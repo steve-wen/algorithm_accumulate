@@ -3,6 +3,7 @@
 using namespace std;
 
 using ll = long long;
+long long mod = (long long)(1e9 + 7);
 
 /**
  * n! n 的阶乘
@@ -5022,12 +5023,49 @@ vector<int> getOrder(vector<vector<int>>& t) {
     }
 }
 
+int minProcessingTime(vector<int>& p, vector<int>& t) {
+    int ans = 0;
+    sort(p.begin(),p.end());
+    sort(t.rbegin(),t.rend());
+    for (int i = 0; i < p.size(); ++i) {
+        for (int j = i *4; j < (i+1)*4; ++j) {
+            ans = max(ans, p[i]+t[j]);
+        }
+    }
+    return ans;
+}
+// 结合 bitset
+
+int maxSum(vector<int>& vec, int k) {
+    long ans = 0;
+    unordered_map<int,int> mp;
+    for (auto a : vec){
+        auto s = bitset<30>(a).to_string();
+        for (int i = 0, j = 29-i; j >= 0; ++i,--j) {
+            if (s[j] == '1') {
+                mp[i]++;
+            }
+        }
+    }
+    while (k) {
+        long tmp = 0;
+        for (int i = 0; i <= 29; ++i) {
+            if (mp[i] > 0) {
+                tmp += (long)pow(2,i);
+                --mp[i];
+            }
+        }
+        ans += tmp * tmp;
+        ans = ans % mod;
+        --k;
+    }
+    return ans;
+}
+
 
 int main() {
-    vector<tuple<int,int,int>> test{{1,2,3},{2,4,5},{3,1,2},{4,1,6}};
 
-
-
+    auto bin = bitset<30>(8).to_string();
 
     return 0;
 }
