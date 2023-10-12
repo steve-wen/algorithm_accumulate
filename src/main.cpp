@@ -836,6 +836,39 @@ int minimumCost(vector<int>& s, vector<int>& t, vector<vector<int>>& r) {
     }
 }
 
+// 结合 bitset
+/**
+ *
+ * 位运算
+ * @param vec
+ * @param k
+ * @return
+ */
+int maxSum(vector<int>& vec, int k) {
+    long ans = 0;
+    unordered_map<int,int> mp;
+    for (auto a : vec){
+        auto s = bitset<30>(a).to_string();
+        for (int i = 0, j = 29-i; j >= 0; ++i,--j) {
+            if (s[j] == '1') {
+                mp[i]++;
+            }
+        }
+    }
+    while (k) {
+        long tmp = 0;
+        for (int i = 0; i <= 29; ++i) {
+            if (mp[i] > 0) {
+                tmp += (long)pow(2,i);
+                --mp[i];
+            }
+        }
+        ans += tmp * tmp;
+        ans = ans % mod;
+        --k;
+    }
+    return ans;
+}
 
 /**
  * bitset 运用，整数转 bitset 转 string, 调用 string find 功能
@@ -1081,6 +1114,135 @@ int minimumDeletions(string s) {
         }
     }
     return f[n];
+}
+
+/**
+ * 记忆化搜索 ： 1. 递归的思想：寻找/求解 子问题
+ *             2. 用记忆化数组缓存 ： memo 数组 (维度与 dfs 维度匹配) (注意引用的运用， 即 int& res = memo[i]);
+ *             (可结合 memset 使用， 如 int memo[n][m][k]; memset(memo,-1,sizeof(memo)))  注意 sizeof(memo)
+ *             3. 从后往前思考， dfs 逆向思考 提出子问题
+ * @param s1
+ * @param s2
+ * @param x
+ * @return
+ */
+int minOperations1(string s1, string s2, int x) {
+    int n = s1.size();
+    vector<int> ind;
+    for (int i = 0; i < n; ++i) {
+        if (s1[i] != s2[i]) {
+            ind.emplace_back(i);
+        }
+    }
+    int m = ind.size();
+    if (m%2) return -1;
+    if (!m) return 0;
+    vector<int> memo(m,-1);
+    function<int(int)> dfs = [&](int i){
+        if (i == -1) return 0;
+        if (i == -2) return (int)1e6;
+        if (memo[i] != -1) return memo[i];
+//        return memo[i] = min(dfs(i-1)+x, i > 0 ? dfs(i-2)+(ind[i]-ind[i-1])*2 : (int)1e6);
+        int& res = memo[i]; // 注意此处是引用， res 直接修改 memo
+        res = min(dfs(i-1)+x, i > 0 ? dfs(i-2)+(ind[i]-ind[i-1])*2 : (int)1e6);
+        return res;
+    };
+    return dfs(m-1)/2;
+}
+
+int minOperations(string s1, string s2, int x) {
+    int n = s1.size();
+    if ((count(s1.begin(), s1.end(), '1') - count(s2.begin(), s2.end(), '1')) % 2) return -1;
+//    int memo[n][n + 1][2];
+    int memo[100][100][2];
+    memset(memo, -1, sizeof(memo)); // -1 表示没有计算过
+    function<int(int,int,bool)> dfs = [&](int i, int j, bool pre){
+        if (i < 0) {
+            if (j > 0 || pre) {
+                return (int)1e6;
+            }
+            return 0;
+        }
+        int& res = memo[i][j][pre]; // 注意此处是引用， res 直接修改 memo
+        if (res != -1) {
+            return res;
+        }
+        if ((s1[i] == s2[i]) == (!pre)) {
+            res = dfs(i - 1, j, false);
+            return res;
+        }
+        auto res1 = dfs(i-1,j+1,false)+x;
+        auto res2 = dfs(i-1,j,true)+1;
+        res = min(res1,res2);
+        if (j > 0) {
+            auto res3 = dfs(i-1,j-1,false);
+            res = min(res,res3);
+        }
+        return res;
+    };
+    return dfs(n-1,0,false);
+}
+
+/**
+ * 记忆化搜索： 打家劫舍
+ * @param a
+ * @return
+ */
+int rob1(vector<int>& a) {
+    int n = a.size();
+    int memo[n][2];
+    memset(memo,-1,sizeof(memo));
+    function<int(int, bool)> dfs = [&](int i, bool pre){
+        if (i< 0) return 0;
+        int& res = memo[i][pre];
+        if (res != -1) return res;
+        if (pre) {
+            res = dfs(i-1,false);
+            return res;
+        }
+        res = max(dfs(i-1,true)+a[i], dfs(i-1,false));
+        return res;
+    };
+    return dfs(n-1,false);
+}
+
+// 简化思路 dfs(i-1) dfs(i-2)
+int rob(vector<int>& a) {
+    int n = a.size();
+    vector<int> memo(n,-1);
+    function<int(int)> dfs = [&](int i){
+        if (i< 0) return 0;
+        int& res = memo[i];
+        if (res != -1) return res;
+        res = max(dfs(i-1), dfs(i-2)+a[i]);
+        return res;
+    };
+    return dfs(n-1);
+}
+
+/**
+ * 记忆化搜索： 最长回文子序列
+ * @param s
+ * @return
+ */
+int longestPalindromeSubseq(string s) {
+    int n = s.size();
+//    int memo[n][n];
+    int memo[100][100];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int)> dfs = [&](int i,int j){
+        if (i == j) return 1;
+        if (i > j) return 0;
+        int& res = memo[i][j];
+        if (res != -1) return res;
+        if (s[i] == s[j]) {
+            res = dfs(i+1,j-1)+2;
+            return res;
+        }
+        res = max(dfs(i+1,j),dfs(i,j-1));
+        return res;
+    };
+    return dfs(0,n-1);
 }
 
 /**
@@ -1477,7 +1639,7 @@ bool validPartition(vector<int>& nums) {
     return f[n];
 }
 
-int longestPalindromeSubseq(string s) {
+int longestPalindromeSubseq1(string s) {
     int n = s.size();
     vector<vector<int>> f(n + 1, vector<int>(n + 1));
     for (int i = 0; i <= n; ++i) {
@@ -3015,7 +3177,7 @@ bool primeSubOperation(vector<int>& nums) {
     return true;
 }
 
-vector<long long> minOperations(vector<int>& nums, vector<int>& q) {
+vector<long long> minOperations1(vector<int>& nums, vector<int>& q) {
     int n = nums.size();
     sort(nums.begin(), nums.end());
     vector<long> sum(n+2);
@@ -5034,36 +5196,43 @@ int minProcessingTime(vector<int>& p, vector<int>& t) {
     }
     return ans;
 }
-// 结合 bitset
 
-int maxSum(vector<int>& vec, int k) {
-    long ans = 0;
-    unordered_map<int,int> mp;
-    for (auto a : vec){
-        auto s = bitset<30>(a).to_string();
-        for (int i = 0, j = 29-i; j >= 0; ++i,--j) {
-            if (s[j] == '1') {
-                mp[i]++;
-            }
+int minOperations(vector<int> &nums1, vector<int> &nums2) {
+    int ans = 0, n1 = nums1.size(), n2 = nums2.size();
+    int nMi = min(n1, n2), nMa = max(n1, n2);
+    if (nMi * 6 < nMa) return -1;
+    int sum1 = accumulate(nums1.begin(), nums1.end(), 0), sum2 = accumulate(nums2.begin(), nums2.end(), 0);
+    int dSum = abs(sum1 - sum2);
+    if (dSum == 0) return 0;
+
+    vector<int> d1(n1);
+    for (int i = 0; i < n1; ++i) {
+        d1[i] = sum1 > sum2 ? nums1[i] - 1 : 6 - nums1[i];
+    }
+    vector<int> d2(n2);
+    for (int i = 0; i < n2; ++i) {
+        d2[i] = sum1 > sum2 ? 6 - nums2[i] : nums2[i] - 1;
+    }
+    vector<int> d(n1 + n2);
+    for (int i = 0; i < n1 + n2; ++i) {
+        if (i < n1) {
+            d[i] = d1[i];
+        } else {
+            d[i] = d2[i - n1];
         }
     }
-    while (k) {
-        long tmp = 0;
-        for (int i = 0; i <= 29; ++i) {
-            if (mp[i] > 0) {
-                tmp += (long)pow(2,i);
-                --mp[i];
-            }
-        }
-        ans += tmp * tmp;
-        ans = ans % mod;
-        --k;
+    sort(d.rbegin(), d.rend());
+    for (int i = 0; i < n1 + n2; ++i) {
+        dSum -= d[i];
+        if (dSum <= 0) return i + 1;
     }
     return ans;
 }
 
 
 int main() {
+    string s = "a" "b";
+
 
     auto bin = bitset<30>(8).to_string();
 
