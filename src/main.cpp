@@ -3,7 +3,15 @@
 using namespace std;
 
 using ll = long long;
-long long mod = (long long)(1e9 + 7);
+
+#define rep(i, from, to) for(ll i = from;i<to;i++)
+#define rrep(i, from, to) for(ll i = from;i>=to;i--)
+#define se second
+#define fi first
+#define tostring(a) (ostringstream() << a).str()
+
+typedef pair<int,int> pii;
+typedef pair<long,long> pll;
 
 /**
  * n! n 的阶乘
@@ -385,6 +393,7 @@ int countCompleteComponents(int n, vector<vector<int>>& e) {
     for (int i = 0; i < n; ++i) {
         if (!mark[i]){
             unordered_set<int> st{i};
+            mark[i] = 1;
             dfs(i,st);
             int cnt = 0;
             for (auto& e1 : e) {
@@ -398,6 +407,54 @@ int countCompleteComponents(int n, vector<vector<int>>& e) {
         }
     }
     return ans;
+}
+
+/**
+ * dfs : 连通分量(On) + 分别排序
+ * @param s
+ * @param e
+ * @return
+ */
+string smallestStringWithSwaps(string s, vector<vector<int>>& e) {
+
+    int m = e.size(), n  = s.size();
+    // 建图
+    unordered_map<int,vector<int>> mp;
+    for (auto& e1 : e) {
+        mp[e1[0]].emplace_back(e1[1]);
+        mp[e1[1]].emplace_back(e1[0]);
+    }
+    // 标记
+    vector<int> mark(n);
+    // 遍历 dfs
+    function<void(int i,vector<int>&)> dfs = [&](int i, vector<int>& ind){
+        for(int j = 0; j < mp[i].size(); ++j) {
+            if(!mark[mp[i][j]]) {
+                ind.emplace_back(mp[i][j]);
+                mark[mp[i][j]] = 1;
+                dfs(mp[i][j],ind);
+            }
+        }
+    };
+    // 根据题目处理
+    for (int i = 0; i < n; ++i) {
+        if (!mark[i]){
+            vector<int> ind{i};
+            mark[i] = 1;
+            dfs(i,ind);
+            int l = ind.size();
+            string str(l,'0');
+            for (int j = 0; j < l; ++j) {
+                str[j] = s[ind[j]];
+            }
+            sort(ind.begin(),ind.end());
+            sort(str.begin(),str.end());
+            for (int j = 0; j < l; ++j) {
+                s[ind[j]] = str[j];
+            }
+        }
+    }
+    return s;
 }
 
 /**
@@ -644,9 +701,56 @@ vector<vector<int>> getAncestors(int n, vector<vector<int>>& e) {
     return vec;
 }
 
+/**
+ * 最短环 ： bfs + 记录父节点（pre)
+ * @param n
+ * @param e
+ * @return
+ */
+int findShortestCycle(int n, vector<vector<int>>& e) {
+    int ans = 1e4;
+
+    unordered_map<int, vector<int>> g;
+    for (auto & e1 : e) {
+        g[e1[1]].emplace_back(e1[0]);
+        g[e1[0]].emplace_back(e1[1]);
+    }
+
+    for (int i = 0; i < n; ++i) {
+        int tmp = 1e4;
+        // dis 数组记录距离 且 < 1 时未访问过，有 mark/vis 的作用
+        vector<int> dis(n,-1);
+        // 初始化
+        dis[i] = 0;
+        queue<pair<int,int>> q;
+        q.emplace(i,-1);
+        while (!q.empty()){
+            // 找到环
+            if (tmp != 1e4) break;
+            for (int k = q.size(); k; --k) {
+                auto q1 = q.front();
+                q.pop();
+                // b 为父节点
+                auto&[a,b] = q1;
+                for (auto& j : g[a]) {
+                    if (dis[j] < 0) { // j 未访问过
+                        dis[j] = dis[a]+1;
+                        q.emplace(j,a);
+                    } else if (j != b) { // j 访问过且不是 a 的父节点，找到环
+                        tmp = dis[a]+dis[j]+1;
+                        break;
+                    }
+                }
+            }
+        }
+        ans = min(ans,tmp);
+    }
+    return ans == 1e4 ? -1 : ans;
+}
+
 
 /**
- * dijkstra : 解决没有负边权的单源最短路
+ * dijkstra : 解决没有负边权的单源最短路， 时间复杂度（ElogN)
  * @param g
  * @return
  */
@@ -836,6 +940,63 @@ int minimumCost(vector<int>& s, vector<int>& t, vector<vector<int>>& r) {
     }
 }
 
+/**
+ * dijkstra(+ 多源 ) : dijkstra + for 循环
+ * @param n
+ * @param e
+ * @param d
+ * @return
+ */
+// 带边权，注意
+int findTheCity(int n, vector<vector<int>>& e, int d) {
+    // 建图
+    unordered_map<int, vector<pair<int,int>>> g;
+    for (auto & e1 : e) {
+        g[e1[1]].emplace_back(e1[0],e1[2]);
+        g[e1[0]].emplace_back(e1[1],e1[2]);
+    }
+    // 待更新结果
+    int mi = 100, ans = 0;
+
+    for (int i = 0; i < n; ++i) {
+        int cnt = 0;
+        // 初始化 dis 数组
+        vector<int> dis(n, 1e6);
+        dis[i] = 0;
+        // 小顶堆， 起点（0，0，0） 入堆
+        priority_queue<pair<int,int>,vector<pair<int,int>>,greater<>> q;
+        q.emplace(0,i);
+
+        while(!q.empty()) {
+            auto[d,i] = q.top();
+            q.pop();
+
+            // 遍历邻居
+            for (auto &p: g[i]) {
+                int i1 = p.first;
+                // 根据题目处理
+                int nd = d + p.second;
+                // 更新点
+                // 剪枝
+                if (nd < dis[i1]) {
+                    q.emplace(nd, i1);
+                    dis[i1] = nd;
+                }
+            }
+        }
+        for (auto & a : dis){
+            if (a != 0 && a <= d){
+                ++cnt;
+            }
+        }
+        if (cnt <= mi) {
+            mi = cnt;
+            ans = i;
+        }
+    }
+    return ans;
+}
+
 // 结合 bitset
 /**
  *
@@ -845,6 +1006,7 @@ int minimumCost(vector<int>& s, vector<int>& t, vector<vector<int>>& r) {
  * @return
  */
 int maxSum(vector<int>& vec, int k) {
+    ll mod = 1e9+7;
     long ans = 0;
     unordered_map<int,int> mp;
     for (auto a : vec){
@@ -1117,6 +1279,96 @@ int minimumDeletions(string s) {
 }
 
 /**
+ * 记忆化搜索转动态规划 ： 目的： 获取路径数组 pre
+ * @param n
+ * @param w
+ * @param g
+ * @return
+ */
+vector<string> getWordsInLongestSubsequence(int n, vector<string>& w, vector<int>& g) {
+    vector<string> ans;
+
+    auto check = [&](string a, string b){
+        int cnt = 0;
+        if (a.size() == b.size()) {
+            for (int i = 0; i < a.size(); ++i) {
+                if (a[i] != b[i]) ++cnt;
+            }
+            if (cnt == 1) return true;
+        }
+        return false;
+    };
+    // pre数组,记录 i 的前一个下标 j, 根据条件更新
+    vector<int> pre(n+1,-1), f(n,1);
+    // now 记录倒序遍历的起点，即最值时的 i
+    int now = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < i; ++j){
+            if (g[j] != g[i] && check(w[j],w[i]) && f[j]+1 > f[i]) {
+                f[i] = f[j]+1;
+                pre[i] = j;
+            }
+        }
+        if (f[i] > f[now]) now = i;
+    }
+    while (now != -1) {
+        ans.emplace_back(w[now]);
+        now = pre[now];
+    }
+    reverse(ans.begin(),ans.end());
+    return ans;
+}
+
+/**
+ * 动态规划： 较为复杂， 动态规划(遍历时，根据条件同时处理两个动态规划数组)
+ * @param b
+ * @return
+ */
+vector<int> pathsWithMaxScore(vector<string>& b) {
+    int mod = 1e9+7;
+    auto check = [&](char c){
+        if (c == 'E' || c == 'S') return 0;
+        else return c-'0';
+    };
+    int n = b.size();
+    int f[n+2][n+2],g[n+2][n+2];
+    memset(f,0,sizeof(f));
+    memset(g,0,sizeof(g));
+    g[n-1][n-1] = 1;
+    for (int i = n-1; i >= 0; --i) {
+        for (int j = n-1; j >= 0; --j){
+            if(b[i][j] == 'X') {
+                f[i][j] = (int)-1e6;
+                continue;
+            }
+            if (i+1 < n) {
+                f[i][j] = f[i+1][j] + check(b[i][j]);
+                g[i][j] = g[i+1][j] ;
+            }
+            if (j+1 < n){
+                if (f[i][j+1] + check(b[i][j]) > f[i][j]) {
+                    f[i][j] = f[i][j+1] + check(b[i][j]);
+                    g[i][j] = g[i][j+1];
+                } else if (f[i][j+1] + check(b[i][j]) == f[i][j]){
+                    g[i][j] = (g[i][j+1]+g[i][j]) % mod;
+                }
+            }
+            if (i+1 < n && j+1 <n) {
+                if (f[i+1][j+1] + check(b[i][j]) > f[i][j]) {
+                    f[i][j] = f[i+1][j+1] + check(b[i][j]);
+                    g[i][j] = g[i+1][j+1];
+                } else if (f[i+1][j+1] + check(b[i][j]) == f[i][j]){
+                    g[i][j] = (g[i+1][j+1] + g[i][j])%mod;
+                }
+            }
+        }
+    }
+    vector<int> ans{f[0][0],g[0][0]};
+    if (ans[0] < 0 || ans[1] == 0) return{0,0};
+    return ans;
+}
+
+/**
  * 记忆化搜索 ： 1. 递归的思想：寻找/求解 子问题
  *             2. 用记忆化数组缓存 ： memo 数组 (维度与 dfs 维度匹配) (注意引用的运用， 即 int& res = memo[i]);
  *             (可结合 memset 使用， 如 int memo[n][m][k]; memset(memo,-1,sizeof(memo)))  注意 sizeof(memo)
@@ -1243,6 +1495,33 @@ int longestPalindromeSubseq(string s) {
         return res;
     };
     return dfs(0,n-1);
+}
+
+/**
+ * 记忆化搜索： memo数组， + dfs 时，取模 mod
+ * @param s
+ * @param l
+ * @return
+ */
+int numWays(int s, int l) {
+    int mod = 1e9+7;
+    int memo[100+5][100+5];
+    memset(memo,-1,sizeof(memo));
+    function<int(int i, int j)> dfs = [&](int i,int j){
+        if (j == 0) {
+            if (i == 0) {
+                return 1;
+            } else return 0;
+        }
+        if (i < 0 || i >= l) {
+            return 0;
+        }
+        if (memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        res = ((dfs(i,j-1)%mod+dfs(i-1,j-1)%mod)%mod+dfs(i+1,j-1)%mod)%mod;
+        return res;
+    };
+    return dfs(0,s);
 }
 
 /**
@@ -5229,12 +5508,143 @@ int minOperations(vector<int> &nums1, vector<int> &nums2) {
     return ans;
 }
 
+vector<vector<int>> constructProductMatrix(vector<vector<int>>& g) {
+    int mod = 12345;
+    int m = g.size(), n = g[0].size();
+    vector<vector<int>> ans(m,vector<int>(n)), pre(m,vector<int>(n)),suf(m,vector<int>(n));
+    pre[0][0] = 1;
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (i == 0 && j==0) continue;
+            if (j == 0){
+                pre[i][j] = (pre[i-1][n-1]%mod)*(g[i-1][n-1]%mod)%mod;
+            } else {
+                pre[i][j] = (pre[i][j-1]%mod)*(g[i][j-1]%mod)%mod;
+            }
+        }
+    }
+    suf[m-1][n-1] = 1;
+    for (int i = m-1; i >= 0; --i) {
+        for (int j = n-1; j >= 0; --j) {
+            if (i == m-1 && j==n-1) continue;
+            if (j == n-1){
+                suf[i][j] = (suf[i+1][0]%mod)*(g[i+1][0]%mod)%mod;
+            } else {
+                suf[i][j] = (suf[i][j+1]%mod)*(g[i][j+1]%mod)%mod;
+            }
+        }
+    }
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            ans[i][j] = (pre[i][j]*suf[i][j])%mod;
+        }
+    }
+    return ans;
+}
+
+
+// 滑窗 + 动态规划
+int minSumOfLengths(vector<int>& a, int t) {
+    int n = a.size();
+    vector<pii> vec;
+    int tmp = 0;
+    for (int r = 0,l = 0; r < n; ++r ){
+        tmp += a[r];
+        while (tmp >= t) {
+            if (tmp ==t) {
+                vec.emplace_back(l,r);
+            }
+            tmp -= a[l];
+            ++l;
+        }
+    }
+    sort(vec.begin(),vec.end());
+    int m = vec.size();
+    if (m < 2) return -1;
+    int ans = 1e6;
+    vector<int> f(n+1);
+    f[vec[m-1].fi] = vec[m-1].se-vec[m-1].fi+1;
+    for (int j = vec[m-1].se; j > vec[m-1].fi; --j) {
+        f[j] = 1e6;
+    }
+    for (int i = m-2; i >= 0; --i) {
+        if (vec[i].se < vec[i+1].fi) {
+            f[vec[i].se+1] = f[vec[i+1].fi];
+            for (int j = vec[i].se; j > vec[i].fi; --j){
+                f[j] = f[j+1];
+            }
+            f[vec[i].fi] = min(f[vec[i].fi+1], vec[i].se-vec[i].fi+1);
+        } else {
+            for (int j = vec[i+1].fi-1; j > vec[i].fi; --j){
+                f[j] = f[j+1];
+            }
+            f[vec[i].fi] = min(f[vec[i].fi+1], vec[i].se-vec[i].fi+1);
+        }
+        ans = min(ans, vec[i].se-vec[i].fi+1+f[vec[i].se+1]);
+    }
+    return ans == 1e6 ? -1 : ans;
+}
+
+// 前缀和 + 哈希记录 (pre[i] - target)
+int maxNonOverlapping(vector<int>& nums, int t) {
+    int n = nums.size(), ans = 0;
+    vector<int> pre(n);
+    pre[0] = nums[0];
+    for (int i = 1; i < n; ++i){
+        pre[i] = pre[i-1]+nums[i];
+    }
+    unordered_set<int> st;
+    st.emplace(0);
+    for (int i = 0; i < n; ++i) {
+        if (st.count(pre[i]-t)){
+            ++ans;
+            st.clear();
+            st.emplace(pre[i]);
+        } else {
+            st.emplace(pre[i]);
+        }
+    }
+    return ans;
+}
+
+int minimumEffort(vector<vector<int>>& t) {
+    int sum = 0;
+    for (auto &t1 : t) {
+        sum += t1[0];
+    }
+    int ans = sum;
+    sort(t.begin(),t.end(),[&](vector<int>& a, vector<int>& b){return a[1]-a[0] > b[1]-b[0];});
+    for (auto &t1 : t) {
+        if (sum < t1[1]) {
+            ans += t1[1]-sum;
+            sum = t1[1];
+        }
+        sum -= t1[0];
+    }
+    return ans;
+}
+
+int longestWPI(vector<int>& h) {
+    int n = h.size(), ans = 0;
+    vector<int> pre(n+1);
+    stack<int> st;
+    st.emplace(0);
+    for (int i = 0; i < n; ++i) {
+        pre[i+1] = pre[i]+ (h[i] > 8 ? 1 : -1);
+        if (pre[st.top()] > pre[i+1]) {
+            st.emplace(i+1);
+        }
+    }
+    for (int i = n; i >= 0; --i) {
+        while (!st.empty() && pre[i] - pre[st.top()] > 0) {
+            ans = max(ans, i-st.top());
+            st.pop();
+        }
+    }
+    return ans;
+}
 
 int main() {
-    string s = "a" "b";
-
-
-    auto bin = bitset<30>(8).to_string();
 
     return 0;
 }
