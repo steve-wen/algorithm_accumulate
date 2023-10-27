@@ -1525,6 +1525,71 @@ int numWays(int s, int l) {
 }
 
 /**
+ * 区间划分型 dp : 划分 k 个区间，端点 0 - n-1, dfs(k-1,n-1)
+ * 用记忆化搜索 dfs 求解
+ */
+vector<vector<int>> divi(202);
+
+int init1 = [](){
+    for (int i = 1; i < 101; ++i) {
+        for (int j = i *2; j < 202; j += i) {
+            divi[j].emplace_back(i);
+        }
+    }
+    return 0;
+}();
+
+auto check = [](string s){
+    int n = s.size();
+    int cnt = 101;
+    for (auto& d : divi[n]) {
+        int tmp = 0;
+        for (int i = 0; i < d; ++i) {
+            string t;
+            for (int j = i; j < n; j += d) {
+                t += s[j];
+            }
+            for (int k = 0; k < t.size()/2 ; ++k) {
+                tmp += t[k] != t[t.size()-1-k];
+            }
+        }
+        cnt = min(cnt,tmp);
+    }
+    return cnt;
+};
+
+// memset int 类型时 value 只能为 0 或 1， 否则会出错（与预期不一致）
+auto minimumChanges = [](string s, int k) {
+    int n = s.size();
+    int mody[202][202];
+    memset(mody,0,sizeof(mody));
+    for (int i = 0; i < n-1; ++i) {
+        for (int j = i+1; j < n; ++j) {
+            mody[i][j] = check(s.substr(i,j-i+1));
+        }
+    }
+
+    int memo[202][202];
+    memset(memo,-1,sizeof(memo));
+
+    function<int(int,int)> dfs = [&](int i, int j){
+        if (i == 0) {
+            return mody[0][j];
+        }
+        if (memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        for (int l = 2*i; l <= j-1; ++l) {
+            res = res == -1 ? dfs(i-1,l-1)+mody[l][j] : min(res, dfs(i-1,l-1)+mody[l][j]);
+        }
+        return res;
+    };
+
+    return dfs(k-1,n-1);
+
+};
+
+
+/**
  * 单调栈：下一个更大的元素 (1)
  *        1. 原数组无序， 要找到下一个更大元素
  *        2. 单调栈存值
@@ -1609,6 +1674,67 @@ long long maximumSumOfHeights(vector<int>& h) {
         ans = max(ans, pre[i]+suf[i]-(long)h[i]);
     }
     return ans;
+}
+
+/**
+ * 经典单调栈， 数形结合
+ * @param h
+ * @return
+ */
+int longestWPI(vector<int>& h) {
+    int n = h.size(), ans = 0;
+    vector<int> pre(n+1);
+    stack<int> st;
+    st.emplace(0);
+    for (int i = 0; i < n; ++i) {
+        pre[i+1] = pre[i]+ (h[i] > 8 ? 1 : -1);
+        if (pre[st.top()] > pre[i+1]) {
+            st.emplace(i+1);
+        }
+    }
+    for (int i = n; i >= 0; --i) {
+        while (!st.empty() && pre[i] - pre[st.top()] > 0) {
+            ans = max(ans, i-st.top());
+            st.pop();
+        }
+    }
+    return ans;
+}
+
+
+/**
+ * 单调队列，双端队列 ： 参照单调栈，但动态更新
+ * 前缀和
+ * @param a
+ * @param k
+ * @return
+ */
+
+int shortestSubarray(vector<int>& a, int k) {
+    int n = a.size(), ans = n+1;
+    // 前缀和
+    vector<long> pre(n+1);
+    for (int i = 0; i < n; ++i) {
+        pre[i+1] = pre[i]+(long)a[i];
+    }
+    // 双端队列
+    deque<int> q;
+    q.emplace_back(0);
+    // 数形结合， 单调性跟图像结合
+    for (int i = 1; i <= n; ++i) {
+        // pop 左边无用的点
+        while(!q.empty() && pre[i]-pre[q.front()] >= k ) {
+            ans = min(ans, i-q.front());
+            q.pop_front();
+        }
+        // pop 右边无用的点
+        while(!q.empty() && pre[q.back()] >= pre[i]) {
+            q.pop_back();
+        }
+        // emplace 当前点
+        q.emplace_back(i);
+    }
+    return ans == n+1 ? -1 : ans;
 }
 
 
@@ -5624,40 +5750,118 @@ int minimumEffort(vector<vector<int>>& t) {
     return ans;
 }
 
-int longestWPI(vector<int>& h) {
-    int n = h.size(), ans = 0;
-    vector<int> pre(n+1);
-    stack<int> st;
-    st.emplace(0);
-    for (int i = 0; i < n; ++i) {
-        pre[i+1] = pre[i]+ (h[i] > 8 ? 1 : -1);
-        if (pre[st.top()] > pre[i+1]) {
-            st.emplace(i+1);
+void rotate(vector<vector<int>>& g) {
+    int n = g.size();
+    for (int i = 0; i < n/2; ++i) {
+        for (int j = i; j < n-1-i; ++j) {
+            int tmp = g[i][j];
+            g[i][j] = g[n-1-j][i];
+            g[n-1-j][i]  = g[n-1-i][n-1-j];
+            g[n-1-i][n-1-j] = g[j][n-1-i];
+            g[j][n-1-i] = tmp;
         }
     }
-    for (int i = n; i >= 0; --i) {
-        while (!st.empty() && pre[i] - pre[st.top()] > 0) {
-            ans = max(ans, i-st.top());
-            st.pop();
-        }
-    }
-    return ans;
+    return;
 }
 
+// 单调队列，有误
+vector<int> maxSlidingWindow(vector<int>& a, int k) {
+    int n = a.size();
+    vector<int> b;
+    deque<int> q;
+    for (int i = 0; i < n; ++i) {
+        while(!q.empty() && (a[q.front()] <= a[i] || q.front() <= i-k)) {
+            q.pop_front();
+        }
+        while (!q.empty() && a[q.back()] <= a[i]) {
+            q.pop_back();
+        }
+        q.emplace_back(i);
+        if (i >= k-1) {
+            b.emplace_back(q.front());
+        }
+    }
+    return b;
+}
+
+
 int main() {
+    priority_queue<int> q;
+
 
     return 0;
 }
 
-
-//void solve() {
+//#include <bits/stdc++.h>
+//
+//using namespace std;
+//
+//int main() {
+//    ios::sync_with_stdio(false);
+//    cin.tie(nullptr);
+//
 //    int n;
 //    cin >> n;
-//    for (int i = 0; i < n; ++i) {
-//        cout << i;
+//
+//    while (n ) {
+//        string s;
+//        cin >> s;
+//        int a = s.size();
+//        if (a <= 10) {
+//            cout << s <<endl ;
+//        } else {
+//            cout << s[0]+to_string(a-2)+s.back() <<endl ;
+//        }
+//        --n;
 //    }
 //}
 
+
+
+//#include <bits/stdc++.h>
+//
+//using namespace std;
+//
+//void solve() {
+//    int n,k;
+//    cin >> n >> k;
+//    vector<int> a(n);
+//    for (int i = 0; i < n; ++i) {
+//        cin >> a[i];
+//    }
+//    int ans = 5;
+//    if (k == 3) {
+//        for (auto& b : a) {
+//            ans = min(ans, 3- (b%3 == 0 ? 3 : b%3));
+//        }
+//
+//    } else if (k == 5) {
+//        for (auto& b : a) {
+//            ans = min(ans, 5- (b%5 == 0 ? 5 : b%5));
+//        }
+//
+//    } else if(k == 2){
+//        for (auto& b : a) {
+//            ans = min(ans, 2- (b%2 == 0 ? 2 : b%2));
+//        }
+//    }else {
+//        int cnt = 0;
+//        for (auto& b : a) {
+//            cnt += (b % 2 == 0 ? 1 : 0);
+//        }
+//        for (auto& b : a) {
+//            ans = min(ans, 4- (b%4 == 0 ? 4 : b%4));
+//        }
+//        if (n >= 2) {
+//            ans = min(ans, 2-cnt >= 0 ? 2-cnt : 0);
+//        }
+//
+//    }
+//    cout << ans << endl;
+//
+//}
+//
+//int main() {
 //    ios::sync_with_stdio(false);
 //    cin.tie(nullptr);
 //
@@ -5666,4 +5870,8 @@ int main() {
 //    while (t--) {
 //        solve();
 //    }
+//}
+
+
+
 
