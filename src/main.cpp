@@ -82,6 +82,24 @@ private:
 };
 
 /**
+ * 旋转图像
+ * @param g
+ */
+void rotate(vector<vector<int>>& g) {
+    int n = g.size();
+    for (int i = 0; i < n/2; ++i) {
+        for (int j = i; j < n-1-i; ++j) {
+            int tmp = g[i][j];
+            g[i][j] = g[n-1-j][i];
+            g[n-1-j][i]  = g[n-1-i][n-1-j];
+            g[n-1-i][n-1-j] = g[j][n-1-i];
+            g[j][n-1-i] = tmp;
+        }
+    }
+    return;
+}
+
+/**
  * 子集 ： 选/不选 以数组下标 ind 为例 ： 0，1，2 ... n-1
  * @param n
  * @return
@@ -997,7 +1015,28 @@ int findTheCity(int n, vector<vector<int>>& e, int d) {
     return ans;
 }
 
-// 结合 bitset
+/**
+ * 快速幂 ： 与位运算结合，累乘，手画
+ * @param x
+ * @param n
+ * @return
+ */
+double myPow(double x, int n) {
+    int a = abs(n);
+    vector<int> b(32);
+    for (int i = 0;i < 32; ++i) {
+        b[i] = ((a >> i) & 1);
+    }
+    double ans = 1;
+    if (n < 0) x = 1/x;
+    for (int i = 0; i < 32; ++i) {
+        if (b[i]) ans *= x;
+        x *= x;
+    }
+    return ans;
+}
+
+// 结合 bitset 与灵神的位运算文章结合
 /**
  *
  * 位运算
@@ -1011,6 +1050,7 @@ int maxSum(vector<int>& vec, int k) {
     unordered_map<int,int> mp;
     for (auto a : vec){
         auto s = bitset<30>(a).to_string();
+        // 注意首尾下标
         for (int i = 0, j = 29-i; j >= 0; ++i,--j) {
             if (s[j] == '1') {
                 mp[i]++;
@@ -1588,6 +1628,88 @@ auto minimumChanges = [](string s, int k) {
 
 };
 
+// 记忆化搜索，线性， t3
+long long minIncrementOperations(vector<int>& a, int k) {
+    long n = a.size();
+    long b = (long)k;
+    long memo[n+10][3];
+    memset(memo,-1,sizeof(memo));
+    function<long(long, long)> dfs = [&](long i, long j){
+        if (i < 0) {
+            return (long)0;
+        }
+        if (memo[i][j] != -1) return memo[i][j];
+        long& res = memo[i][j];
+        if (j < 2) {
+            // b-a[i] < 0 ? 0 : b-a[i] 简化写法 ： max(b-a[i], (long)0)
+            res = min(dfs(i-1,0)+max(b-a[i], (long)0), dfs(i-1,j+1));
+        } else {
+            res = dfs(i-1,0)+max(b-a[i], (long)0);
+        }
+        return res;
+    };
+    return dfs(n-1,0);
+}
+
+/**
+ * 树形 dp, 记忆化搜索（也可用 chatgpt 转成 python 加 @cache）
+ * 自顶向下
+ * @param e
+ * @param c
+ * @param k
+ * @return
+ */
+int maximumPoints(vector<vector<int>>& e, vector<int>& c, int k) {
+    int n = c.size();
+    // 建图， 建树， 无向边
+    vector<vector<int>> g(n);
+    for (auto& e1 : e) {
+        g[e1[0]].emplace_back(e1[1]);
+        g[e1[1]].emplace_back(e1[0]);
+    }
+    // memo 数组注意不要爆内存
+    int memo[n+2][18];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int,int)> dfs = [&](int i, int j, int fa){
+        // 边界， 右移 14 位后，都变为0(0 > 负数)
+        if (j >= 14) return 0;
+        if (memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        int res1 = (c[i]>>j)-k, res2 = c[i]>>(j+1);
+        for (auto& i1 : g[i]) {
+            if (i1 != fa) {
+                res1 += dfs(i1,j,i);
+                res2 += dfs(i1,j+1,i);
+            }
+        }
+        return max(res1,res2);
+    };
+    return dfs(0,0,0);
+}
+
+// 可用 chatgpt 转成 python 加 @cache
+//def maximumPoints(e, c, k):
+//n = len(c)
+//g = [[] for _ in range(n)]
+//for e1 in e:
+//g[e1[0]].append(e1[1])
+//g[e1[1]].append(e1[0])
+//
+//@cache
+//    def dfs(i, j, fa):
+//if j >= 14:
+//return 0
+//res1 = (c[i] >> j) - k
+//res2 = c[i] >> (j + 1)
+//for i1 in g[i]:
+//if i1 != fa:
+//res1 += dfs(i1, j, i)
+//res2 += dfs(i1, j + 1, i)
+//return max(res1, res2)
+//
+//return dfs(0, 0, 0)
+
+
 
 /**
  * 单调栈：下一个更大的元素 (1)
@@ -1737,6 +1859,28 @@ int shortestSubarray(vector<int>& a, int k) {
     return ans == n+1 ? -1 : ans;
 }
 
+// 单调队列，参照单调栈，但动态更新
+vector<int> maxSlidingWindow(vector<int>& a, int k) {
+    int n = a.size();
+    vector<int> b;
+    deque<int> q;
+    for (int i = 0; i < n; ++i) {
+        // pop 左边无用的点
+        while(!q.empty() && (a[q.front()] <= a[i] || q.front() <= i-k)) {
+            q.pop_front();
+        }
+        // pop 右边无用的点
+        while (!q.empty() && a[q.back()] <= a[i]) {
+            q.pop_back();
+        }
+        // 更新当前点
+        q.emplace_back(i);
+        if (i >= k-1) {
+            b.emplace_back(a[q.front()]);
+        }
+    }
+    return b;
+}
 
 int firstCompleteIndex(vector<int>& arr, vector<vector<int>>& mat) {
     unordered_map<int, vector<int>> mp;
@@ -5668,7 +5812,6 @@ vector<vector<int>> constructProductMatrix(vector<vector<int>>& g) {
     return ans;
 }
 
-
 // 滑窗 + 动态规划
 int minSumOfLengths(vector<int>& a, int t) {
     int n = a.size();
@@ -5733,61 +5876,127 @@ int maxNonOverlapping(vector<int>& nums, int t) {
     return ans;
 }
 
-int minimumEffort(vector<vector<int>>& t) {
-    int sum = 0;
-    for (auto &t1 : t) {
-        sum += t1[0];
-    }
-    int ans = sum;
-    sort(t.begin(),t.end(),[&](vector<int>& a, vector<int>& b){return a[1]-a[0] > b[1]-b[0];});
-    for (auto &t1 : t) {
-        if (sum < t1[1]) {
-            ans += t1[1]-sum;
-            sum = t1[1];
+int sumCounts1(vector<int>& a) {
+    int mod = 1e9+7;
+    int ans = 0, n = a.size();
+    for (int i = 0; i < n; ++i) {
+        unordered_set<int> st;
+        for (int j = i; j < n; ++j) {
+            st.emplace(a[j]);
+            ans = (ans + st.size()*st.size())%mod;
         }
-        sum -= t1[0];
+    }
+    return ans;
+
+}
+
+int minChanges(string s) {
+    int ans = 0, n = s.size();
+    for (int i = 0;i < n; i += 2) {
+        if (s[i] != s[i+1]) ++ans;
     }
     return ans;
 }
 
-void rotate(vector<vector<int>>& g) {
-    int n = g.size();
-    for (int i = 0; i < n/2; ++i) {
-        for (int j = i; j < n-1-i; ++j) {
-            int tmp = g[i][j];
-            g[i][j] = g[n-1-j][i];
-            g[n-1-j][i]  = g[n-1-i][n-1-j];
-            g[n-1-i][n-1-j] = g[j][n-1-i];
-            g[j][n-1-i] = tmp;
+int lengthOfLongestSubsequence(vector<int>& a, int t) {
+    int ans = 0, n = a.size();
+    int memo[(int)(1e3+2)][(int)(1e3+2)];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int)> dfs = [&](int i, int j) {
+        if (j < 0) return -(n+1);
+        if (i < 0) {
+            if (j > 0) return -(n+1);
+            return 0;
         }
-    }
-    return;
+        if (memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        return res = max(dfs(i-1,j-a[i])+1, dfs(i-1,j));
+    };
+    ans = dfs(n-1,t);
+    return ans < 0? -1 : ans;
 }
 
-// 单调队列，有误
-vector<int> maxSlidingWindow(vector<int>& a, int k) {
-    int n = a.size();
-    vector<int> b;
-    deque<int> q;
-    for (int i = 0; i < n; ++i) {
-        while(!q.empty() && (a[q.front()] <= a[i] || q.front() <= i-k)) {
-            q.pop_front();
-        }
-        while (!q.empty() && a[q.back()] <= a[i]) {
-            q.pop_back();
-        }
-        q.emplace_back(i);
-        if (i >= k-1) {
-            b.emplace_back(q.front());
-        }
-    }
-    return b;
+int sumCounts(vector<int>& a) {
+
+
 }
+
+/**
+ * lazy segment tree : lazy 线段树
+ *  0. 解决问题 ：一个数组， 更新一个子数组的值（都加上一个数，把子数组内的元素取反，...）
+ *              查询一个子数组的值（求和，求最大值）
+ *  1. 两大思想：
+ *      1.1 挑选 O(n) 个特殊区间，使得任意一个区间可以拆分为 O(log n) 个特殊区间 (用最近公共祖先思考)
+ *          O(n) <= 4n, 分治思想， 满二叉树， 递归
+ *
+ *  1. 分治思想， 满二叉树
+ */
+// no.2569
+class LazySegmentTree {
+    vector<int> cnt1, flip;
+
+    // 维护区间 1 的个数
+    void maintain(int o) {
+        cnt1[o] = cnt1[o * 2] + cnt1[o * 2 + 1];
+    }
+
+    // 执行区间反转
+    void do_(int o, int l, int r) {
+        cnt1[o] = r - l + 1 - cnt1[o];
+        flip[o] = !flip[o];
+    }
+
+    // 初始化线段树   o,l,r=1,1,n (节点编号，左端点，右端点)  (起点从 1 开始， 1 - n)
+    void build(vector<int> &a, int o, int l, int r) {
+        // 边界条件
+        if (l == r) {
+            cnt1[o] = a[l - 1];
+            return;
+        }
+        int m = (l + r) / 2;
+        // 左儿子节点编号 o*2, 右儿子节点编号 o*2+1
+        build(a, o * 2, l, m);
+        build(a, o * 2 + 1, m + 1, r);
+        // 维护
+        maintain(o);
+    }
+
+    // 反转区间 [L,R], 更新 [L,R], [L,R]是常量   o,l,r=1,1,n
+    void update(int o, int l, int r, int L, int R) {
+        if (L <= l && r <= R) {
+            do_(o, l, r);
+            return;
+        }
+        int m = (l + r) / 2;
+        if (flip[o]) {
+            do_(o * 2, l, m);
+            do_(o * 2 + 1, m + 1, r);
+            flip[o] = false;
+        }
+        if (m >= L) update(o * 2, l, m, L, R);
+        if (m < R) update(o * 2 + 1, m + 1, r, L, R);
+        maintain(o);
+    }
+
+public:
+    vector<long long> handleQuery(vector<int> &nums1, vector<int> &nums2, vector<vector<int>> &queries) {
+        int n = nums1.size();
+        cnt1.resize(n * 4);
+        flip.resize(n * 4);
+        build(nums1, 1, 1, n);
+        vector<long long> ans;
+        long long sum = accumulate(nums2.begin(), nums2.end(), 0LL);
+        for (auto &q : queries) {
+            if (q[0] == 1) update(1, 1, n, q[1] + 1, q[2] + 1);
+            else if (q[0] == 2) sum += 1LL * q[1] * cnt1[1];
+            else ans.push_back(sum);
+        }
+        return ans;
+    }
+};
 
 
 int main() {
-    priority_queue<int> q;
-
 
     return 0;
 }
@@ -5815,7 +6024,6 @@ int main() {
 //        --n;
 //    }
 //}
-
 
 
 //#include <bits/stdc++.h>
@@ -5872,6 +6080,12 @@ int main() {
 //    }
 //}
 
-
-
-
+/**
+ * impl list :
+ * 2. 第 4 题
+ * 2.1 lazy 线段树知识点 2569
+ * 2.2 字符串引力
+ * 2.3 洛谷上线段树相关题目
+ * 3. 树形 dp 等
+ * 4. 2000 难度题
+ */
