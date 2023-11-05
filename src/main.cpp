@@ -5916,10 +5916,6 @@ int lengthOfLongestSubsequence(vector<int>& a, int t) {
     return ans < 0? -1 : ans;
 }
 
-int sumCounts(vector<int>& a) {
-
-
-}
 
 /**
  * lazy segment tree : lazy 线段树
@@ -5928,8 +5924,16 @@ int sumCounts(vector<int>& a) {
  *  1. 两大思想：
  *      1.1 挑选 O(n) 个特殊区间，使得任意一个区间可以拆分为 O(log n) 个特殊区间 (用最近公共祖先思考)
  *          O(n) <= 4n, 分治思想， 满二叉树， 递归
+ *      挑选 O(n) 个特殊区间， build
+ *  2. lazy更新 / 延迟更新
+ *     lazy tag : 用一个数组维护每个区间需要更新的值
+ *     如果这个值 = 0 表示不需要更新
+ *     如果这个值 != 0 表示更新操作在这个区间停住了， 不继续递归更新子区间了
  *
- *  1. 分治思想， 满二叉树
+ *     如果后面又来了一个更新，破坏了有 lazy tag 的区间，那么这个区间就得继续递归更新了
+ *
+ *
+ *
  */
 // no.2569
 class LazySegmentTree {
@@ -5995,9 +5999,77 @@ public:
     }
 };
 
+int findChampion(vector<vector<int>>& g) {
+    int n = g.size();
+    for (int i = 0; i < n; ++i) {
+        if (count(g[i].begin(),g[i].end(),1) == n-1)
+            return i;
+    }
+    return 0;
+}
+
+int findChampion(int n, vector<vector<int>>& e) {
+    vector<int> a(n),ans;
+    for (auto&e1 : e) {
+        a[e1[1]] = 1;
+    }
+    for (int i =0; i < n; ++i) {
+        if (a[i] == 0) {
+            ans.emplace_back(i);
+        }
+    }
+    if (ans.size() == 1) return ans[0];
+    else return -1;
+}
+
+// 思路有误， 不是贪心， 考虑记忆化搜索 dfs 树形dp, 记忆化搜索
+long long maximumScoreAfterOperations(vector<vector<int>>& e, vector<int>& v) {
+    long n = v.size(), ans = 0;
+    // 建图， 建树
+    vector<vector<int>> g(n);
+    for (auto &e1: e) {
+        g[e1[1]].emplace_back(e1[0]);
+        g[e1[0]].emplace_back(e1[1]);
+    }
+    // memo 数组注意不要爆内存
+    long memo[n+2][2];
+    memset(memo,-1,sizeof(memo));
+    function<long(int,int,int)> dfs = [&](int i, int j, int fa){
+        // 边界， 右移 14 位后，都变为0(0 > 负数)
+        if (g[i].size() == 1 && g[i][0] == fa) {
+            return 0L;
+        }
+        if (memo[i][j] != -1) return memo[i][j];
+        long& res = memo[i][j];
+        res = 0;
+        for (auto& i1 : g[i]) {
+            if (i1 != fa) {
+                if (j ==1) {
+                    res += dfs(i1,1,i)+(long)v[i1];
+                } else {
+                    if (g[i1].size() == 1 && g[i1][0] == i) {
+                        res += dfs(i1,1,i);
+                    } else {
+                        res += max(dfs(i1,1,i), dfs(i1,0,i)+(long)v[i1]);
+                    }
+                }
+            }
+        }
+        return res;
+    };
+    return max(dfs(0,0,0)+(long)v[0], dfs(0,1,0));
+}
+
+//输入
+//    edges =
+//[[0,1],[0,2],[0,3],[2,4],[4,5]]
+//values =
+//[5,2,5,2,1,1]
 
 int main() {
-
+    vector<vector<int>> e{{0,1},{0,2},{0,3},{2,4},{4,5}};
+    vector<int> v{5,2,5,2,1,1};
+    auto ans = maximumScoreAfterOperations(e,v);
     return 0;
 }
 
