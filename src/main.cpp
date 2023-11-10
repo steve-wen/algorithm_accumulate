@@ -9,9 +9,19 @@ using ll = long long;
 #define se second
 #define fi first
 #define tostring(a) (ostringstream() << a).str()
+#define endl "/n"
 
 typedef pair<int,int> pii;
 typedef pair<long,long> pll;
+
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+};
 
 /**
  * n! n 的阶乘
@@ -1162,7 +1172,7 @@ struct ListNode {
     ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
-class Solution {
+class Solution_L {
 public:
     static ListNode* removeNodes(ListNode* h) {
         // 反转链表
@@ -1687,7 +1697,7 @@ int maximumPoints(vector<vector<int>>& e, vector<int>& c, int k) {
     return dfs(0,0,0);
 }
 
-// 可用 chatgpt 转成 python 加 @cache
+// 可用 chatgpt 转成 python 加 @cache, copy 代码时，用 copy code 按钮，保留 python 格式
 //def maximumPoints(e, c, k):
 //n = len(c)
 //g = [[] for _ in range(n)]
@@ -1709,7 +1719,140 @@ int maximumPoints(vector<vector<int>>& e, vector<int>& c, int k) {
 //
 //return dfs(0, 0, 0)
 
+// 考虑记忆化搜索 dfs 树形dp, 记忆化搜索
+long long maximumScoreAfterOperations(vector<vector<int>>& e, vector<int>& v) {
+    long n = v.size(), ans = 0;
+    // 建图， 建树
+    vector<vector<int>> g(n);
+    for (auto &e1: e) {
+        g[e1[1]].emplace_back(e1[0]);
+        g[e1[0]].emplace_back(e1[1]);
+    }
+    // memo 数组注意不要爆内存
+    long memo[n+2][2];
+    memset(memo,-1,sizeof(memo));
+    function<long(int,int,int)> dfs = [&](int i, int j, int fa){
+        // 边界， 判断叶子节点
+        if (g[i].size() == 1 && g[i][0] == fa) {  // g[i].size() == 1 && i != 0
+            return 0L;
+        }
+        if (memo[i][j] != -1) return memo[i][j];
+        long& res = memo[i][j];
+        res = 0;
+        for (auto& i1 : g[i]) {
+            if (i1 != fa) { // 不往上递归
+                if (j ==1) {
+                    res += dfs(i1,1,i)+(long)v[i1];
+                } else {
+                    if (g[i1].size() == 1 && g[i1][0] == i) {
+                        res += dfs(i1,1,i);
+                    } else {
+                        res += max(dfs(i1,1,i), dfs(i1,0,i)+(long)v[i1]);
+                    }
+                }
+            }
+        }
+        return res;
+    };
+    return max(dfs(0,0,0)+(long)v[0], dfs(0,1,0));
+}
 
+// 二叉树的直径， 找拐点，分成两条链 no.534
+int diameterOfBinaryTree(TreeNode* root) {
+    int ans = 0;
+    function<int(TreeNode*)> dfs = [&](TreeNode* r){
+        if (r == nullptr) return -1;
+        int L = dfs(r->left), R = dfs(r->right); // 用 L，R 记录 dfs, 类似 memo 数组记忆化
+        ans = max(ans, L+R+2);
+        return max(L,R)+1;
+    };
+    dfs(root);
+    return ans;
+}
+
+// 二叉树的最大路径和 no.124
+int maxPathSum(TreeNode* root) {
+    int ans = -1e3;
+    function<int(TreeNode*)> dfs = [&](TreeNode* r){
+        if (r == nullptr) return 0;
+        int L = max(0,dfs(r->left)), R = max(0,dfs(r->right)); // 用 L，R 记录 dfs, 类似 memo 数组记忆化
+        ans = max(ans, L+R+r->val);
+        return max(L,R)+r->val;
+    };
+    dfs(root);
+    return ans;
+}
+
+// 相邻字符不同的最长路径 no.2246
+int longestPath(vector<int>& p, string s) {
+    // 建树
+    int n = p.size();
+    vector<vector<int>> g(n);
+    for (int i = 1; i < n; ++i) {
+        g[p[i]].emplace_back(i);
+    }
+
+    int ans = 1;
+    function<int(int)> dfs = [&](int i) {
+        int i_len = 0;
+        for (auto j : g[i]) {
+            // 递归儿子
+            int j_len = dfs(j)+1;
+            if (s[j] != s[i]){ // 不满足条件则不更新答案
+                ans = max(ans, i_len+j_len+1);
+                i_len = max(i_len,j_len);
+            }
+        }
+        return i_len;
+    };
+    dfs(0);
+    return ans;
+}
+
+// no.337 打家劫舍 3
+int rob(TreeNode* root) {
+    // 记忆化， memo map
+    map<pair<TreeNode*,int>,int> memo;
+    function<int(TreeNode*,int)> dfs = [&](TreeNode* r, int j){
+        if (r == nullptr) return 0;
+        if(memo.count(pair(r,j))) return memo[pair(r,j)];
+        int& res = memo[pair(r,j)];
+        int l0 = dfs(r->left,0), l1 = dfs(r->left,1);
+        int r0 = dfs(r->right,0), r1 = dfs(r->right,1);
+        if (j == 1) {
+            res = l0+ r0+r->val;
+        } else {
+            res = max(l0,l1) + max(r0,r1);
+        }
+        return res;
+    };
+    return max(dfs(root,0),dfs(root,1));
+}
+
+// no.968 监控二叉树
+int minCameraCover(TreeNode* root) {
+    // 记忆化， memo map
+    map<pair<TreeNode*,int>,int> memo;
+    function<int(TreeNode*,int)> dfs = [&](TreeNode* r, int j){
+        if (r == nullptr) {
+            return j == 0 ? (int)1e3 : 0;
+        }
+        if(memo.count(pair(r,j))) return memo[pair(r,j)];
+        int& res = memo[pair(r,j)];
+        int l0 = dfs(r->left,0), l1 = dfs(r->left,1), l2 = dfs(r->left,2);
+        int r0 = dfs(r->right,0), r1 = dfs(r->right,1), r2 = dfs(r->right,2);
+        if (j == 0) {
+            res = min(min(l0,l1),l2) + min(min(r0,r1),r2) + 1;
+        } else if (j ==1) {
+            res = min(l0,l2)+min(r0,r2);
+        } else {
+            res = min(min(l0+r0,l0+r2),l2+r0);
+        }
+        return res;
+    };
+    return min(dfs(root,0),dfs(root,2));
+
+}
 
 /**
  * 单调栈：下一个更大的元素 (1)
@@ -2646,6 +2789,7 @@ int maxIncreasingGroups(vector<int>& u) {
     return ans;
 }
 
+// no.2262 字符串的总引力
 long long appealSum(string s) {
     long ans = 0, tmp = 0;
     int n = s.size();
@@ -4170,14 +4314,7 @@ long long minimumFuelCost(vector<vector<int>>& r, int s) {
 
 // 环
 
-  struct TreeNode {
-      int val;
-      TreeNode *left;
-      TreeNode *right;
-      TreeNode() : val(0), left(nullptr), right(nullptr) {}
-      TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
-      TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
-  };
+
 
 class Solution1 {
 public:
@@ -5932,11 +6069,165 @@ int lengthOfLongestSubsequence(vector<int>& a, int t) {
  *
  *     如果后面又来了一个更新，破坏了有 lazy tag 的区间，那么这个区间就得继续递归更新了
  *
- *
+ *  to_do 作用理解？
  *
  */
 // no.2569
-class LazySegmentTree {
+class Solution {
+    vector<long> cnt1, to_do; // cnt1 区间段的数
+
+    // 维护区间的增量
+    void maintain(int o) {
+        cnt1[o] = cnt1[o * 2] + cnt1[o * 2 + 1];
+    }
+
+    // 执行区间反转
+    void do_(int o, int l, int r, int add) {
+        cnt1[o] += (long)add * (r - l + 1) ;
+        to_do[o] += add;
+    }
+
+    // 初始化线段树   o,l,r=1,1,n (节点编号，左端点，右端点)  (起点从 1 开始， 1 - n)  O(n)
+    void build(vector<int> &a, int o, int l, int r) {
+        // 边界条件
+        if (l == r) {
+            cnt1[o] = 0;
+            return;
+        }
+        int m = (l + r) / 2;
+        // 左儿子节点编号 o*2, 右儿子节点编号 o*2+1
+        build(a, o * 2, l, m);
+        build(a, o * 2 + 1, m + 1, r);
+        // 维护
+        maintain(o);
+    }
+
+    long long query_and_add1(int o, int l, int r, int L, int R) {
+        if (L <= l && r <= R) {
+            long long res = cnt1[o];
+            do_(o, l, r, 1);
+            return res;
+        }
+
+        int m = (l + r) / 2;
+        int add = to_do[o];
+        if (add != 0) {
+            do_(o * 2, l, m, add);
+            do_(o * 2 + 1, m + 1, r, add);
+            to_do[o] = 0;
+        }
+
+        long long res = 0;
+        if (L <= m) res += query_and_add1(o * 2, l, m, L, R);
+        if (m < R)  res += query_and_add1(o * 2 + 1, m + 1, r, L, R);
+        maintain(o);
+        return res;
+    }
+
+    // 反转区间 [L,R], 更新 [L,R], [L,R]是常量   o,l,r=1,1,n  O(log n)
+//    void update(int o, int l, int r, int L, int R) {
+//        if (L <= l && r <= R) {
+//            do_(o, l, r,1);
+//            return;
+//        }
+//        int m = (l + r) / 2;
+//        int add = to_do[o];
+//        if (add != 0) {
+//            do_(o * 2, l, m, add);
+//            do_(o * 2 + 1, m + 1, r, add);
+//            to_do[o] = 0;
+//        }
+//        if (m >= L) update(o * 2, l, m, L, R);
+//        if (m < R) update(o * 2 + 1, m + 1, r, L, R);
+//        maintain(o);
+//    }
+//
+//    long query(int o, int l, int r, int L, int R) {
+//        if (L <= l && r <= R) {
+//            return cnt1[o];
+//        }
+//        int m = (l + r) / 2;
+//        long res = 0;
+//        if (L <= m) res += query(o * 2, l, m, L, R);
+//        if (m < R)  res += query(o * 2 + 1, m + 1, r, L, R);
+//        return res;
+//    }
+
+public:
+    int sumCounts(vector<int> &a) {
+        int mod = 1e9+7;
+        int n = a.size();
+        cnt1.resize(n * 4);
+        to_do.resize(n * 4);
+
+        long ans = 0, s = 0;
+        unordered_map<int, int> mp;
+        build(a,1,1,n);
+        for (int i = 1; i <= n; i++) {
+            int x = a[i - 1];
+            int j = mp.count(x) ? mp[x] : 0;
+            s += query_and_add1(1, 1, n, j + 1, i) * 2 + (long)i - (long)j;
+            ans = (ans + s) % mod;
+            mp[x] = i;
+        }
+        return ans;
+    }
+};
+
+class Solution2 {
+    vector<long long> sum;
+    vector<int> todo;
+
+    void do_(int o, int l, int r, int add) {
+        sum[o] += (long long) add * (r - l + 1);
+        todo[o] += add;
+    }
+
+    // o=1  [l,r] 1<=l<=r<=n
+    // 把 [L,R] 加一，同时返回加一之前的区间和
+    long long query_and_add1(int o, int l, int r, int L, int R) {
+        if (L <= l && r <= R) {
+            long long res = sum[o];
+            do_(o, l, r, 1);
+            return res;
+        }
+
+        int m = (l + r) / 2;
+        int add = todo[o];
+        if (add != 0) {
+            do_(o * 2, l, m, add);
+            do_(o * 2 + 1, m + 1, r, add);
+            todo[o] = 0;
+        }
+
+        long long res = 0;
+        if (L <= m) res += query_and_add1(o * 2, l, m, L, R);
+        if (m < R)  res += query_and_add1(o * 2 + 1, m + 1, r, L, R);
+        sum[o] = sum[o * 2] + sum[o * 2 + 1];
+        return res;
+    }
+
+public:
+    int sumCounts(vector<int> &nums) {
+        int n = nums.size();
+        sum.resize(n * 4);
+        todo.resize(n * 4);
+
+        long long ans = 0, s = 0;
+        unordered_map<int, int> last;
+        for (int i = 1; i <= n; i++) {
+            int x = nums[i - 1];
+            int j = last.count(x) ? last[x] : 0;
+            s += query_and_add1(1, 1, n, j + 1, i) * 2 + i - j;
+            ans = (ans + s) % 1'000'000'007;
+            last[x] = i;
+        }
+        return ans;
+    }
+};
+
+
+class LazySegmentTree1 {
     vector<int> cnt1, flip;
 
     // 维护区间 1 的个数
@@ -5950,7 +6241,7 @@ class LazySegmentTree {
         flip[o] = !flip[o];
     }
 
-    // 初始化线段树   o,l,r=1,1,n (节点编号，左端点，右端点)  (起点从 1 开始， 1 - n)
+    // 初始化线段树   o,l,r=1,1,n (节点编号，左端点，右端点)  (起点从 1 开始， 1 - n)  O(n)
     void build(vector<int> &a, int o, int l, int r) {
         // 边界条件
         if (l == r) {
@@ -5965,7 +6256,7 @@ class LazySegmentTree {
         maintain(o);
     }
 
-    // 反转区间 [L,R], 更新 [L,R], [L,R]是常量   o,l,r=1,1,n
+    // 反转区间 [L,R], 更新 [L,R], [L,R]是常量   o,l,r=1,1,n  O(log n)
     void update(int o, int l, int r, int L, int R) {
         if (L <= l && r <= R) {
             do_(o, l, r);
@@ -5989,9 +6280,9 @@ public:
         flip.resize(n * 4);
         build(nums1, 1, 1, n);
         vector<long long> ans;
-        long long sum = accumulate(nums2.begin(), nums2.end(), 0LL);
+        long long sum = accumulate(nums2.begin(), nums2.end(), 0LL); // O(n)
         for (auto &q : queries) {
-            if (q[0] == 1) update(1, 1, n, q[1] + 1, q[2] + 1);
+            if (q[0] == 1) update(1, 1, n, q[1] + 1, q[2] + 1);  // O(q log n)
             else if (q[0] == 2) sum += 1LL * q[1] * cnt1[1];
             else ans.push_back(sum);
         }
@@ -5999,80 +6290,19 @@ public:
     }
 };
 
-int findChampion(vector<vector<int>>& g) {
-    int n = g.size();
-    for (int i = 0; i < n; ++i) {
-        if (count(g[i].begin(),g[i].end(),1) == n-1)
-            return i;
-    }
-    return 0;
+int sumCounts(vector<int>& a) {
+    int mod = 1e9+7;
+
 }
 
-int findChampion(int n, vector<vector<int>>& e) {
-    vector<int> a(n),ans;
-    for (auto&e1 : e) {
-        a[e1[1]] = 1;
-    }
-    for (int i =0; i < n; ++i) {
-        if (a[i] == 0) {
-            ans.emplace_back(i);
-        }
-    }
-    if (ans.size() == 1) return ans[0];
-    else return -1;
-}
-
-// 思路有误， 不是贪心， 考虑记忆化搜索 dfs 树形dp, 记忆化搜索
-long long maximumScoreAfterOperations(vector<vector<int>>& e, vector<int>& v) {
-    long n = v.size(), ans = 0;
-    // 建图， 建树
-    vector<vector<int>> g(n);
-    for (auto &e1: e) {
-        g[e1[1]].emplace_back(e1[0]);
-        g[e1[0]].emplace_back(e1[1]);
-    }
-    // memo 数组注意不要爆内存
-    long memo[n+2][2];
-    memset(memo,-1,sizeof(memo));
-    function<long(int,int,int)> dfs = [&](int i, int j, int fa){
-        // 边界， 右移 14 位后，都变为0(0 > 负数)
-        if (g[i].size() == 1 && g[i][0] == fa) {
-            return 0L;
-        }
-        if (memo[i][j] != -1) return memo[i][j];
-        long& res = memo[i][j];
-        res = 0;
-        for (auto& i1 : g[i]) {
-            if (i1 != fa) {
-                if (j ==1) {
-                    res += dfs(i1,1,i)+(long)v[i1];
-                } else {
-                    if (g[i1].size() == 1 && g[i1][0] == i) {
-                        res += dfs(i1,1,i);
-                    } else {
-                        res += max(dfs(i1,1,i), dfs(i1,0,i)+(long)v[i1]);
-                    }
-                }
-            }
-        }
-        return res;
-    };
-    return max(dfs(0,0,0)+(long)v[0], dfs(0,1,0));
-}
-
-//输入
-//    edges =
-//[[0,1],[0,2],[0,3],[2,4],[4,5]]
-//values =
-//[5,2,5,2,1,1]
 
 int main() {
-    vector<vector<int>> e{{0,1},{0,2},{0,3},{2,4},{4,5}};
-    vector<int> v{5,2,5,2,1,1};
-    auto ans = maximumScoreAfterOperations(e,v);
     return 0;
 }
 
+/**
+ * luogu
+ */
 //#include <bits/stdc++.h>
 //
 //using namespace std;
@@ -6083,21 +6313,73 @@ int main() {
 //
 //    int n;
 //    cin >> n;
-//
-//    while (n ) {
-//        string s;
-//        cin >> s;
-//        int a = s.size();
-//        if (a <= 10) {
-//            cout << s <<endl ;
-//        } else {
-//            cout << s[0]+to_string(a-2)+s.back() <<endl ;
+//    vector<int> r(n+1);
+//    vector<int> a(n+1); // 找根
+//    vector<vector<int>> g(n+1);
+//    for (int i = 0; i < n; ++i) {
+//        int b;
+//        cin >> b >> r[b];
+//        int m;
+//        cin >> m;
+//        for (int j = 0; j < m; ++j) {
+//            int k;
+//            cin >> k;
+//            g[b].emplace_back(k);
+//            a[k] = 1;// 找根
 //        }
-//        --n;
+//
 //    }
+//
+//    int root = 0;
+//    for (int i = 1; i <= n; ++i) {
+//        if (!a[i]) root = i; // 找根
+//    }
+//
+//    int memo[n+1][3];
+//    memset(memo,-1,sizeof(memo));
+//    // 需特殊处理叶子节点
+//    function<int(int,int)> dfs = [&](int i, int j){
+//        if (g[i].size() == 0 && j == 2) return (int)2e7; // 处理叶子为 red
+//        if(memo[i][j] != -1) return memo[i][j];
+//        int& res = memo[i][j];
+//        res = 0;
+//        int tmp = (int)2e7;
+//        if (j == 0) {
+//            res += r[i];
+//        }
+//        for (auto k : g[i]) {
+//            int k0 = dfs(k,0), k1 = dfs(k,1), k2 = dfs(k,2);
+//            if (j == 0) {
+//                res += min(k0,k1);
+//            } else if (j == 1){
+//                if (g[k].size() == 0) {
+//                    res += k0;
+//                } else {
+//                    res += min(k0,k2);
+//                }
+//            } else {
+//                if (g[k].size() == 0) {
+//                    res += k0;
+//                    tmp = 0;
+//                } else {
+//                    res += min(k0,k2);
+//                }
+//                tmp = min(tmp,k0-k2);
+//            }
+//        }
+//        if (j == 2) {
+//            res += max(0, tmp);
+//        }
+//        return res;
+//    };
+//    int ans = min(dfs(root,0),dfs(root,2));
+//    cout<<ans;
+//    return 0;
 //}
 
-
+/**
+ * codeforces
+ */
 //#include <bits/stdc++.h>
 //
 //using namespace std;
@@ -6154,10 +6436,15 @@ int main() {
 
 /**
  * impl list :
- * 2. 第 4 题
- * 2.1 lazy 线段树知识点 2569
  * 2.2 字符串引力
+ * 2. 双周赛第 4 题
+ * 0. lazy 线段树（优先）
+ * 0.1 线段树
+ * 1. 370 周赛第 3，4 题
+ * 1.1 树形 dp 视频1， 2， 3， 及视频中涉及的题目(洛谷 保安站岗) (done)
+ * 2.1 lazy 线段树知识点 2569
  * 2.3 洛谷上线段树相关题目
- * 3. 树形 dp 等
  * 4. 2000 难度题
+ * 5. 灵神 总结/归纳 的周赛题单（附难度分和知识点）-> 对应练习
+ * 6. no.887 鸡蛋掉落
  */
