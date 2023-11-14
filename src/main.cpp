@@ -6055,7 +6055,7 @@ int lengthOfLongestSubsequence(vector<int>& a, int t) {
 
 
 /**
- * lazy segment tree : lazy 线段树
+ * lazy segment tree : lazy 线段树  (本质是递归)
  *  0. 解决问题 ：一个数组， 更新一个子数组的值（都加上一个数，把子数组内的元素取反，...）
  *              查询一个子数组的值（求和，求最大值）
  *  1. 两大思想：
@@ -6072,7 +6072,7 @@ int lengthOfLongestSubsequence(vector<int>& a, int t) {
  *  to_do 作用理解？
  *
  */
-// no.2569
+// no.2916
 class Solution {
     vector<long> cnt1, to_do; // cnt1 区间段的数
 
@@ -6102,6 +6102,7 @@ class Solution {
         maintain(o);
     }
 
+    // 查询的同时做本次更新操作 （对指定区间加 1）
     long long query_and_add1(int o, int l, int r, int L, int R) {
         if (L <= l && r <= R) {
             long long res = cnt1[o];
@@ -6124,34 +6125,42 @@ class Solution {
         return res;
     }
 
-    // 反转区间 [L,R], 更新 [L,R], [L,R]是常量   o,l,r=1,1,n  O(log n)
-//    void update(int o, int l, int r, int L, int R) {
-//        if (L <= l && r <= R) {
-//            do_(o, l, r,1);
-//            return;
-//        }
-//        int m = (l + r) / 2;
-//        int add = to_do[o];
-//        if (add != 0) {
-//            do_(o * 2, l, m, add);
-//            do_(o * 2 + 1, m + 1, r, add);
-//            to_do[o] = 0;
-//        }
-//        if (m >= L) update(o * 2, l, m, L, R);
-//        if (m < R) update(o * 2 + 1, m + 1, r, L, R);
-//        maintain(o);
-//    }
-//
-//    long query(int o, int l, int r, int L, int R) {
-//        if (L <= l && r <= R) {
-//            return cnt1[o];
-//        }
-//        int m = (l + r) / 2;
-//        long res = 0;
-//        if (L <= m) res += query(o * 2, l, m, L, R);
-//        if (m < R)  res += query(o * 2 + 1, m + 1, r, L, R);
-//        return res;
-//    }
+    // 更新区间 [L,R], 更新 [L,R], [L,R]是常量   o,l,r=1,1,n  O(log n)， 此处 update 为 对选定区间 +1
+    void update(int o, int l, int r, int L, int R) {
+        if (L <= l && r <= R) {
+            do_(o, l, r,1);
+            return;
+        }
+        int m = (l + r) / 2;
+        int add = to_do[o];
+        if (add != 0) {
+            do_(o * 2, l, m, add);
+            do_(o * 2 + 1, m + 1, r, add);
+            to_do[o] = 0;
+        }
+        if (m >= L) update(o * 2, l, m, L, R);
+        if (m < R) update(o * 2 + 1, m + 1, r, L, R);
+        maintain(o);
+    }
+
+    // 查询区间 [L,R] 的和 / max 值 （查询的同时注意更新子区间）
+    long query(int o, int l, int r, int L, int R) {
+        if (L <= l && r <= R) {
+            return cnt1[o];
+        }
+        int m = (l + r) / 2;
+        int add = to_do[o];
+        if (add != 0) {
+            do_(o * 2, l, m, add);
+            do_(o * 2 + 1, m + 1, r, add);
+            to_do[o] = 0;
+        }
+        long res = 0;
+        if (L <= m) res += query(o * 2, l, m, L, R);
+        if (m < R)  res += query(o * 2 + 1, m + 1, r, L, R);
+        maintain(o);
+        return res;
+    }
 
 public:
     int sumCounts(vector<int> &a) {
@@ -6166,7 +6175,9 @@ public:
         for (int i = 1; i <= n; i++) {
             int x = a[i - 1];
             int j = mp.count(x) ? mp[x] : 0;
-            s += query_and_add1(1, 1, n, j + 1, i) * 2 + (long)i - (long)j;
+//            s += query_and_add1(1, 1, n, j + 1, i) * 2 + (long)i - (long)j;
+            s += query(1, 1, n, j + 1, i) * 2 + (long)i - (long)j;
+            update(1, 1, n, j + 1, i);
             ans = (ans + s) % mod;
             mp[x] = i;
         }
@@ -6174,59 +6185,7 @@ public:
     }
 };
 
-class Solution2 {
-    vector<long long> sum;
-    vector<int> todo;
-
-    void do_(int o, int l, int r, int add) {
-        sum[o] += (long long) add * (r - l + 1);
-        todo[o] += add;
-    }
-
-    // o=1  [l,r] 1<=l<=r<=n
-    // 把 [L,R] 加一，同时返回加一之前的区间和
-    long long query_and_add1(int o, int l, int r, int L, int R) {
-        if (L <= l && r <= R) {
-            long long res = sum[o];
-            do_(o, l, r, 1);
-            return res;
-        }
-
-        int m = (l + r) / 2;
-        int add = todo[o];
-        if (add != 0) {
-            do_(o * 2, l, m, add);
-            do_(o * 2 + 1, m + 1, r, add);
-            todo[o] = 0;
-        }
-
-        long long res = 0;
-        if (L <= m) res += query_and_add1(o * 2, l, m, L, R);
-        if (m < R)  res += query_and_add1(o * 2 + 1, m + 1, r, L, R);
-        sum[o] = sum[o * 2] + sum[o * 2 + 1];
-        return res;
-    }
-
-public:
-    int sumCounts(vector<int> &nums) {
-        int n = nums.size();
-        sum.resize(n * 4);
-        todo.resize(n * 4);
-
-        long long ans = 0, s = 0;
-        unordered_map<int, int> last;
-        for (int i = 1; i <= n; i++) {
-            int x = nums[i - 1];
-            int j = last.count(x) ? last[x] : 0;
-            s += query_and_add1(1, 1, n, j + 1, i) * 2 + i - j;
-            ans = (ans + s) % 1'000'000'007;
-            last[x] = i;
-        }
-        return ans;
-    }
-};
-
-
+// no.2569
 class LazySegmentTree1 {
     vector<int> cnt1, flip;
 
@@ -6289,11 +6248,6 @@ public:
         return ans;
     }
 };
-
-int sumCounts(vector<int>& a) {
-    int mod = 1e9+7;
-
-}
 
 
 int main() {
@@ -6447,4 +6401,5 @@ int main() {
  * 4. 2000 难度题
  * 5. 灵神 总结/归纳 的周赛题单（附难度分和知识点）-> 对应练习
  * 6. no.887 鸡蛋掉落
+ * 7. 数位 dp
  */
