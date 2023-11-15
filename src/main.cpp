@@ -6249,6 +6249,29 @@ public:
     }
 };
 
+class BookMyShow {
+public:
+    BookMyShow(int n, int m) {
+
+    }
+
+    vector<int> gather(int k, int maxRow) {
+
+    }
+
+    bool scatter(int k, int maxRow) {
+
+    }
+};
+
+/**
+ * Your BookMyShow object will be instantiated and called as such:
+ * BookMyShow* obj = new BookMyShow(n, m);
+ * vector<int> param_1 = obj->gather(k,maxRow);
+ * bool param_2 = obj->scatter(k,maxRow);
+ */
+
+
 
 int main() {
     return 0;
@@ -6390,10 +6413,11 @@ int main() {
 
 /**
  * impl list :
- * 2.2 字符串引力
+ * 2.2 字符串引力（done）
  * 2. 双周赛第 4 题
  * 0. lazy 线段树（优先）
  * 0.1 线段树
+ * 0.2 字典树 trie (371周赛 no.4) (311周赛 no.4)(灵神视频)
  * 1. 370 周赛第 3，4 题
  * 1.1 树形 dp 视频1， 2， 3， 及视频中涉及的题目(洛谷 保安站岗) (done)
  * 2.1 lazy 线段树知识点 2569
@@ -6403,3 +6427,8 @@ int main() {
  * 6. no.887 鸡蛋掉落
  * 7. 数位 dp
  */
+
+/**
+* tips :
+* 1. javascript 代码 tle 容易过，可用 chatgpt 转 javascript 再提交
+*/
