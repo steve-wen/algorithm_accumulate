@@ -6249,29 +6249,108 @@ public:
     }
 };
 
+/**
+ * 线段树， segment tree
+ */
 class BookMyShow {
 public:
-    BookMyShow(int n, int m) {
+    vector<long> sum;
+    vector<int> mn;
+    int m,n;
+
+    void maintain(int o) {
+        sum[o] = sum[o * 2] + sum[o * 2 + 1];
+        mn[o] = min(mn[o * 2],mn[o * 2 + 1]);
+    }
+
+    void add(int o, int l, int r, int idx, int val) {
+        if (l == r) {
+            sum[o] += (long)val;
+            mn[o] += val;
+            return;
+        }
+        int mid = (l+r)/2;
+        if (idx <= mid) add(o*2, l, mid, idx, val);
+        else add(o*2 +1,mid+1, r, idx, val);
+        maintain(o);
+    }
+
+    long query(int o, int l, int r, int L, int R) {
+        if (L <=l && r <= R) {
+            return sum[o];
+        }
+        int mid = (l+r)/2;
+        long sum1 = 0;
+        if (L <= mid) sum1 += query(o*2, l, mid, L, R);
+        if (mid < R) sum1 += query(o*2+1, mid+1, r, L, R);
+        return sum1;
+    }
+
+    int index(int o, int l, int r, int R, int val) {
+        if (mn[o] > m-val) return 0;
+        if (l == r) return l;
+        int mid = (l+r)/2;
+        if (mn[o*2] <= m-val) return index(o*2, l, mid, R, val);
+        if (R > mid) return index(o*2+1, mid+1, r, R, val);
+        return 0;
+    }
+
+    BookMyShow(int n1, int m1) {
+        m = m1, n = n1;
+        sum.resize(n * 4);
+        mn.resize(n*4);
 
     }
 
-    vector<int> gather(int k, int maxRow) {
+    vector<int> gather(int k, int R) {
+        auto i = index(1,1,n,R+1,k);
+        if (i == 0) return {};
+        add(1,1,n,i,k);
+        auto seat = query(1,1,n,i,i);
+        return vector<int>({i-1,(int)seat-k});
 
     }
 
-    bool scatter(int k, int maxRow) {
-
+    bool scatter(int k, int R) {
+        auto left_seat = (long)(R+1) * (long)m - query(1,1,n,1,R+1);
+        if (left_seat < k) return false;
+        auto i = index(1,1,n,R+1,1);
+        while (1) {
+            if ((long)m - query(1,1,n,i,i) >= (long)k) {
+                add(1,1,n,i,k);
+                return true;
+            } else {
+                k -= (long)m - query(1,1,n,i,i);
+                add(1,1,n,i,(long)m - query(1,1,n,i,i));
+                ++i;
+            }
+        }
+        return true;
     }
 };
 
-/**
- * Your BookMyShow object will be instantiated and called as such:
- * BookMyShow* obj = new BookMyShow(n, m);
- * vector<int> param_1 = obj->gather(k,maxRow);
- * bool param_2 = obj->scatter(k,maxRow);
- */
+int lengthOfLIS(vector<int>& nums, int k) {
 
 
+}
+
+int lengthOfLIS(vector<int>& a) {
+    int n = a.size();
+    int memo[n+1][n+2];
+    memset(memo, -1, sizeof(memo));
+    function<int(int,int)> dfs = [&](int i, int j){
+        if (i < 0) return 0;
+        if (memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        if (j == 0 || a[i] < a[j]) {
+            res = max(dfs(i-1,i)+1,dfs(i-1,j));
+        } else {
+            res = dfs(i-1,j);
+        }
+        return res;
+    };
+    return dfs(n-1,0);
+}
 
 int main() {
     return 0;
@@ -6414,7 +6493,7 @@ int main() {
 /**
  * impl list :
  * 2.2 字符串引力（done）
- * 2. 双周赛第 4 题
+ * 2. 双周赛第 4 题（done）
  * 0. lazy 线段树（优先）
  * 0.1 线段树
  * 0.2 字典树 trie (371周赛 no.4) (311周赛 no.4)(灵神视频)
@@ -6427,8 +6506,3 @@ int main() {
  * 6. no.887 鸡蛋掉落
  * 7. 数位 dp
  */
-
-/**
-* tips :
-* 1. javascript 代码 tle 容易过，可用 chatgpt 转 javascript 再提交
-*/
