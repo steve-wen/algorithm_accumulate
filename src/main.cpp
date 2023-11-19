@@ -6352,6 +6352,60 @@ int lengthOfLIS(vector<int>& a) {
     return dfs(n-1,0);
 }
 
+long long minimumSteps(string s) {
+    long n = s.size(), ans = 0, tmp = n-1;
+    for (long i = n-1; i >= 0; --i) {
+        if (s[i] == '1') {
+            ans += tmp -i;
+            --tmp;
+        }
+    }
+    return ans;
+}
+
+int maximumXorProduct(long long a, long long b, int n) {
+    long mod = 1e9+7;
+    long a1 = max(a,b), b1 = min(a,b);
+    auto s1 = bitset<51>(a1).to_string();
+    auto s2 = bitset<51>(b1).to_string();
+    long cnt = 51;
+    // 注意首尾下标
+    for (long i = 0; i <= 50; ++i) {
+        if(s1[i] == '1') {
+            cnt = i;
+            break;
+        }
+    }
+    cnt = 50 - cnt;
+    bool flag = false;
+    for (long i = 0; i < 51-n; ++i) {
+        if (s1[i] != s2[i]) {
+            flag = true;
+            break;
+        }
+    }
+    for (long i = 51-n; i <= 50; ++i) {
+        if (s1[i] =='0' && s2[i] =='0') {
+            s1[i] = '1', s2[i] = '1';
+        }
+        if (s1[i] == '1' && s2[i] == '0') {
+            if (!flag) {
+                flag = true;
+            } else {
+                s1[i] ='0', s2[i] = '1';
+            }
+        }
+    }
+    long ans1 = 0, ans2 = 0;
+    for (long i = 50; i >= 0; --i) {
+        if (s1[i] == '1') {
+            ans1 += pow(2,50-i);
+        }
+        if (s2[i] == '1') ans2 += pow(2,50-i);
+    }
+    return (ans1%mod) * (ans2%mod) % mod;
+}
+
 int main() {
     return 0;
 }
