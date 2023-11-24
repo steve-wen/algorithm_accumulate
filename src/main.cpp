@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <windows.h>
 
 using namespace std;
 
@@ -6250,7 +6251,7 @@ public:
 };
 
 /**
- * 线段树， segment tree
+ * 线段树， segment tree no.2286
  */
 class BookMyShow {
 public:
@@ -6334,34 +6335,23 @@ int lengthOfLIS(vector<int>& nums, int k) {
 
 }
 
-int lengthOfLIS(vector<int>& a) {
-    int n = a.size();
-    int memo[n+1][n+2];
-    memset(memo, -1, sizeof(memo));
-    function<int(int,int)> dfs = [&](int i, int j){
-        if (i < 0) return 0;
-        if (memo[i][j] != -1) return memo[i][j];
-        int& res = memo[i][j];
-        if (j == 0 || a[i] < a[j]) {
-            res = max(dfs(i-1,i)+1,dfs(i-1,j));
-        } else {
-            res = dfs(i-1,j);
-        }
-        return res;
-    };
-    return dfs(n-1,0);
-}
-
-long long minimumSteps(string s) {
-    long n = s.size(), ans = 0, tmp = n-1;
-    for (long i = n-1; i >= 0; --i) {
-        if (s[i] == '1') {
-            ans += tmp -i;
-            --tmp;
-        }
-    }
-    return ans;
-}
+//int lengthOfLIS(vector<int>& a) {
+//    int n = a.size();
+//    int memo[n+1][n+2];
+//    memset(memo, -1, sizeof(memo));
+//    function<int(int,int)> dfs = [&](int i, int j){
+//        if (i < 0) return 0;
+//        if (memo[i][j] != -1) return memo[i][j];
+//        int& res = memo[i][j];
+//        if (j == 0 || a[i] < a[j]) {
+//            res = max(dfs(i-1,i)+1,dfs(i-1,j));
+//        } else {
+//            res = dfs(i-1,j);
+//        }
+//        return res;
+//    };
+//    return dfs(n-1,0);
+//}
 
 int maximumXorProduct(long long a, long long b, int n) {
     long mod = 1e9+7;
@@ -6406,7 +6396,355 @@ int maximumXorProduct(long long a, long long b, int n) {
     return (ans1%mod) * (ans2%mod) % mod;
 }
 
+// 小顶堆
+vector<int> leftmostBuildingQueries1(vector<int>& h, vector<vector<int>>& q) {
+    int n = h.size(), m = q.size();
+    vector<int> ans(m,-1);
+    vector<vector<pair<int,int>>> vec(n); // 记录高度和编号
+    priority_queue<pair<int,int>,vector<pair<int,int>>,greater<>> pq; // 小顶堆
+    for (int i = 0; i < m; ++i) {
+        int j = min(q[i][0],q[i][1]), k =  max(q[i][0],q[i][1]);
+        if (j == k || h[j] < h[k]) ans[i] = k;
+        else {
+            vec[k].emplace_back(h[j],i);
+        }
+    }
+    for (int i = 0; i < n; ++i) {
+        for (auto& p : vec[i]){
+            pq.emplace(p);
+        }
+        while (!pq.empty() && h[i] > pq.top().first) {
+            ans[pq.top().second] = i;
+            pq.pop();
+        }
+    }
+    return ans;
+}
+
+// segment tree 线段树 no.2940
+class Solution_segment {
+public:
+    vector<int> mx;
+
+    // 维护
+    void maintain(int o) {
+        mx[o] = max(mx[o * 2],mx[o * 2 + 1]);
+    }
+    // 初始化
+    void build(vector<int> &a, int o, int l, int r) {
+        // 边界条件
+        if (l == r) {
+            mx[o] = a[l - 1];
+            return;
+        }
+        int m = (l + r) / 2;
+        // 左儿子节点编号 o*2, 右儿子节点编号 o*2+1
+        build(a, o * 2, l, m);
+        build(a, o * 2 + 1, m + 1, r);
+        // 维护
+        maintain(o);
+    }
+
+    // 线段树上二分 获取下标 ind
+    int index(int o, int l, int r, int L, int val) {
+        if (mx[o] <= val) return 5e4+2;
+        if (l == r) return l;
+        int mid = (l+r)/2;
+        if (L <= mid && mx[o*2] > val) {
+            auto ind = index(o*2, l, mid,L, val);
+            if (ind != (int)5e4+2) return ind;
+        }
+        return index(o*2+1, mid+1, r, L,val);
+    }
+
+    vector<int> leftmostBuildingQueries(vector<int>& h, vector<vector<int>>& q) {
+        int n = h.size(), m = q.size();
+        mx.resize(n*4);
+        vector<int> ans(m,-1);
+        build(h,1,1,n);
+        for (int i = 0; i < m; ++i) {
+            int j = min(q[i][0],q[i][1]), k =  max(q[i][0],q[i][1]);
+            if (j == k || h[j] < h[k]) ans[i] = k;
+            else {
+                auto ind = index(1,1,n,k+2,h[j]);
+                if (ind != 5e4+2) ans[i] = ind-1;
+            }
+        }
+        return ans;
+    }
+
+};
+
+// segment tree + dp : 线段树 + 动态规划  no.2407
+class Solution4 {
+    vector<int> mx;
+
+    // 维护
+    void maintain(int o) {
+        mx[o] = max(mx[o * 2],mx[o * 2 + 1]);
+    }
+
+    void update(int o, int l, int r, int i, int val) {
+        if (l == r) {
+            mx[o] = val;
+            return;
+        }
+        int m = (l + r) / 2;
+        if (i <= m) update(o * 2, l, m, i, val);
+        else update(o * 2 + 1, m + 1, r, i, val);
+        maintain(o);
+    }
+
+    // 返回区间 [L,R] 内的最大值
+    int query(int o, int l, int r, int L, int R) { // L 和 R 在整个递归过程中均不变，将其大写，视作常量
+        if (L <= l && r <= R) return mx[o];
+        int res = 0;
+        int m = (l + r) / 2;
+        if (L <= m) res = query(o * 2, l, m, L, R);
+        if (R > m) res = max(res, query(o * 2 + 1, m + 1, r, L, R)); // 右边与左边取 max
+        return res;
+    }
+
+public:
+    int lengthOfLIS(vector<int> &nums, int k) {
+        int u = *max_element(nums.begin(), nums.end());
+        mx.resize(u * 4);
+        for (int x: nums) {
+            if (x == 1) {
+                update(1, 1, u, 1, 1);
+            } else {
+                int res = 1 + query(1, 1, u, max(x - k, 1), x - 1);
+                update(1, 1, u, x, res);
+            }
+        }
+        return mx[1];
+    }
+};
+
+// 异或哈希表 no.2935
+int maximumStrongPairXor(vector<int>& a) {
+    // 排序
+    sort(a.begin(),a.end());
+    int mx = a.back();
+//    int high_bit = mx ? 31 - __builtin_clz(mx) : -1;
+    int high_bit = -1;
+    for (int i = 31; i >= 0; --i){
+        if(mx >> i) {
+            high_bit = i;
+            break;
+        }
+    }
+
+    int ans = 0, mask = 0, n = a.size();
+    unordered_map<int,int> mp;
+    for (int i = high_bit; i >= 0; i--) { // 从最高位开始枚举
+        mp.clear();
+        mask |= 1 << i;
+        int new_ans = ans | (1 << i); // 这个比特位可以是 1 吗？
+        for (int i = 0; i < n; ++i) {
+            auto x = a[i];
+            x &= mask; // 低于 i 的比特位置为 0
+            if (mp.count(new_ans ^ x) && a[i]-a[mp[new_ans ^ x]]*2 <= 0) {
+                ans = new_ans; // 这个比特位可以是 1
+                break;
+            }
+            mp[x] = i;
+        }
+    }
+    return ans;
+}
+
+/**
+ * 0-1 Trie ，0-1 字典树
+ * no.2935
+ */
+class Node {
+public:
+    array<Node*, 2> children{};
+    int cnt = 0; // 子树大小
+};
+
+class Trie {
+    static const int HIGH_BIT = 19;
+public:
+    Node *root = new Node();
+
+    // 添加 val, insert 时，建树
+    void insert(int val) {
+        Node *cur = root;
+        for (int i = HIGH_BIT; i >= 0; i--) {
+            int bit = (val >> i) & 1;
+            if (cur->children[bit] == nullptr) {
+                cur->children[bit] = new Node();
+            }
+            cur = cur->children[bit];
+            cur->cnt++; // 维护子树大小
+        }
+    }
+
+    // 删除 val，但不删除节点
+    // 要求 val 必须在 trie 中
+    void remove(int val) {
+        Node *cur = root;
+        for (int i = HIGH_BIT; i >= 0; i--) {
+            int bit = (val >> i) & 1;
+            cur = cur->children[bit];
+            cur->cnt--; // 维护子树大小
+        }
+    }
+
+    // 返回 val 与 trie 中一个元素的最大异或和
+    // 要求 trie 不能为空
+    int max_xor(int val) {
+        Node *cur = root;
+        int ans = 0;
+        for (int i = HIGH_BIT; i >= 0; i--) {
+            int bit = (val >> i) & 1;
+            // 如果 cur.children[bit^1].cnt == 0，视作空节点
+            if (cur->children[bit ^ 1] && cur->children[bit ^ 1]->cnt) {
+                ans |= 1 << i;
+                cur = cur->children[bit ^ 1];
+            } else { // 必然存在其中一边节点不为空
+                cur = cur->children[bit];
+            }
+        }
+        return ans;
+    }
+};
+
+class Solution_trie {
+public:
+    int maximumStrongPairXor(vector<int> &nums) {
+        sort(nums.begin(), nums.end());
+        Trie t{};
+        int ans = 0, left = 0;
+        for (int y: nums) {
+            t.insert(y);
+            while (nums[left] * 2 < y) {
+                t.remove(nums[left++]);
+            }
+            ans = max(ans, t.max_xor(y));
+        }
+        return ans;
+    }
+};
+
+
+//class Node {
+//public:
+//    array<Node*, 2> children{};
+//    int cnt = 0; // 子树大小
+//};
+//
+//class Trie {
+//    static const int HIGH_BIT = 31;
+//public:
+//    Node *root = new Node();
+//
+//    // 添加 val, insert 时，建树
+//    void insert(int val) {
+//        Node *cur = root;
+//        for (int i = HIGH_BIT; i >= 0; i--) {
+//            int bit = (val >> i) & 1;
+//            if (cur->children[bit] == nullptr) {
+//                cur->children[bit] = new Node();
+//            }
+//            cur = cur->children[bit];
+//            cur->cnt++; // 维护子树大小
+//        }
+//    }
+//
+//    // 删除 val，但不删除节点
+//    // 要求 val 必须在 trie 中
+//    void remove(int val) {
+//        Node *cur = root;
+//        for (int i = HIGH_BIT; i >= 0; i--) {
+//            int bit = (val >> i) & 1;
+//            cur = cur->children[bit];
+//            cur->cnt--; // 维护子树大小
+//        }
+//    }
+//
+//    // 返回 val 与 trie 中一个元素的最大异或和
+//    // 要求 trie 不能为空
+//    int max_xor(int val) {
+//        Node *cur = root;
+//        int ans = 0;
+//        for (int i = HIGH_BIT; i >= 0; i--) {
+//            int bit = (val >> i) & 1;
+//            // 如果 cur.children[bit^1].cnt == 0，视作空节点
+//            if (cur->children[bit ^ 1] && cur->children[bit ^ 1]->cnt) {
+//                ans |= 1 << i;
+//                cur = cur->children[bit ^ 1];
+//            } else { // 必然存在其中一边节点不为空
+//                cur = cur->children[bit];
+//            }
+//        }
+//        return ans;
+//    }
+//};
+//
+//class Solution {
+//public:
+//    int findMaximumXOR(vector<int> &nums) {
+//        Trie t{};
+//        int ans = 0;
+//        for (int y: nums) {
+//            t.insert(y);
+//            ans = max(ans, t.max_xor(y));
+//        }
+//        return ans;
+//    }
+//};
+
+
+// 异或哈希表 no.421
+int findMaximumXOR(vector<int> &a) {
+    int mx = *max_element(a.begin(), a.end());
+//    int high_bit = mx ? 31 - __builtin_clz(mx) : -1;
+    int high_bit = -1;
+    for (int i = 31; i >= 0; --i){
+        if(mx >> i) {
+            high_bit = i;
+            break;
+        }
+    }
+
+    int ans = 0, mask = 0;
+    unordered_set<int> seen;
+    for (int i = high_bit; i >= 0; i--) { // 从最高位开始枚举
+        seen.clear();
+        mask |= 1 << i;
+        int new_ans = ans | (1 << i); // 这个比特位可以是 1 吗？
+        for (int x: a) {
+            x &= mask; // 低于 i 的比特位置为 0
+            if (seen.count(new_ans ^ x)) {
+                ans = new_ans; // 这个比特位可以是 1
+                break;
+            }
+            seen.emplace(x);
+        }
+    }
+    return ans;
+}
+
+
 int main() {
+
+//    string src_str = "abcde中文";
+//    int len = MultiByteToWideChar(CP_UTF8, 0, src_str.c_str(), -1, nullptr, 0); // 字符数
+//    auto wszGBK = new wchar_t[len + 1];
+//    memset(wszGBK, 0, len * 2 + 2);
+//    MultiByteToWideChar(CP_UTF8, 0, src_str.c_str(), -1, wszGBK, len); // 填充 wszGBK
+//
+//
+//    int len1 = WideCharToMultiByte(CP_ACP, 0, wszGBK, -1, nullptr, 0, nullptr, nullptr); // 返回 将 wszGBK 转换为 CP_ACP 编码后的字节数
+//
+//    char *szGBK = new char[len1 + 1];
+//    memset(szGBK, 0, len1 + 1);
+//    WideCharToMultiByte(CP_ACP, 0, wszGBK, -1, szGBK, len1, nullptr, nullptr); // 填充 szGBK
+//    string str(szGBK);
+
     return 0;
 }
 
@@ -6549,14 +6887,17 @@ int main() {
  * 2.2 字符串引力（done）
  * 2. 双周赛第 4 题（done）
  * 0. lazy 线段树（优先）
- * 0.1 线段树
+ * 0.1 线段树（done）
  * 0.2 字典树 trie (371周赛 no.4) (311周赛 no.4)(灵神视频)
  * 1. 370 周赛第 3，4 题
  * 1.1 树形 dp 视频1， 2， 3， 及视频中涉及的题目(洛谷 保安站岗) (done)
- * 2.1 lazy 线段树知识点 2569
+ * 2.1 lazy 线段树知识点 2569（done）
  * 2.3 洛谷上线段树相关题目
  * 4. 2000 难度题
  * 5. 灵神 总结/归纳 的周赛题单（附难度分和知识点）-> 对应练习
  * 6. no.887 鸡蛋掉落
  * 7. 数位 dp
+ * 8. 莫队算法
+ * 9. 按灵神 github 模板， 整理算法结构
+ * 10. 往届周赛 t4
  */
