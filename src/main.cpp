@@ -6728,8 +6728,113 @@ int findMaximumXOR(vector<int> &a) {
     return ans;
 }
 
+bool areSimilar(vector<vector<int>>& g, int k) {
+    int m = g.size(), n = g[0].size();
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (i % 2) {
+                if (g[i][(j+k)%n] != g[i][j]) return false;
+            }
+            else {
+                if (g[i][((j-k)%n+n)%n] != g[i][j]) return false;
+            }
+        }
+    }
+    return true;
+}
+
+int beautifulSubstrings1(string s, int k) {
+    auto check = [&](char c){
+        if (c == 'a' || c == 'e' || c == 'i'||c == 'o'||c=='u') return true;
+        else return false;
+    };
+    int ans = 0, n = s.size();
+    for (int i = 0; i < n; ++i) {
+        int cnt = 0;
+        for (int j = i; j < n; ++j) {
+            if (check(s[j])) ++cnt;
+            if (cnt == j+1-cnt-i && cnt *(j+1-cnt-i) % k == 0) ++ans;
+        }
+    }
+    return ans;
+}
+
+vector<int> lexicographicallySmallestArray(vector<int>& a, int l) {
+    int n = a.size();
+    vector<int> ans(n);
+    multiset<int> s1[n],s2[n];
+    vector<int> ind(n);
+    iota(ind.begin(),ind.end(),0);
+    sort(ind.begin(),ind.end(),[&](int i, int j){return a[i] < a[j];});
+    sort(a.begin(),a.end());
+    int j = 0;
+    for (int i = 0; i < n; ++i) {
+        if (i == 0 || a[i]-a[i-1] <= l) {
+            s1[j].emplace(a[i]);
+            s2[j].emplace(ind[i]);
+        } else {
+            ++j;
+            s1[j].emplace(a[i]);
+            s2[j].emplace(ind[i]);
+        }
+    }
+    for (int i = 0; i < n; ++i) {
+        if (!s1[i].empty()){
+            vector<int> vec1(s1[i].begin(),s1[i].end());
+            vector<int> vec2(s2[i].begin(),s2[i].end());
+            for (int k = 0; k < vec1.size(); ++k) {
+                ans[vec2[k]] = vec1[k];
+            }
+        }
+    }
+    return ans;
+}
+
+
+bool isVowel(char c) {
+    return (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u');
+}
+
+long long beautifulSubstrings(string s, int k) {
+    int n = s.length();
+    vector<int> prefixVowels(n + 1, 0);
+    vector<int> prefixConsonants(n + 1, 0);
+    unordered_map<long long, int> countMap;  // 使用 long long 类型
+
+    int vowels = 0;
+    int consonants = 0;
+    countMap[0] = 1;
+
+    long long beautifulCount = 0;
+
+    for (int i = 1; i <= n; ++i) {
+        if (isVowel(s[i - 1])) {
+            vowels++;
+        } else {
+            consonants++;
+        }
+
+        prefixVowels[i] = vowels;
+        prefixConsonants[i] = consonants;
+
+        long long diffVowels = prefixVowels[i] - prefixVowels[i - k];
+        long long diffConsonants = prefixConsonants[i] - prefixConsonants[i - k];
+        long long hashValue = diffVowels * 1000LL + diffConsonants;  // 使用 long long 类型
+
+        beautifulCount += countMap[hashValue];
+        countMap[hashValue]++;
+    }
+
+    return beautifulCount;
+}
+
 
 int main() {
+
+
+    return 0;
+}
+
 
 //    string src_str = "abcde中文";
 //    int len = MultiByteToWideChar(CP_UTF8, 0, src_str.c_str(), -1, nullptr, 0); // 字符数
@@ -6744,9 +6849,6 @@ int main() {
 //    memset(szGBK, 0, len1 + 1);
 //    WideCharToMultiByte(CP_ACP, 0, wszGBK, -1, szGBK, len1, nullptr, nullptr); // 填充 szGBK
 //    string str(szGBK);
-
-    return 0;
-}
 
 /**
  * luogu
