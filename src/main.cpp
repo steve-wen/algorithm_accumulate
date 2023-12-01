@@ -6558,76 +6558,130 @@ int maximumStrongPairXor(vector<int>& a) {
  * 0-1 Trie ，0-1 字典树
  * no.2935
  */
+//class Node {
+//public:
+//    array<Node*, 2> children{};
+//    int cnt = 0; // 子树大小
+//};
+//
+//class Trie {
+//    static const int HIGH_BIT = 19;
+//public:
+//    Node *root = new Node();
+//
+//    // 添加 val, insert 时，建树
+//    void insert(int val) {
+//        Node *cur = root;
+//        for (int i = HIGH_BIT; i >= 0; i--) {
+//            int bit = (val >> i) & 1;
+//            if (cur->children[bit] == nullptr) {
+//                cur->children[bit] = new Node();
+//            }
+//            cur = cur->children[bit];
+//            cur->cnt++; // 维护子树大小
+//        }
+//    }
+//
+//    // 删除 val，但不删除节点
+//    // 要求 val 必须在 trie 中
+//    void remove(int val) {
+//        Node *cur = root;
+//        for (int i = HIGH_BIT; i >= 0; i--) {
+//            int bit = (val >> i) & 1;
+//            cur = cur->children[bit];
+//            cur->cnt--; // 维护子树大小
+//        }
+//    }
+//
+//    // 返回 val 与 trie 中一个元素的最大异或和
+//    // 要求 trie 不能为空
+//    int max_xor(int val) {
+//        Node *cur = root;
+//        int ans = 0;
+//        for (int i = HIGH_BIT; i >= 0; i--) {
+//            int bit = (val >> i) & 1;
+//            // 如果 cur.children[bit^1].cnt == 0，视作空节点
+//            if (cur->children[bit ^ 1] && cur->children[bit ^ 1]->cnt) {
+//                ans |= 1 << i;
+//                cur = cur->children[bit ^ 1];
+//            } else { // 必然存在其中一边节点不为空
+//                cur = cur->children[bit];
+//            }
+//        }
+//        return ans;
+//    }
+//};
+
+//class Solution_trie {
+//public:
+//    int maximumStrongPairXor(vector<int> &nums) {
+//        sort(nums.begin(), nums.end());
+//        Trie t{};
+//        int ans = 0, left = 0;
+//        for (int y: nums) {
+//            t.insert(y);
+//            while (nums[left] * 2 < y) {
+//                t.remove(nums[left++]);
+//            }
+//            ans = max(ans, t.max_xor(y));
+//        }
+//        return ans;
+//    }
+//};
+
+/**
+ * 实现 trie no.208
+ * 字典树, 小写字母朴素用法
+ */
+
+
 class Node {
 public:
-    array<Node*, 2> children{};
-    int cnt = 0; // 子树大小
+    array<Node*, 26> children{};
 };
 
 class Trie {
-    static const int HIGH_BIT = 19;
 public:
+    unordered_map<string,int> mp;
     Node *root = new Node();
+    Trie() {
 
-    // 添加 val, insert 时，建树
-    void insert(int val) {
+    }
+
+    void insert(string w) {
+        ++mp[w];
         Node *cur = root;
-        for (int i = HIGH_BIT; i >= 0; i--) {
-            int bit = (val >> i) & 1;
-            if (cur->children[bit] == nullptr) {
-                cur->children[bit] = new Node();
+        for (auto c : w) {
+            if (cur->children[c-'a'] == nullptr) {
+                cur->children[c-'a'] = new Node();
             }
-            cur = cur->children[bit];
-            cur->cnt++; // 维护子树大小
+            cur = cur->children[c-'a'];
         }
     }
 
-    // 删除 val，但不删除节点
-    // 要求 val 必须在 trie 中
-    void remove(int val) {
-        Node *cur = root;
-        for (int i = HIGH_BIT; i >= 0; i--) {
-            int bit = (val >> i) & 1;
-            cur = cur->children[bit];
-            cur->cnt--; // 维护子树大小
-        }
+    bool search(string w) {
+        return mp[w];
     }
 
-    // 返回 val 与 trie 中一个元素的最大异或和
-    // 要求 trie 不能为空
-    int max_xor(int val) {
+    bool startsWith(string p) {
         Node *cur = root;
-        int ans = 0;
-        for (int i = HIGH_BIT; i >= 0; i--) {
-            int bit = (val >> i) & 1;
-            // 如果 cur.children[bit^1].cnt == 0，视作空节点
-            if (cur->children[bit ^ 1] && cur->children[bit ^ 1]->cnt) {
-                ans |= 1 << i;
-                cur = cur->children[bit ^ 1];
-            } else { // 必然存在其中一边节点不为空
-                cur = cur->children[bit];
+        for (auto c : p) {
+            if (cur->children[c-'a'] == nullptr) {
+                return false;
             }
+            cur = cur->children[c-'a'];
         }
-        return ans;
+        return true;
     }
 };
 
-class Solution_trie {
-public:
-    int maximumStrongPairXor(vector<int> &nums) {
-        sort(nums.begin(), nums.end());
-        Trie t{};
-        int ans = 0, left = 0;
-        for (int y: nums) {
-            t.insert(y);
-            while (nums[left] * 2 < y) {
-                t.remove(nums[left++]);
-            }
-            ans = max(ans, t.max_xor(y));
-        }
-        return ans;
-    }
-};
+/**
+ * Your Trie object will be instantiated and called as such:
+ * Trie* obj = new Trie();
+ * obj->insert(word);
+ * bool param_2 = obj->search(word);
+ * bool param_3 = obj->startsWith(prefix);
+ */
 
 
 //class Node {
@@ -6791,64 +6845,115 @@ vector<int> lexicographicallySmallestArray(vector<int>& a, int l) {
 }
 
 
-bool isVowel(char c) {
-    return (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u');
+
+/**
+ * 子数组统计套路 : 前缀和 + 哈希表  no.2949
+ *                数学： 余数化简，处理， 同余定理
+ * @param s
+ * @param k
+ * @return
+ */
+long long beautifulSubstrings(string s, int k) {
+    auto check = [&](char c){
+        if (c == 'a' || c == 'e' || c == 'i'||c == 'o'||c=='u') return true;
+        else return false;
+    };
+    int d = 1;
+    for (;d <= 2*k; ++d) {
+        if (d*d % (4 *k) == 0) {
+            break;
+        }
+    }
+    long ans = 0, n = s.size();
+    vector<int> pre(n+1);
+    for (int i = 0; i < n; ++i) {
+        pre[i+1] += (pre[i] + (check(s[i]) ? 1 : -1));
+    }
+    map<pair<int,int>,long> mp;
+//    mp[pair<int,int>(pre[0],0)] = 1;
+    for (int i = 0; i <=n; ++i) {
+        ans += mp[pair<int,int>(pre[i],i%d)];
+        ++mp[pair<int,int>(pre[i],i%d)];
+    }
+    return ans;
 }
 
-long long beautifulSubstrings(string s, int k) {
-    int n = s.length();
-    vector<int> prefixVowels(n + 1, 0);
-    vector<int> prefixConsonants(n + 1, 0);
-    unordered_map<long long, int> countMap;  // 使用 long long 类型
+int minimumCoins1(vector<int>& a) {
+    int n = a.size();
+    int memo[n+1][n+1];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int)> dfs = [&](int i, int j){
+        if (i == n-1) {
+            if (j > 0) return 0;
+            else return a[i];
+        }
+        if (memo[i][j] != -1) return memo[i][j];
+        int &res = memo[i][j];
+        if (j > 0) {
+            res = min(dfs(i+1,j-1),dfs(i+1,i+1)+a[i]);
+        } else res = dfs(i+1,i+1)+a[i];
+        return res;
+    };
+    return dfs(0,0);
+}
 
-    int vowels = 0;
-    int consonants = 0;
-    countMap[0] = 1;
-
-    long long beautifulCount = 0;
-
-    for (int i = 1; i <= n; ++i) {
-        if (isVowel(s[i - 1])) {
-            vowels++;
+int minimumCoins(vector<int>& a) {
+    int n = a.size();
+    vector<int> f(n+1);
+    deque<int> q;
+    for (int i = n; i >= 1;--i) {
+        while (!q.empty() && q.back() > i*2+1){
+            q.pop_back();
+        }
+        if (i*2 >= n) {
+            f[i] = a[i-1];
         } else {
-            consonants++;
+            f[i] = f[q.back()]+a[i-1];
+        }
+        while (!q.empty() && f[q.front()] >= f[i]) {
+            q.pop_front();
+        }
+        q.emplace_front(i);
+    }
+    return f[1];
+}
+
+/**
+ * 单调队列优化 DP : no.2945
+ * @param a
+ * @return
+ */
+int findMaximumLength(vector<int> &a) {
+    int n = a.size();
+    vector<long long> s(n + 1), last(n + 1);
+    vector<int> f(n + 1), q(n + 1); // 数组模拟队列
+    int front = 0, rear = 0; // 手写双端队列
+    for (int i = 1; i <= n; i++) {
+        s[i] = s[i - 1] + a[i - 1]; // 前缀和
+
+        // 1. 去掉队首无用数据（计算转移时，直接取队首）
+        while (front < rear && s[q[front + 1]] + last[q[front + 1]] <= s[i]) {
+            front++;
         }
 
-        prefixVowels[i] = vowels;
-        prefixConsonants[i] = consonants;
+        // 2. 计算转移
+        f[i] = f[q[front]] + 1;
+        last[i] = s[i] - s[q[front]];
 
-        long long diffVowels = prefixVowels[i] - prefixVowels[i - k];
-        long long diffConsonants = prefixConsonants[i] - prefixConsonants[i - k];
-        long long hashValue = diffVowels * 1000LL + diffConsonants;  // 使用 long long 类型
-
-        beautifulCount += countMap[hashValue];
-        countMap[hashValue]++;
+        // 3. 去掉队尾无用数据
+        while (rear >= front && s[q[rear]] + last[q[rear]] >= s[i] + last[i]) {
+            rear--;
+        }
+        q[++rear] = i;
     }
-
-    return beautifulCount;
+    return f[n];
 }
 
 
 int main() {
-
-
     return 0;
 }
 
-
-//    string src_str = "abcde中文";
-//    int len = MultiByteToWideChar(CP_UTF8, 0, src_str.c_str(), -1, nullptr, 0); // 字符数
-//    auto wszGBK = new wchar_t[len + 1];
-//    memset(wszGBK, 0, len * 2 + 2);
-//    MultiByteToWideChar(CP_UTF8, 0, src_str.c_str(), -1, wszGBK, len); // 填充 wszGBK
-//
-//
-//    int len1 = WideCharToMultiByte(CP_ACP, 0, wszGBK, -1, nullptr, 0, nullptr, nullptr); // 返回 将 wszGBK 转换为 CP_ACP 编码后的字节数
-//
-//    char *szGBK = new char[len1 + 1];
-//    memset(szGBK, 0, len1 + 1);
-//    WideCharToMultiByte(CP_ACP, 0, wszGBK, -1, szGBK, len1, nullptr, nullptr); // 填充 szGBK
-//    string str(szGBK);
 
 /**
  * luogu
@@ -6986,19 +7091,15 @@ int main() {
 
 /**
  * impl list :
- * 2.2 字符串引力（done）
- * 2. 双周赛第 4 题（done）
- * 0. lazy 线段树（优先）
- * 0.1 线段树（done）
+ * 0.1 双周赛 118 3(done)，4 题(done)
  * 0.2 字典树 trie (371周赛 no.4) (311周赛 no.4)(灵神视频)
  * 1. 370 周赛第 3，4 题
- * 1.1 树形 dp 视频1， 2， 3， 及视频中涉及的题目(洛谷 保安站岗) (done)
- * 2.1 lazy 线段树知识点 2569（done）
- * 2.3 洛谷上线段树相关题目
- * 4. 2000 难度题
+ * 7. 数位 dp
+ * 7.1 质数筛
+ * 7.2 GCD
+ * 4. 2100 难度题
  * 5. 灵神 总结/归纳 的周赛题单（附难度分和知识点）-> 对应练习
  * 6. no.887 鸡蛋掉落
- * 7. 数位 dp
  * 8. 莫队算法
  * 9. 按灵神 github 模板， 整理算法结构
  * 10. 往届周赛 t4
