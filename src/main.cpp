@@ -6949,6 +6949,142 @@ int findMaximumLength(vector<int> &a) {
     return f[n];
 }
 
+vector<int> findPeaks(vector<int>& a) {
+    int n = a.size();
+    vector<int> ans;
+    for (int i = 1; i < n-1; ++i) {
+        if (a[i] > a[i-1] && a[i] > a[i+1]) ans.emplace_back(i);
+    }
+    return ans;
+}
+
+int minimumAddedCoins(vector<int>& a, int t) {
+    int n = a.size(), ans = 0;
+    sort(a.begin(),a.end());
+    int tmp = 0;
+    for (int i = 0; i < n;) {
+        if (tmp >= t) return ans;
+        if (a[i] > tmp+1) {
+            ++ans;
+            tmp += tmp+1;
+        } else {
+            tmp += a[i];
+            ++i;
+        }
+    }
+    for (int i = tmp+1; i <= t;) {
+        if (tmp >= t) return ans;
+        if (i > tmp) {
+            ++ans;
+            tmp += tmp+1;
+            i = tmp+1;
+        }
+    }
+    return ans;
+}
+
+//int countCompleteSubstrings(string s, int k) {
+//    int n = s.size(), ans = 0;
+//    unordered_map<char,int> mp;
+//    int l = 0, r = 0, tmp = 1;
+//    for (r; r <=n ; ++r) {
+//        if (r==n) {
+//            while (l < r) {
+//                mp[s[l]]--;
+//                bool flag2 = true;
+//                int cnt = 0;
+//                for (auto p : mp) {
+//                    if (p.second != 0 && p.second != k) flag2 = false;
+//                    if (p.second == k) ++cnt;
+//                }
+//                if (flag2 && l != r-1 && cnt > 1) ++ans;
+//                ++l;
+//            }
+//            return ans;
+//        }
+//        if ((r > 0 && abs(s[r] - s[r-1]) > 2)) {
+//            while (l < r) {
+//                mp[s[l]]--;
+//                bool flag2 = true;
+//                int cnt = 0;
+//                for (auto p : mp) {
+//                    if (p.second != 0 && p.second != k) flag2 = false;
+//                    if (p.second == k) ++cnt;
+//                }
+//                if (flag2 && l != r-1 && cnt > 1) ++ans;
+//                ++l;
+//            }
+//        }
+//        mp[s[r]]++;
+//        while (l < r) {
+//            bool flag = false;
+//            for (auto p : mp) {
+//                if (p.second > k) flag = true;
+//            }
+//            if (flag) {
+//                mp[s[l]]--;
+//                ++l;
+//            } else break;
+//        }
+//
+//        if (r > l && s[r] == s[r-1]) {
+//            ++tmp;
+//        }
+//        if (r > 0 && s[r] != s[r-1]) {
+//            tmp =1;
+//        }
+//
+//        bool flag = true;
+//        for (auto p : mp) {
+//            if (p.second != 0 && p.second != k) flag = false;
+//        }
+//        if (flag) ++ans;
+//        if (tmp >= k) {
+//            bool flag1 = false;
+//            for (auto p : mp) {
+//                if (p.second != 0 && p.first != s[r]) flag1 = true;
+//            }
+//            if (flag1) ++ans;
+//        }
+//    }
+//    return ans;
+//}
+
+
+
+int countCompleteSubstrings(string w, int k) {
+
+    auto f = [&](string s, int k) {
+        int res = 0;
+        for (int m = 1; m <= 26 && k * m <= s.length(); m++) {
+            unordered_map<char,int> mp;
+            auto check = [&]() {
+                for (auto p : mp) {
+                    if (p.second != 0 && p.second != k) return;
+                }
+                res++;
+            };
+            for (int r = 0; r < s.length(); r++) {
+                mp[s[r]]++;
+                int l = r + 1 - k * m;
+                if (l >= 0) {
+                    check();
+                    mp[s[l]]--;
+                }
+            }
+        }
+        return res;
+    };
+
+    int n = w.length();
+    int ans = 0;
+    for (int i = 0; i < n;) {
+        int st = i;
+        for (i++; i < n && abs(int(w[i]) - int(w[i - 1])) <= 2; i++);
+        ans += f(w.substr(st, i - st), k);
+    }
+    return ans;
+}
 
 int main() {
     return 0;
