@@ -1,5 +1,4 @@
 #include <bits/stdc++.h>
-#include <windows.h>
 
 using namespace std;
 
@@ -1856,119 +1855,6 @@ int minCameraCover(TreeNode* root) {
 }
 
 /**
- * 单调栈：下一个更大的元素 (1)
- *        1. 原数组无序， 要找到下一个更大元素
- *        2. 单调栈存值
- * @param nums1
- * @param nums2
- * @return
- */
-vector<int> nextGreaterElement(vector<int>& nums1, vector<int>& nums2) {
-    int n = nums2.size(), m = nums1.size();
-    vector<int> vec(n);
-    stack<int> s;
-    for(int i = n-1; i >= 0; --i){
-        while (!s.empty() && s.top() < nums2[i]) {
-            s.pop();
-        }
-        vec[i] = s.empty() ? -1:s.top();
-        s.emplace(nums2[i]);
-    }
-    unordered_map<int,int> mp;
-    for (int i = 0; i < n; ++i) {
-        mp[nums2[i]] = i;
-    }
-    vector<int> ans(m);
-    for (int i = 0; i < m; ++i){
-        ans[i] = vec[mp[nums1[i]]];
-    }
-    return ans;
-}
-
-/**
- * 单调栈 + 前后缀和：从右向左单调减 ： 正序，下一个更小的元素； 从左向右单调增： 倒序， 下一个更大的元素
- * 单调栈存下标
- * @param h
- * @return
- */
-long long maximumSumOfHeights(vector<int>& h) {
-    int n  = h.size();
-    // 单调栈
-    stack<int> s1;
-    // 记录下标
-    vector<int> ind1(n);
-    // 从右向左单调减 ： 正序，下一个更小的元素
-    for (int i = 0; i < n; ++i) {
-        // pop 大于的元素
-        while (!s1.empty() && h[s1.top()] > h[i]) {
-            s1.pop();
-        }
-        // -1 标记
-        ind1[i] = s1.empty() ? -1 : s1.top();
-        s1.emplace(i);
-    }
-    // 前缀和
-    vector<long> pre(n);
-    for (int i = 0; i < n; ++i) {
-        if (ind1[i] == -1) {
-            pre[i] = (long)h[i] * (i+1);
-        } else {
-            pre[i] = pre[ind1[i]] + (long)(i-ind1[i]) * h[i];
-        }
-    }
-
-    stack<int> s2;
-    vector<int> ind2(n);
-    // 从左向右单调减 ： 倒序，下一个更小的元素
-    for (int i = n-1; i >= 0; --i) {
-        while (!s2.empty() && h[s2.top()] > h[i]) {
-            s2.pop();
-        }
-        ind2[i] = s2.empty() ? -1 : s2.top();
-        s2.emplace(i);
-    }
-    vector<long> suf(n);
-    for (int i = n-1; i >= 0; --i) {
-        if (ind2[i] == -1) {
-            suf[i] = (long)h[i] * (n-i);
-        } else {
-            suf[i] = suf[ind2[i]] + (long)(ind2[i]-i) * h[i];
-        }
-    }
-    long ans = 0;
-    for (int i = 0; i < n; ++i) {
-        ans = max(ans, pre[i]+suf[i]-(long)h[i]);
-    }
-    return ans;
-}
-
-/**
- * 经典单调栈， 数形结合
- * @param h
- * @return
- */
-int longestWPI(vector<int>& h) {
-    int n = h.size(), ans = 0;
-    vector<int> pre(n+1);
-    stack<int> st;
-    st.emplace(0);
-    for (int i = 0; i < n; ++i) {
-        pre[i+1] = pre[i]+ (h[i] > 8 ? 1 : -1);
-        if (pre[st.top()] > pre[i+1]) {
-            st.emplace(i+1);
-        }
-    }
-    for (int i = n; i >= 0; --i) {
-        while (!st.empty() && pre[i] - pre[st.top()] > 0) {
-            ans = max(ans, i-st.top());
-            st.pop();
-        }
-    }
-    return ans;
-}
-
-
-/**
  * 单调队列，双端队列 ： 参照单调栈，但动态更新
  * 前缀和
  * @param a
@@ -2391,9 +2277,9 @@ int longestAlternatingSubarray(vector<int>& nums, int t) {
     return ans;
 }
 
-const int MX = 1e6;
+const int MX1 = 1e6;
 vector<int> primes;
-bool np[MX + 1];
+bool np[MX1 + 1];
 
 vector<vector<int>> findPrimePairs(int n) {
     vector<vector<int>> vec;
@@ -6054,287 +5940,6 @@ int lengthOfLongestSubsequence(vector<int>& a, int t) {
     return ans < 0? -1 : ans;
 }
 
-
-/**
- * lazy segment tree : lazy 线段树  (本质是递归)
- *  0. 解决问题 ：一个数组， 更新一个子数组的值（都加上一个数，把子数组内的元素取反，...）
- *              查询一个子数组的值（求和，求最大值）
- *  1. 两大思想：
- *      1.1 挑选 O(n) 个特殊区间，使得任意一个区间可以拆分为 O(log n) 个特殊区间 (用最近公共祖先思考)
- *          O(n) <= 4n, 分治思想， 满二叉树， 递归
- *      挑选 O(n) 个特殊区间， build
- *  2. lazy更新 / 延迟更新
- *     lazy tag : 用一个数组维护每个区间需要更新的值
- *     如果这个值 = 0 表示不需要更新
- *     如果这个值 != 0 表示更新操作在这个区间停住了， 不继续递归更新子区间了
- *
- *     如果后面又来了一个更新，破坏了有 lazy tag 的区间，那么这个区间就得继续递归更新了
- *
- *  to_do 作用理解？
- *
- */
-// no.2916
-class Solution {
-    vector<long> cnt1, to_do; // cnt1 区间段的数
-
-    // 维护区间的增量
-    void maintain(int o) {
-        cnt1[o] = cnt1[o * 2] + cnt1[o * 2 + 1];
-    }
-
-    // 执行区间反转
-    void do_(int o, int l, int r, int add) {
-        cnt1[o] += (long)add * (r - l + 1) ;
-        to_do[o] += add;
-    }
-
-    // 初始化线段树   o,l,r=1,1,n (节点编号，左端点，右端点)  (起点从 1 开始， 1 - n)  O(n)
-    void build(vector<int> &a, int o, int l, int r) {
-        // 边界条件
-        if (l == r) {
-            cnt1[o] = 0;
-            return;
-        }
-        int m = (l + r) / 2;
-        // 左儿子节点编号 o*2, 右儿子节点编号 o*2+1
-        build(a, o * 2, l, m);
-        build(a, o * 2 + 1, m + 1, r);
-        // 维护
-        maintain(o);
-    }
-
-    // 查询的同时做本次更新操作 （对指定区间加 1）
-    long long query_and_add1(int o, int l, int r, int L, int R) {
-        if (L <= l && r <= R) {
-            long long res = cnt1[o];
-            do_(o, l, r, 1);
-            return res;
-        }
-
-        int m = (l + r) / 2;
-        int add = to_do[o];
-        if (add != 0) {
-            do_(o * 2, l, m, add);
-            do_(o * 2 + 1, m + 1, r, add);
-            to_do[o] = 0;
-        }
-
-        long long res = 0;
-        if (L <= m) res += query_and_add1(o * 2, l, m, L, R);
-        if (m < R)  res += query_and_add1(o * 2 + 1, m + 1, r, L, R);
-        maintain(o);
-        return res;
-    }
-
-    // 更新区间 [L,R], 更新 [L,R], [L,R]是常量   o,l,r=1,1,n  O(log n)， 此处 update 为 对选定区间 +1
-    void update(int o, int l, int r, int L, int R) {
-        if (L <= l && r <= R) {
-            do_(o, l, r,1);
-            return;
-        }
-        int m = (l + r) / 2;
-        int add = to_do[o];
-        if (add != 0) {
-            do_(o * 2, l, m, add);
-            do_(o * 2 + 1, m + 1, r, add);
-            to_do[o] = 0;
-        }
-        if (m >= L) update(o * 2, l, m, L, R);
-        if (m < R) update(o * 2 + 1, m + 1, r, L, R);
-        maintain(o);
-    }
-
-    // 查询区间 [L,R] 的和 / max 值 （查询的同时注意更新子区间）
-    long query(int o, int l, int r, int L, int R) {
-        if (L <= l && r <= R) {
-            return cnt1[o];
-        }
-        int m = (l + r) / 2;
-        int add = to_do[o];
-        if (add != 0) {
-            do_(o * 2, l, m, add);
-            do_(o * 2 + 1, m + 1, r, add);
-            to_do[o] = 0;
-        }
-        long res = 0;
-        if (L <= m) res += query(o * 2, l, m, L, R);
-        if (m < R)  res += query(o * 2 + 1, m + 1, r, L, R);
-        maintain(o);
-        return res;
-    }
-
-public:
-    int sumCounts(vector<int> &a) {
-        int mod = 1e9+7;
-        int n = a.size();
-        cnt1.resize(n * 4);
-        to_do.resize(n * 4);
-
-        long ans = 0, s = 0;
-        unordered_map<int, int> mp;
-        build(a,1,1,n);
-        for (int i = 1; i <= n; i++) {
-            int x = a[i - 1];
-            int j = mp.count(x) ? mp[x] : 0;
-//            s += query_and_add1(1, 1, n, j + 1, i) * 2 + (long)i - (long)j;
-            s += query(1, 1, n, j + 1, i) * 2 + (long)i - (long)j;
-            update(1, 1, n, j + 1, i);
-            ans = (ans + s) % mod;
-            mp[x] = i;
-        }
-        return ans;
-    }
-};
-
-// no.2569
-class LazySegmentTree1 {
-    vector<int> cnt1, flip;
-
-    // 维护区间 1 的个数
-    void maintain(int o) {
-        cnt1[o] = cnt1[o * 2] + cnt1[o * 2 + 1];
-    }
-
-    // 执行区间反转
-    void do_(int o, int l, int r) {
-        cnt1[o] = r - l + 1 - cnt1[o];
-        flip[o] = !flip[o];
-    }
-
-    // 初始化线段树   o,l,r=1,1,n (节点编号，左端点，右端点)  (起点从 1 开始， 1 - n)  O(n)
-    void build(vector<int> &a, int o, int l, int r) {
-        // 边界条件
-        if (l == r) {
-            cnt1[o] = a[l - 1];
-            return;
-        }
-        int m = (l + r) / 2;
-        // 左儿子节点编号 o*2, 右儿子节点编号 o*2+1
-        build(a, o * 2, l, m);
-        build(a, o * 2 + 1, m + 1, r);
-        // 维护
-        maintain(o);
-    }
-
-    // 反转区间 [L,R], 更新 [L,R], [L,R]是常量   o,l,r=1,1,n  O(log n)
-    void update(int o, int l, int r, int L, int R) {
-        if (L <= l && r <= R) {
-            do_(o, l, r);
-            return;
-        }
-        int m = (l + r) / 2;
-        if (flip[o]) {
-            do_(o * 2, l, m);
-            do_(o * 2 + 1, m + 1, r);
-            flip[o] = false;
-        }
-        if (m >= L) update(o * 2, l, m, L, R);
-        if (m < R) update(o * 2 + 1, m + 1, r, L, R);
-        maintain(o);
-    }
-
-public:
-    vector<long long> handleQuery(vector<int> &nums1, vector<int> &nums2, vector<vector<int>> &queries) {
-        int n = nums1.size();
-        cnt1.resize(n * 4);
-        flip.resize(n * 4);
-        build(nums1, 1, 1, n);
-        vector<long long> ans;
-        long long sum = accumulate(nums2.begin(), nums2.end(), 0LL); // O(n)
-        for (auto &q : queries) {
-            if (q[0] == 1) update(1, 1, n, q[1] + 1, q[2] + 1);  // O(q log n)
-            else if (q[0] == 2) sum += 1LL * q[1] * cnt1[1];
-            else ans.push_back(sum);
-        }
-        return ans;
-    }
-};
-
-/**
- * 线段树， segment tree no.2286
- */
-class BookMyShow {
-public:
-    vector<long> sum;
-    vector<int> mn;
-    int m,n;
-
-    void maintain(int o) {
-        sum[o] = sum[o * 2] + sum[o * 2 + 1];
-        mn[o] = min(mn[o * 2],mn[o * 2 + 1]);
-    }
-
-    void add(int o, int l, int r, int idx, int val) {
-        if (l == r) {
-            sum[o] += (long)val;
-            mn[o] += val;
-            return;
-        }
-        int mid = (l+r)/2;
-        if (idx <= mid) add(o*2, l, mid, idx, val);
-        else add(o*2 +1,mid+1, r, idx, val);
-        maintain(o);
-    }
-
-    long query(int o, int l, int r, int L, int R) {
-        if (L <=l && r <= R) {
-            return sum[o];
-        }
-        int mid = (l+r)/2;
-        long sum1 = 0;
-        if (L <= mid) sum1 += query(o*2, l, mid, L, R);
-        if (mid < R) sum1 += query(o*2+1, mid+1, r, L, R);
-        return sum1;
-    }
-
-    int index(int o, int l, int r, int R, int val) {
-        if (mn[o] > m-val) return 0;
-        if (l == r) return l;
-        int mid = (l+r)/2;
-        if (mn[o*2] <= m-val) return index(o*2, l, mid, R, val);
-        if (R > mid) return index(o*2+1, mid+1, r, R, val);
-        return 0;
-    }
-
-    BookMyShow(int n1, int m1) {
-        m = m1, n = n1;
-        sum.resize(n * 4);
-        mn.resize(n*4);
-
-    }
-
-    vector<int> gather(int k, int R) {
-        auto i = index(1,1,n,R+1,k);
-        if (i == 0) return {};
-        add(1,1,n,i,k);
-        auto seat = query(1,1,n,i,i);
-        return vector<int>({i-1,(int)seat-k});
-
-    }
-
-    bool scatter(int k, int R) {
-        auto left_seat = (long)(R+1) * (long)m - query(1,1,n,1,R+1);
-        if (left_seat < k) return false;
-        auto i = index(1,1,n,R+1,1);
-        while (1) {
-            if ((long)m - query(1,1,n,i,i) >= (long)k) {
-                add(1,1,n,i,k);
-                return true;
-            } else {
-                k -= (long)m - query(1,1,n,i,i);
-                add(1,1,n,i,(long)m - query(1,1,n,i,i));
-                ++i;
-            }
-        }
-        return true;
-    }
-};
-
-int lengthOfLIS(vector<int>& nums, int k) {
-
-
-}
-
 //int lengthOfLIS(vector<int>& a) {
 //    int n = a.size();
 //    int memo[n+1][n+2];
@@ -6421,106 +6026,6 @@ vector<int> leftmostBuildingQueries1(vector<int>& h, vector<vector<int>>& q) {
     return ans;
 }
 
-// segment tree 线段树 no.2940
-class Solution_segment {
-public:
-    vector<int> mx;
-
-    // 维护
-    void maintain(int o) {
-        mx[o] = max(mx[o * 2],mx[o * 2 + 1]);
-    }
-    // 初始化
-    void build(vector<int> &a, int o, int l, int r) {
-        // 边界条件
-        if (l == r) {
-            mx[o] = a[l - 1];
-            return;
-        }
-        int m = (l + r) / 2;
-        // 左儿子节点编号 o*2, 右儿子节点编号 o*2+1
-        build(a, o * 2, l, m);
-        build(a, o * 2 + 1, m + 1, r);
-        // 维护
-        maintain(o);
-    }
-
-    // 线段树上二分 获取下标 ind
-    int index(int o, int l, int r, int L, int val) {
-        if (mx[o] <= val) return 5e4+2;
-        if (l == r) return l;
-        int mid = (l+r)/2;
-        if (L <= mid && mx[o*2] > val) {
-            auto ind = index(o*2, l, mid,L, val);
-            if (ind != (int)5e4+2) return ind;
-        }
-        return index(o*2+1, mid+1, r, L,val);
-    }
-
-    vector<int> leftmostBuildingQueries(vector<int>& h, vector<vector<int>>& q) {
-        int n = h.size(), m = q.size();
-        mx.resize(n*4);
-        vector<int> ans(m,-1);
-        build(h,1,1,n);
-        for (int i = 0; i < m; ++i) {
-            int j = min(q[i][0],q[i][1]), k =  max(q[i][0],q[i][1]);
-            if (j == k || h[j] < h[k]) ans[i] = k;
-            else {
-                auto ind = index(1,1,n,k+2,h[j]);
-                if (ind != 5e4+2) ans[i] = ind-1;
-            }
-        }
-        return ans;
-    }
-
-};
-
-// segment tree + dp : 线段树 + 动态规划  no.2407
-class Solution4 {
-    vector<int> mx;
-
-    // 维护
-    void maintain(int o) {
-        mx[o] = max(mx[o * 2],mx[o * 2 + 1]);
-    }
-
-    void update(int o, int l, int r, int i, int val) {
-        if (l == r) {
-            mx[o] = val;
-            return;
-        }
-        int m = (l + r) / 2;
-        if (i <= m) update(o * 2, l, m, i, val);
-        else update(o * 2 + 1, m + 1, r, i, val);
-        maintain(o);
-    }
-
-    // 返回区间 [L,R] 内的最大值
-    int query(int o, int l, int r, int L, int R) { // L 和 R 在整个递归过程中均不变，将其大写，视作常量
-        if (L <= l && r <= R) return mx[o];
-        int res = 0;
-        int m = (l + r) / 2;
-        if (L <= m) res = query(o * 2, l, m, L, R);
-        if (R > m) res = max(res, query(o * 2 + 1, m + 1, r, L, R)); // 右边与左边取 max
-        return res;
-    }
-
-public:
-    int lengthOfLIS(vector<int> &nums, int k) {
-        int u = *max_element(nums.begin(), nums.end());
-        mx.resize(u * 4);
-        for (int x: nums) {
-            if (x == 1) {
-                update(1, 1, u, 1, 1);
-            } else {
-                int res = 1 + query(1, 1, u, max(x - k, 1), x - 1);
-                update(1, 1, u, x, res);
-            }
-        }
-        return mx[1];
-    }
-};
-
 // 异或哈希表 no.2935
 int maximumStrongPairXor(vector<int>& a) {
     // 排序
@@ -6553,204 +6058,6 @@ int maximumStrongPairXor(vector<int>& a) {
     }
     return ans;
 }
-
-/**
- * 0-1 Trie ，0-1 字典树
- * no.2935
- */
-//class Node {
-//public:
-//    array<Node*, 2> children{};
-//    int cnt = 0; // 子树大小
-//};
-//
-//class Trie {
-//    static const int HIGH_BIT = 19;
-//public:
-//    Node *root = new Node();
-//
-//    // 添加 val, insert 时，建树
-//    void insert(int val) {
-//        Node *cur = root;
-//        for (int i = HIGH_BIT; i >= 0; i--) {
-//            int bit = (val >> i) & 1;
-//            if (cur->children[bit] == nullptr) {
-//                cur->children[bit] = new Node();
-//            }
-//            cur = cur->children[bit];
-//            cur->cnt++; // 维护子树大小
-//        }
-//    }
-//
-//    // 删除 val，但不删除节点
-//    // 要求 val 必须在 trie 中
-//    void remove(int val) {
-//        Node *cur = root;
-//        for (int i = HIGH_BIT; i >= 0; i--) {
-//            int bit = (val >> i) & 1;
-//            cur = cur->children[bit];
-//            cur->cnt--; // 维护子树大小
-//        }
-//    }
-//
-//    // 返回 val 与 trie 中一个元素的最大异或和
-//    // 要求 trie 不能为空
-//    int max_xor(int val) {
-//        Node *cur = root;
-//        int ans = 0;
-//        for (int i = HIGH_BIT; i >= 0; i--) {
-//            int bit = (val >> i) & 1;
-//            // 如果 cur.children[bit^1].cnt == 0，视作空节点
-//            if (cur->children[bit ^ 1] && cur->children[bit ^ 1]->cnt) {
-//                ans |= 1 << i;
-//                cur = cur->children[bit ^ 1];
-//            } else { // 必然存在其中一边节点不为空
-//                cur = cur->children[bit];
-//            }
-//        }
-//        return ans;
-//    }
-//};
-
-//class Solution_trie {
-//public:
-//    int maximumStrongPairXor(vector<int> &nums) {
-//        sort(nums.begin(), nums.end());
-//        Trie t{};
-//        int ans = 0, left = 0;
-//        for (int y: nums) {
-//            t.insert(y);
-//            while (nums[left] * 2 < y) {
-//                t.remove(nums[left++]);
-//            }
-//            ans = max(ans, t.max_xor(y));
-//        }
-//        return ans;
-//    }
-//};
-
-/**
- * 实现 trie no.208
- * 字典树, 小写字母朴素用法
- */
-
-
-class Node {
-public:
-    array<Node*, 26> children{};
-};
-
-class Trie {
-public:
-    unordered_map<string,int> mp;
-    Node *root = new Node();
-    Trie() {
-
-    }
-
-    void insert(string w) {
-        ++mp[w];
-        Node *cur = root;
-        for (auto c : w) {
-            if (cur->children[c-'a'] == nullptr) {
-                cur->children[c-'a'] = new Node();
-            }
-            cur = cur->children[c-'a'];
-        }
-    }
-
-    bool search(string w) {
-        return mp[w];
-    }
-
-    bool startsWith(string p) {
-        Node *cur = root;
-        for (auto c : p) {
-            if (cur->children[c-'a'] == nullptr) {
-                return false;
-            }
-            cur = cur->children[c-'a'];
-        }
-        return true;
-    }
-};
-
-/**
- * Your Trie object will be instantiated and called as such:
- * Trie* obj = new Trie();
- * obj->insert(word);
- * bool param_2 = obj->search(word);
- * bool param_3 = obj->startsWith(prefix);
- */
-
-
-//class Node {
-//public:
-//    array<Node*, 2> children{};
-//    int cnt = 0; // 子树大小
-//};
-//
-//class Trie {
-//    static const int HIGH_BIT = 31;
-//public:
-//    Node *root = new Node();
-//
-//    // 添加 val, insert 时，建树
-//    void insert(int val) {
-//        Node *cur = root;
-//        for (int i = HIGH_BIT; i >= 0; i--) {
-//            int bit = (val >> i) & 1;
-//            if (cur->children[bit] == nullptr) {
-//                cur->children[bit] = new Node();
-//            }
-//            cur = cur->children[bit];
-//            cur->cnt++; // 维护子树大小
-//        }
-//    }
-//
-//    // 删除 val，但不删除节点
-//    // 要求 val 必须在 trie 中
-//    void remove(int val) {
-//        Node *cur = root;
-//        for (int i = HIGH_BIT; i >= 0; i--) {
-//            int bit = (val >> i) & 1;
-//            cur = cur->children[bit];
-//            cur->cnt--; // 维护子树大小
-//        }
-//    }
-//
-//    // 返回 val 与 trie 中一个元素的最大异或和
-//    // 要求 trie 不能为空
-//    int max_xor(int val) {
-//        Node *cur = root;
-//        int ans = 0;
-//        for (int i = HIGH_BIT; i >= 0; i--) {
-//            int bit = (val >> i) & 1;
-//            // 如果 cur.children[bit^1].cnt == 0，视作空节点
-//            if (cur->children[bit ^ 1] && cur->children[bit ^ 1]->cnt) {
-//                ans |= 1 << i;
-//                cur = cur->children[bit ^ 1];
-//            } else { // 必然存在其中一边节点不为空
-//                cur = cur->children[bit];
-//            }
-//        }
-//        return ans;
-//    }
-//};
-//
-//class Solution {
-//public:
-//    int findMaximumXOR(vector<int> &nums) {
-//        Trie t{};
-//        int ans = 0;
-//        for (int y: nums) {
-//            t.insert(y);
-//            ans = max(ans, t.max_xor(y));
-//        }
-//        return ans;
-//    }
-//};
-
 
 // 异或哈希表 no.421
 int findMaximumXOR(vector<int> &a) {
@@ -6878,24 +6185,24 @@ long long beautifulSubstrings(string s, int k) {
     return ans;
 }
 
-int minimumCoins1(vector<int>& a) {
-    int n = a.size();
-    int memo[n+1][n+1];
-    memset(memo,-1,sizeof(memo));
-    function<int(int,int)> dfs = [&](int i, int j){
-        if (i == n-1) {
-            if (j > 0) return 0;
-            else return a[i];
-        }
-        if (memo[i][j] != -1) return memo[i][j];
-        int &res = memo[i][j];
-        if (j > 0) {
-            res = min(dfs(i+1,j-1),dfs(i+1,i+1)+a[i]);
-        } else res = dfs(i+1,i+1)+a[i];
-        return res;
-    };
-    return dfs(0,0);
-}
+//int minimumCoins1(vector<int>& a) {
+//    int n = a.size();
+//    int memo[n+1][n+1];
+//    memset(memo,-1,sizeof(memo));
+//    function<int(int,int)> dfs = [&](int i, int j){
+//        if (i == n-1) {
+//            if (j > 0) return 0;
+//            else return a[i];
+//        }
+//        if (memo[i][j] != -1) return memo[i][j];
+//        int &res = memo[i][j];
+//        if (j > 0) {
+//            res = min(dfs(i+1,j-1),dfs(i+1,i+1)+a[i]);
+//        } else res = dfs(i+1,i+1)+a[i];
+//        return res;
+//    };
+//    return dfs(0,0);
+//}
 
 int minimumCoins(vector<int>& a) {
     int n = a.size();
@@ -7078,12 +6385,67 @@ int countCompleteSubstrings(string w, int k) {
 
     int n = w.length();
     int ans = 0;
+    // 分组循环
     for (int i = 0; i < n;) {
         int st = i;
         for (i++; i < n && abs(int(w[i]) - int(w[i - 1])) <= 2; i++);
         ans += f(w.substr(st, i - st), k);
     }
     return ans;
+}
+
+/**
+ * 组合数学 逆元
+ */
+const int MOD = 1'000'000'007;
+const int MX = 100'000; // C(n,k) n
+
+// 快速幂取 MOD
+long long q_pow(long long x, int n) {
+    long long res = 1;
+    for (; n > 0; n /= 2) {
+        if (n % 2) {
+            res = res * x % MOD;
+        }
+        x = x * x % MOD;
+    }
+    return res;
+}
+
+// 组合数模板， 逆元
+// fac : 阶乘 ,inv_a : 个数 a[i] 的逆元, inv_a[i]/inv[i]
+long long fac[MX], inv_fac[MX], inv_a[MX];
+
+auto init_inv = [] {
+    fac[0] = 1;
+    for (int i = 1; i < MX; i++) {
+        fac[i] = fac[i - 1] * i % MOD; // for (int i = 1; i <= n; ++i) s[i] = s[i - 1] * a[i] % p;
+    }
+    inv_fac[MX - 1] = q_pow(fac[MX - 1], MOD - 2); // x === a^(b-2) (mod b)
+    for (int i = MX - 1; i > 0; i--) {
+        inv_fac[i - 1] = inv_fac[i] * i % MOD; // for (int i = n; i >= 1; --i) sv[i - 1] = sv[i] * a[i] % p;
+    }
+    for (int i = 1; i <= MX - 1; ++i) inv_a[i] = inv_fac[i] * fac[i - 1] % MOD; // for (int i = 1; i <= n; ++i) inv[i] = sv[i] * s[i - 1] % p;
+    // 求出每个数 a[i] 的逆元, inv[i]
+    return 0;
+}();
+
+long long comb(int n, int k) {
+    return fac[n] * inv_fac[k] % MOD * inv_fac[n - k] % MOD;
+}
+
+class Solution{
+public:
+    int stringCount(int n) {
+        if (n < 4) return 0;
+        long long ans = comb(n, 4) * 12 * q_pow(26, n-4) % MOD;
+        return ans;
+    }
+};
+
+int stringCount(int n) {
+
+
 }
 
 int main() {
@@ -7227,12 +6589,15 @@ int main() {
 
 /**
  * impl list :
- * 0.1 双周赛 118 3(done)，4 题(done)
- * 0.2 字典树 trie (371周赛 no.4) (311周赛 no.4)(灵神视频)
- * 1. 370 周赛第 3，4 题
+ * 374 周赛 no.3(done)
+ * 7.3 组合数学 (容斥原理)
+ * 字典树 trie (311周赛 no.4)(灵神视频)
  * 7. 数位 dp
  * 7.1 质数筛
  * 7.2 GCD
+ * 0.1 双周赛 118 3(done)，4 题(done)
+ * 0.2 字典树 trie (371周赛 no.4)
+ * 1. 370 周赛第 3，4 题
  * 4. 2100 难度题
  * 5. 灵神 总结/归纳 的周赛题单（附难度分和知识点）-> 对应练习
  * 6. no.887 鸡蛋掉落
