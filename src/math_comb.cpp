@@ -65,3 +65,49 @@ public:
         return ans * q_pow(2, e) % MOD;
     }
 };
+
+/**
+ * 容斥原理
+ *
+ * 集合 A:
+ * 集合 B:
+ * 集合 C:
+ *
+ * 集合 A∩B:
+ * 集合 A∩C:
+ * 集合 B∩C:
+ *
+ * 集合 A∩B∩C:
+ *
+ * |A| + |B| + |C| -(|A∩B|+|A∩C|+|B∩C|) + |A∩B∩C|
+ */
+
+/**
+ * 朴素选择
+ * lc.no.2930
+ * @param n
+ * @return
+ */
+int stringCount(int n) {
+    if (n < 4) return 0;
+    long long tmp = (q_pow(25,n) * 3 % MOD + (long long)n * q_pow(25,n-1) % MOD - (q_pow(24,n) * 3 % MOD + (long long)n * q_pow(24,n-1) * 2 % MOD - q_pow(23,n) - (long long)n * q_pow(23,n-1) % MOD)) % MOD;
+    long long ans = (q_pow(26,n) - tmp) % MOD;
+    return (ans + MOD) % MOD;
+}
+
+/**
+ *  隔板法，板和球一起计总数
+ *
+ * lc.no.2929
+ */
+long long distributeCandies(int n, int l) {
+    if (l * 3 + 1 <= n) return 0;
+    long long tmp1 = (long long)(n+2)*(n+1)/2, tmp2 = 0;
+    if (n-(l+1) >= 0) {
+        tmp2 += (long long)(n-(l+1)+2)*(n-(l+1)+1)/2*3;
+    }
+    if (n-2*(l+1) >= 0) {
+        tmp2 -= (long long)(n- 2*(l+1)+2)*(n- 2*(l+1) +1)/2*3;
+    }
+    return tmp1 - tmp2;
+}

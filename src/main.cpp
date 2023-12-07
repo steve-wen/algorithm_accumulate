@@ -6438,15 +6438,42 @@ class Solution{
 public:
     int stringCount(int n) {
         if (n < 4) return 0;
-        long long ans = comb(n, 4) * 12 * q_pow(26, n-4) % MOD;
-        return ans;
+        long long tmp = (q_pow(25,n) * 3 % MOD + (long long)n * q_pow(25,n-1) % MOD - (q_pow(24,n) * 3 % MOD + (long long)n * q_pow(24,n-1) * 2 % MOD - q_pow(23,n) - (long long)n * q_pow(23,n-1) % MOD)) % MOD;
+        long long ans = (q_pow(26,n) - tmp) % MOD;
+        return (ans + MOD) % MOD;
     }
 };
 
-int stringCount(int n) {
-
-
+long long distributeCandies(int n, int l) {
+    if (l * 3 + 1 <= n) return 0;
+    long long memo[3][n+1];
+    memset(memo, -1, sizeof(memo));
+    function<long long(int,int)> dfs = [&](int i, int j){
+        if (i == 0) {
+            if (j > l) return 0LL;
+            return 1LL;
+        }
+        if (memo[i][j] != -1) return memo[i][j];
+        long long& res = memo[i][j];
+        res = 0;
+        for (int k = j;k >= max(0,j-l);--k) {
+            res += dfs(i-1,k);
+        }
+        return res;
+    };
+    return dfs(2,n);
 }
+
+
+//long long tmp1 = (long long)(n+2)*(n+1)/2, tmp2 = 0;
+//if (n-(l+1) >= 0) {
+//tmp2 += (long long)(n-(l+1)+2)*(n-(l+1)+1)/2*3;
+//}
+//if (n-2*(l+1) >= 0) {
+//tmp2 -= (long long)(n- 2*(l+1)+2)*(n- 2*(l+1) +1)/2*3;
+//}
+//return tmp1 - tmp2;
+
 
 int main() {
     return 0;
@@ -6589,8 +6616,6 @@ int main() {
 
 /**
  * impl list :
- * 374 周赛 no.3(done)
- * 7.3 组合数学 (容斥原理)
  * 字典树 trie (311周赛 no.4)(灵神视频)
  * 7. 数位 dp
  * 7.1 质数筛
