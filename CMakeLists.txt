@@ -8,4 +8,5 @@ add_executable(test_main src/main.cpp
         src/trie01.cpp
         src/segment_tree.cpp
         src/monotone_stack.cpp
-        src/math_comb.cpp)
+        src/math_comb.cpp
+        src/dp.cpp)

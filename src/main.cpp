@@ -6357,8 +6357,6 @@ int minimumAddedCoins(vector<int>& a, int t) {
 //    return ans;
 //}
 
-
-
 int countCompleteSubstrings(string w, int k) {
 
     auto f = [&](string s, int k) {
@@ -6394,56 +6392,6 @@ int countCompleteSubstrings(string w, int k) {
     return ans;
 }
 
-/**
- * 组合数学 逆元
- */
-const int MOD = 1'000'000'007;
-const int MX = 100'000; // C(n,k) n
-
-// 快速幂取 MOD
-long long q_pow(long long x, int n) {
-    long long res = 1;
-    for (; n > 0; n /= 2) {
-        if (n % 2) {
-            res = res * x % MOD;
-        }
-        x = x * x % MOD;
-    }
-    return res;
-}
-
-// 组合数模板， 逆元
-// fac : 阶乘 ,inv_a : 个数 a[i] 的逆元, inv_a[i]/inv[i]
-long long fac[MX], inv_fac[MX], inv_a[MX];
-
-auto init_inv = [] {
-    fac[0] = 1;
-    for (int i = 1; i < MX; i++) {
-        fac[i] = fac[i - 1] * i % MOD; // for (int i = 1; i <= n; ++i) s[i] = s[i - 1] * a[i] % p;
-    }
-    inv_fac[MX - 1] = q_pow(fac[MX - 1], MOD - 2); // x === a^(b-2) (mod b)
-    for (int i = MX - 1; i > 0; i--) {
-        inv_fac[i - 1] = inv_fac[i] * i % MOD; // for (int i = n; i >= 1; --i) sv[i - 1] = sv[i] * a[i] % p;
-    }
-    for (int i = 1; i <= MX - 1; ++i) inv_a[i] = inv_fac[i] * fac[i - 1] % MOD; // for (int i = 1; i <= n; ++i) inv[i] = sv[i] * s[i - 1] % p;
-    // 求出每个数 a[i] 的逆元, inv[i]
-    return 0;
-}();
-
-long long comb(int n, int k) {
-    return fac[n] * inv_fac[k] % MOD * inv_fac[n - k] % MOD;
-}
-
-class Solution{
-public:
-    int stringCount(int n) {
-        if (n < 4) return 0;
-        long long tmp = (q_pow(25,n) * 3 % MOD + (long long)n * q_pow(25,n-1) % MOD - (q_pow(24,n) * 3 % MOD + (long long)n * q_pow(24,n-1) * 2 % MOD - q_pow(23,n) - (long long)n * q_pow(23,n-1) % MOD)) % MOD;
-        long long ans = (q_pow(26,n) - tmp) % MOD;
-        return (ans + MOD) % MOD;
-    }
-};
-
 long long distributeCandies(int n, int l) {
     if (l * 3 + 1 <= n) return 0;
     long long memo[3][n+1];
@@ -6463,17 +6411,6 @@ long long distributeCandies(int n, int l) {
     };
     return dfs(2,n);
 }
-
-
-//long long tmp1 = (long long)(n+2)*(n+1)/2, tmp2 = 0;
-//if (n-(l+1) >= 0) {
-//tmp2 += (long long)(n-(l+1)+2)*(n-(l+1)+1)/2*3;
-//}
-//if (n-2*(l+1) >= 0) {
-//tmp2 -= (long long)(n- 2*(l+1)+2)*(n- 2*(l+1) +1)/2*3;
-//}
-//return tmp1 - tmp2;
-
 
 int main() {
     return 0;
@@ -6616,12 +6553,9 @@ int main() {
 
 /**
  * impl list :
- * 字典树 trie (311周赛 no.4)(灵神视频)
  * 7. 数位 dp
  * 7.1 质数筛
  * 7.2 GCD
- * 0.1 双周赛 118 3(done)，4 题(done)
- * 0.2 字典树 trie (371周赛 no.4)
  * 1. 370 周赛第 3，4 题
  * 4. 2100 难度题
  * 5. 灵神 总结/归纳 的周赛题单（附难度分和知识点）-> 对应练习
