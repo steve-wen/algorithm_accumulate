@@ -3,7 +3,7 @@
 using namespace std;
 
 /**
-* dp 动态规划
+*  数位 dp
 */
 
 /**
@@ -77,6 +77,7 @@ int atMostNGivenDigitSet(vector<string>& d, int n) {
 }
 
 // lc.no.233
+// j 记录 1 的个数
 int countDigitOne(int n) {
     string s(to_string(n));
     int memo[10][10][2][2];
@@ -102,4 +103,57 @@ int countDigitOne(int n) {
         return res;
     };
     return dfs(0,0,1,0);
+}
+
+// lc.no.2719
+// j 记录数位之和
+int count(string s1, string s2, int a, int b) {
+    int MOD = 1e9+7;
+
+    int memo1[23][500][2][2];
+    memset(memo1,-1,sizeof(memo1));
+    function<int(int,int,int,int)> dfs1 = [&](int i, int j, int k, int l){
+        if (i == s1.size()) {
+            if (a <= j && j <= b && !k)
+                return 1;
+            else return 0;
+        }
+        if (memo1[i][j][k][l] != -1) return memo1[i][j][k][l];
+        int& res = memo1[i][j][k][l];
+        res = 0;
+        if (j > b) return 0;
+        if (!l) {
+            res = (res +dfs1(i+1,j,0,0)) % MOD;
+        }
+        int up = k ? s1[i]-'0' : 9;
+        for (int m = 1 - l; m <= up; ++m) {
+            res = (res + dfs1(i + 1, j+m, k && m == up, 1)) % MOD;
+        }
+        return res;
+    };
+    int cnt1 = dfs1(0,0,1,0);
+
+    int memo2[23][500][2][2];
+    memset(memo2,-1,sizeof(memo2));
+    function<int(int,int,int,int)> dfs2 = [&](int i, int j, int k, int l){
+        if (i == s2.size()) {
+            if (a <= j && j <= b)
+                return 1;
+            else return 0;
+        }
+        if (memo2[i][j][k][l] != -1) return memo2[i][j][k][l];
+        int& res = memo2[i][j][k][l];
+        res = 0;
+        if (j > b) return 0;
+        if (!l) {
+            res = (res +dfs2(i+1,j,0,0)) % MOD;
+        }
+        int up = k ? s2[i]-'0' : 9;
+        for (int m = 1 - l; m <= up; ++m) {
+            res = (res + dfs2(i + 1, j+m, k && m == up, 1)) % MOD;
+        }
+        return res;
+    };
+    int cnt2 = dfs2(0,0,1,0);
+    return (cnt2-cnt1+MOD)%MOD;
 }

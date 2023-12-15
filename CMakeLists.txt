@@ -9,4 +9,8 @@ add_executable(test_main src/main.cpp
         src/segment_tree.cpp
         src/monotone_stack.cpp
         src/math_comb.cpp
-        src/dp.cpp)
+        src/dp_bit.cpp
+        src/common.cpp
+        src/math.cpp
+        src/dp_tree.cpp
+        src/dp_state_compress.cpp)

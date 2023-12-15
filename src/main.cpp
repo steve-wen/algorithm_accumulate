@@ -2277,20 +2277,6 @@ int longestAlternatingSubarray(vector<int>& nums, int t) {
     return ans;
 }
 
-const int MX1 = 1e6;
-vector<int> primes;
-bool np[MX1 + 1];
-
-vector<vector<int>> findPrimePairs(int n) {
-    vector<vector<int>> vec;
-    for (int i = 0; primes[i] <= n / 2; ++i) {
-        if (!np[n - primes[i]]) {
-            vec.emplace_back(vector{primes[i], n - primes[i]});
-        }
-    }
-    return vec;
-}
-
 long long continuousSubarrays(vector<int>& nums) {
     int n = nums.size();
     long long ans = 0;
@@ -5151,34 +5137,6 @@ int minAreaRect(vector<vector<int>>& p) {
 
 }
 
-vector<ll> vec;
-auto init = [](){
-    vec.emplace_back(0);
-    ll sum = 0;
-    ll j = 1;
-    while (sum < 1e15) {
-        ll tmp = 0;
-        tmp = (j * (2*j+1) + j*(j+1)-j*2);
-        sum += tmp*4;
-        ++j;
-        vec.emplace_back(sum);
-        if (sum>1e15) break;
-    }
-    return 0;
-}();
-
-long long minimumPerimeter(long long a) {
-    long long ans = 0;
-    ll n = vec.size();
-    for (ll i = 0; i < n; ++i) {
-        if (vec[i] >= a) {
-            return i*2*4;
-        }
-    }
-    return 0;
-
-}
-
 int longestArithSeqLength(vector<int>& nums) {
     int n = nums.size(), ans = 0;
     unordered_map<int,int> f[n];
@@ -5193,7 +5151,6 @@ int longestArithSeqLength(vector<int>& nums) {
     }
     return ans;
 }
-
 
 string decodeCiphertext(string e, int row) {
     int n = e.size(), col = n/row;
@@ -6290,75 +6247,7 @@ int minimumAddedCoins(vector<int>& a, int t) {
     return ans;
 }
 
-//int countCompleteSubstrings(string s, int k) {
-//    int n = s.size(), ans = 0;
-//    unordered_map<char,int> mp;
-//    int l = 0, r = 0, tmp = 1;
-//    for (r; r <=n ; ++r) {
-//        if (r==n) {
-//            while (l < r) {
-//                mp[s[l]]--;
-//                bool flag2 = true;
-//                int cnt = 0;
-//                for (auto p : mp) {
-//                    if (p.second != 0 && p.second != k) flag2 = false;
-//                    if (p.second == k) ++cnt;
-//                }
-//                if (flag2 && l != r-1 && cnt > 1) ++ans;
-//                ++l;
-//            }
-//            return ans;
-//        }
-//        if ((r > 0 && abs(s[r] - s[r-1]) > 2)) {
-//            while (l < r) {
-//                mp[s[l]]--;
-//                bool flag2 = true;
-//                int cnt = 0;
-//                for (auto p : mp) {
-//                    if (p.second != 0 && p.second != k) flag2 = false;
-//                    if (p.second == k) ++cnt;
-//                }
-//                if (flag2 && l != r-1 && cnt > 1) ++ans;
-//                ++l;
-//            }
-//        }
-//        mp[s[r]]++;
-//        while (l < r) {
-//            bool flag = false;
-//            for (auto p : mp) {
-//                if (p.second > k) flag = true;
-//            }
-//            if (flag) {
-//                mp[s[l]]--;
-//                ++l;
-//            } else break;
-//        }
-//
-//        if (r > l && s[r] == s[r-1]) {
-//            ++tmp;
-//        }
-//        if (r > 0 && s[r] != s[r-1]) {
-//            tmp =1;
-//        }
-//
-//        bool flag = true;
-//        for (auto p : mp) {
-//            if (p.second != 0 && p.second != k) flag = false;
-//        }
-//        if (flag) ++ans;
-//        if (tmp >= k) {
-//            bool flag1 = false;
-//            for (auto p : mp) {
-//                if (p.second != 0 && p.first != s[r]) flag1 = true;
-//            }
-//            if (flag1) ++ans;
-//        }
-//    }
-//    return ans;
-//}
-
 int countCompleteSubstrings(string w, int k) {
-
     auto f = [&](string s, int k) {
         int res = 0;
         for (int m = 1; m <= 26 && k * m <= s.length(); m++) {
@@ -6392,30 +6281,13 @@ int countCompleteSubstrings(string w, int k) {
     return ans;
 }
 
-long long distributeCandies(int n, int l) {
-    if (l * 3 + 1 <= n) return 0;
-    long long memo[3][n+1];
-    memset(memo, -1, sizeof(memo));
-    function<long long(int,int)> dfs = [&](int i, int j){
-        if (i == 0) {
-            if (j > l) return 0LL;
-            return 1LL;
-        }
-        if (memo[i][j] != -1) return memo[i][j];
-        long long& res = memo[i][j];
-        res = 0;
-        for (int k = j;k >= max(0,j-l);--k) {
-            res += dfs(i-1,k);
-        }
-        return res;
-    };
-    return dfs(2,n);
+int minTransfers(vector<vector<int>>& d) {
+
 }
 
 int main() {
     return 0;
 }
-
 
 /**
  * luogu
@@ -6553,14 +6425,15 @@ int main() {
 
 /**
  * impl list :
- * 7. 数位 dp
- * 7.1 质数筛
- * 7.2 GCD
+ * 7.4 状压 dp
+ * 7.5 划分型 dp
+ * 7.6 贡献法
+ * 7.7 dijkstra/floyd
+ * 8. 莫队算法
  * 1. 370 周赛第 3，4 题
- * 4. 2100 难度题
+ * 4. 2200 难度题
  * 5. 灵神 总结/归纳 的周赛题单（附难度分和知识点）-> 对应练习
  * 6. no.887 鸡蛋掉落
- * 8. 莫队算法
  * 9. 按灵神 github 模板， 整理算法结构
  * 10. 往届周赛 t4
  */
