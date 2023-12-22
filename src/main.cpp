@@ -2927,7 +2927,7 @@ string smallestString(string s) {
 
 }
 
-long long minCost(vector<int>& nums, int x) {
+long long minCost1(vector<int>& nums, int x) {
     vector<long> num(nums.begin(), nums.end());
     long y = x;
     int n = nums.size();
@@ -6281,10 +6281,6 @@ int countCompleteSubstrings(string w, int k) {
     return ans;
 }
 
-int minTransfers(vector<vector<int>>& d) {
-
-}
-
 int main() {
     return 0;
 }
@@ -6425,7 +6421,6 @@ int main() {
 
 /**
  * impl list :
- * 7.4 状压 dp
  * 7.5 划分型 dp
  * 7.6 贡献法
  * 7.7 dijkstra/floyd
