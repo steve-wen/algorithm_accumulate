@@ -14,4 +14,5 @@ add_executable(test_main src/main.cpp
         src/math.cpp
         src/dp_tree.cpp
         src/dp_state_compress.cpp
-        src/dp_divide.cpp)
+        src/dp_divide.cpp
+        src/contribute.cpp)

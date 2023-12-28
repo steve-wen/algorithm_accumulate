@@ -6281,81 +6281,9 @@ int countCompleteSubstrings(string w, int k) {
     return ans;
 }
 
-/**
- * 划分型 dp
- */
-// 预处理每个数的真因子，时间复杂度 O(MX*logMX)
-const int MX = 201;
-vector<vector<int>> divisors(MX);
-int init = [] {
-    for (int i = 1; i < MX; i++) {
-        for (int j = i * 2; j < MX; j += i) {
-            divisors[j].push_back(i);
-        }
-    }
-    return 0;
-}();
+int sumImbalanceNumbers(vector<int>& nums) {
 
-class Solution {
-    int get_modify(string s) {
-        int n = s.length();
-        int res = n;
-        for (int d: divisors[n]) {
-            int cnt = 0;
-            for (int i0 = 0; i0 < d; i0++) { // 半回文规则
-                for (int i = i0, j = n - d + i0; i < j; i += d, j -= d) {
-                    cnt += s[i] != s[j];
-                }
-            }
-            res = min(res, cnt);
-        }
-        return res;
-    }
-
-public:
-    int minimumChanges(string s, int k) {
-        int n = s.length();
-        vector<vector<int>> modify(n, vector<int>(n,n+1));
-        for (int left = 0; left < n - 1; left++) { // 预处理
-            for (int right = left + 1; right < n; right++) {
-                modify[left][right] = get_modify(s.substr(left, right - left + 1));
-            }
-        }
-        int memo[101][201][201];
-        memset(memo,-1,sizeof(memo));
-
-        function<int(int, int, int)> dfs = [&](int t, int i, int j) -> int {
-            if (i < 0) {
-                if (t >= 0) return n+1; // 注意细节条件
-                else return 0;
-            }
-            if (t == 0) {
-                return modify[0][j];
-            }
-            int &res = memo[t][i][j]; // 注意这里是引用
-            if (res != -1) { // 之前计算过
-                return res;
-            }
-            res = dfs(t,i-1,j);
-            if (i < j) {
-                res = min(res, dfs(t-1,i - 1, i-1) + modify[i][j]);
-            }
-            return res;
-        };
-        return dfs(k - 1,n-1, n - 1);
-    }
-};
-
-//s =
-//"acba"
-//k =
-//2
-//
-//添加到测试用例
-//    输出
-//1
-//预期结果
-//2
+}
 
 int main() {
     return 0;
@@ -6497,9 +6425,9 @@ int main() {
 
 /**
  * impl list :
- * 7.5 划分型 dp
  * 7.6 贡献法
- * 7.7 dijkstra/floyd
+ * 7.7 dijkstra/floyd (两种)
+ * 7.8 巫师的力量总和
  * 8. 莫队算法
  * 1. 370 周赛第 3，4 题
  * 4. 2200 难度题
