@@ -6281,11 +6281,89 @@ int countCompleteSubstrings(string w, int k) {
     return ans;
 }
 
-int sumImbalanceNumbers(vector<int>& nums) {
+bool hasTrailingZeros(vector<int>& a) {
+    int cnt = 0, n = a.size();
+    for (auto a1 : a) {
+        if (a1%2 == 0) ++cnt;
+    }
+    if (cnt >= 2) return true;
+    return false;
+}
 
+int maximumLength1(string s) {
+    map<pair<char,int>,int> mp;
+    int n = s.size();
+    auto check1 = [&](string s1) {
+        for (int i = 1; i < s1.size(); ++i) {
+            if (s1[i] != s1[i-1]) return false;
+        }
+        return true;
+    };
+    for (int i = 0; i < n; ++i) {
+        string str{s[i]};
+        mp[pair<char,int>(s[i],1)]++;
+        for (int j = i+1; j < n; ++j) {
+            str += s[j];
+            if (check1(str)) {
+                mp[pair<char,int>(s[j],str.size())]++;
+            } else break;
+        }
+    }
+    int ans = -1;
+    for (char c = 'a'; c <= 'z'; ++c) {
+        for (int i = 1; i < 50; ++i) {
+            if (mp[pair<char,int>(c,i)] >= 3) {
+                ans = max(ans, i);
+            } else break;
+        }
+    }
+    return ans;
+}
+
+int maximumLength(string s) {
+    map<pair<char,int>,int> mp;
+    map<char,int> mp1;
+    int n = s.size();
+    string str{s[0]};
+    for (int i = 1; i < n; ++i) {
+        if (s[i] != s[i-1]) {
+            int l = str.size();
+            for (int j = 1; j <= l; ++j) {
+                if (mp[pair<char,int>(s[i-1],l+2-j)] < 3) {
+                    mp[pair<char,int>(s[i-1],l+1-j)] += j;
+                    if (mp[pair<char,int>(s[i-1],l+1-j)] >= 3)
+                        mp1[s[i-1]] = max(mp1[s[i-1]], l+1-j);
+                } else {
+                    mp1[s[i-1]] = max(mp1[s[i-1]], l+2-j);
+                    break;
+                }
+            }
+            str = s[i];
+        } else {
+            str += s[i];
+        }
+    }
+    int l = str.size();
+    for (int j = 1; j <= l; ++j) {
+        if (mp[pair<char,int>(s[n-1],l+2-j)] < 3) {
+            mp[pair<char,int>(s[n-1],l+1-j)] += j;
+            if (mp[pair<char,int>(s[n-1],l+1-j)] >= 3)
+                mp1[s[n-1]] = max(mp1[s[n-1]], l+1-j);
+        } else {
+            mp1[s[n-1]] = max(mp1[s[n-1]], l+2-j);
+            break;
+        }
+    }
+    int ans = -1;
+    for (char c = 'a'; c <= 'z'; ++c) {
+        ans = max(ans,mp1[c]);
+    }
+    return ans == 0 ? -1 : ans;
 }
 
 int main() {
+    string test = "aaaa";
+    auto tmp = maximumLength(test);
     return 0;
 }
 

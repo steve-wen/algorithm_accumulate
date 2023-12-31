@@ -91,7 +91,7 @@ int minimumBeautifulSubstrings(string s) {
 // 自然数 n 平均有 O(log(n)) 个因子
 const int MX = 201;
 vector<vector<int>> divisors(MX);
-int init = [] {
+int init_1 = [] {
     for (int i = 1; i < MX; i++) {
         for (int j = i * 2; j < MX; j += i) {
             divisors[j].push_back(i);
