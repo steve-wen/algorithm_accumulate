@@ -1589,7 +1589,7 @@ int init1 = [](){
     return 0;
 }();
 
-auto check = [](string s){
+auto check_1 = [](string s){
     int n = s.size();
     int cnt = 101;
     for (auto& d : divi[n]) {
@@ -1615,7 +1615,7 @@ auto minimumChanges = [](string s, int k) {
     memset(mody,0,sizeof(mody));
     for (int i = 0; i < n-1; ++i) {
         for (int j = i+1; j < n; ++j) {
-            mody[i][j] = check(s.substr(i,j-i+1));
+            mody[i][j] = check_1(s.substr(i,j-i+1));
         }
     }
 
@@ -6361,9 +6361,242 @@ int maximumLength(string s) {
     return ans == 0 ? -1 : ans;
 }
 
+int areaOfMaxDiagonal(vector<vector<int>>& d) {
+    double mx1 = 0, mx2 = 0;
+    for (auto& d1 : d) {
+        double x = sqrt((double)d1[0]*(double)d1[0] + (double)d1[1]*(double)d1[1]);
+        if (x > mx1) {
+            mx1 = x;
+            mx2 = (double)d1[0]*(double)d1[1];
+        } else if (x == mx1){
+            mx2 = max(mx2,(double)d1[0]*(double)d1[1]);
+        }
+    }
+    return (int)mx2;
+
+}
+
+int minMovesToCaptureTheQueen(int a, int b, int c, int d, int e, int f) {
+    a= a-1,b=b-1,c=c-1,d=d-1,e=e-1,f=f-1;
+    if (e == a) {
+        if (!(c == a && ((b < d && d < f) || (b > d && d > f)))) return 1;
+    }
+    if (b == f) {
+        if (!(d == b && ((a < c && c < e) || (a > c && c > e)))) return 1;
+    }
+    if (abs(e-c) == abs(d-f)) {
+        if (! (abs(a-c) == abs(d-b) && (c-e)*(c-a) > 0 && (d-f)*(d-b) > 0 && (abs(c-a) < abs(c-e)))) return 1;
+    }
+    return 2;
+}
+
+int maximumSetSize(vector<int>& a, vector<int>& b) {
+    int n = a.size();
+    map<int,int> mp1,mp2;
+    set<int> st1(a.begin(),a.end()), st2(b.begin(),b.end());
+    for (auto &a1 : a) {
+        mp1[a1]++;
+    }
+    for (auto &b1 : b) {
+        mp2[b1]++;
+    }
+    int cnt1 = 0, cnt2 = 0, cnt3 = 0;
+    for (auto &a1 : st1) {
+        cnt1 += (mp1[a1]-1 );
+        if (mp1[a1] >0 && mp2[a1] >0) ++cnt3;
+    }
+    for (auto &b1 : st2) {
+        cnt2 += (mp2[b1]-1 );
+    }
+    if (cnt1 >= n/2) {
+        if (cnt2+cnt3 >= n/2) {
+            return st1.size()+st2.size()-cnt3;
+        } else {
+            return st1.size()+st2.size()-cnt3-(n/2-cnt2-cnt3);
+        }
+    }
+    if (cnt2 >= n/2) {
+        if (cnt1+cnt3 >= n/2) {
+            return st1.size()+st2.size()-cnt3;
+        } else {
+            return st1.size()+st2.size()-cnt3-(n/2-cnt1-cnt3);
+        }
+    }
+    if (cnt1+cnt3+cnt2 >= n) {
+        return st1.size()+st2.size()-cnt3;
+    } else {
+        return st1.size()+st2.size()-cnt3-(n-cnt1-cnt3-cnt2);
+    }
+    return st1.size()+st2.size()-cnt3;
+}
+
+int maxFrequencyElements(vector<int>& a) {
+    int n = a.size(), ans = 0;
+    map<int,int> mp;
+    for(auto& a1 : a) {
+        mp[a1]++;
+    }
+    int mx = 0;
+    for(auto& a1 : a) {
+        mx = max(mx,mp[a1]);
+    }
+    for (auto& p : mp) {
+        if(p.second == mx) {
+            ans += mx;
+        }
+    }
+    return ans;
+}
+
+
+vector<int> beautifulIndices_1(string s, string a, string b, int k) {
+    int n = s.size(), m1 = a.size(), m2 = b.size();
+    vector<int> veci,vecj,ans;
+    for (int i = 0; i < n; ++i) {
+        if (i <= n-m1) {
+            if (s.substr(i,m1) == a) {
+                veci.emplace_back(i);
+            }
+        }
+        if (i <= n-m2) {
+            if (s.substr(i,m2) == b) {
+                vecj.emplace_back(i);
+            }
+        }
+    }
+    int l1 = 0,l2 = 0, n1 = veci.size(), n2 = vecj.size();
+    while (l1 < n1 && l2 < n2) {
+        if (abs(veci[l1] - vecj[l2]) <= k) {
+            ans.emplace_back(veci[l1]);
+            ++l1;
+        } else {
+            if (vecj[l2] < veci[l1]) {
+                ++l2;
+            } else {
+                ++l1;
+            }
+        }
+    }
+    return ans;
+}
+
+
+
+int kmp_next[500001];
+
+void getNext(int m, string& a, string& b){
+    int j = 0;
+    // 初始化next[0]的值
+    kmp_next[0] = 0;
+    for(int i=1; i<m; ++i){
+        // 当这一位不匹配时，将j指向此位之前最大公共前后缀的位置
+        while(j>0 && b[i]!=b[j]) j=kmp_next[j-1];
+        // 如果这一位匹配，那么将j+1，继续判断下一位
+        if(b[i]==b[j]) ++j;
+        // 更新next[i]的值
+        kmp_next[i] = j;
+    }
+}
+
+void kmp(int n,int m,string& a, string& b,vector<int>& vec){
+    int i, j = 0;
+    // 初始化位置p = -1
+    int p = -1;
+    // 初始化next数组
+    getNext(m,a,b);
+    for(i=0; i<n; ++i){
+        // 当这一位不匹配时，将j指向此位之前最大公共前后缀的位置
+        while(j>0 && b[j]!=a[i]) j=kmp_next[j-1];
+        // 如果这一位匹配，那么将j+1，继续判断下一位
+        if(b[j]==a[i]) ++j;
+        // 如果是子串(m位完全匹配)，则更新位置p的值，并中断程序
+        if(j==m){
+            p = i - m + 1;
+            vec.emplace_back(p);
+        }
+    }
+    // 返回位置p的值
+    return ;
+}
+
+vector<int> beautifulIndices(string s, string a, string b, int k) {
+    int n = s.size(), m1 = a.size(), m2 = b.size();
+    vector<int> veci,vecj,ans;
+    kmp(n, m1,s, a,veci);
+    kmp(n, m2,s, b,vecj);
+    int l1 = 0,l2 = 0, n1 = veci.size(), n2 = vecj.size();
+    while (l1 < n1 && l2 < n2) {
+        if (abs(veci[l1] - vecj[l2]) <= k) {
+            ans.emplace_back(veci[l1]);
+            ++l1;
+        } else {
+            if (vecj[l2] < veci[l1]) {
+                ++l2;
+            } else {
+                ++l1;
+            }
+        }
+    }
+    return ans;
+}
+
+/**
+ * 数位 DP + 二分
+ * 注意 ： long long memo[m][m][2][2];
+        memset(memo,-1,sizeof(memo));
+        开数组比 vector 快；
+        dfs 不传 string
+ * lc: https://leetcode.cn/problems/maximum-number-that-sum-of-the-prices-is-less-than-or-equal-to-k/description/
+ * @param k1
+ * @param x
+ * @return
+ */
+long long findMaximumNumber(long long k1, int x) {
+
+    auto check = [&](long long num) {
+        auto bin = bitset<60>(num).to_string();
+        auto s = bin.substr(bin.find('1'));
+        int m = s.size();
+        long long memo[m][m][2][2];
+        memset(memo,-1,sizeof(memo));
+        function<long long(int,int,int,int)> dfs = [&](int i, int j, int k, int l){
+            if (i == m) {
+                return (long long)j;
+            }
+            if (memo[i][j][k][l] != -1) return memo[i][j][k][l];
+            long long& res = memo[i][j][k][l];
+            res = 0;
+            if (!l) {
+                res += dfs(i+1,j,0,0);
+            }
+            int up = k ? (s[i] - '0') : 1;
+            for (int m1 = 1-l; m1 <= up; ++m1) {
+                if (m1 == 1 && ((m-i) % x == 0)) {
+                    res += dfs(i+1,j+1,k && m1 == up,1);
+                } else {
+                    res += dfs(i+1,j,k && m1 == up,1);
+                }
+            }
+            return res;
+        };
+        return dfs(0,0,1,0) <= k1;
+    };
+
+    long long r = (long long)1e15, l = 1, ans = 1;
+    while (l <= r) {
+        long long mid = (r+l) / 2;
+        if (check(mid)) {
+            ans = max(ans, mid);
+            l = mid + 1;
+        } else {
+            r = mid -1;
+        }
+    }
+    return ans;
+}
+
 int main() {
-    string test = "aaaa";
-    auto tmp = maximumLength(test);
+    auto ans = findMaximumNumber(9, 1);
     return 0;
 }
 
