@@ -4924,7 +4924,7 @@ long long taskSchedulerII(vector<int>& t, int s) {
 
 
 // 自定义 cmp 算子, 结合 decltype
-auto cmp = [](pair<string, int> p1 ,pair<string, int> p2  ){
+auto cmp_1 = [](pair<string, int> p1 ,pair<string, int> p2  ){
     return (p1.second>p2.second || (p1.second==p2.second && p1.first < p2.first));
 };
 
@@ -4933,13 +4933,13 @@ public:
 
     unordered_map<string, string> mp1;
     unordered_map<string, int> mp3;
-    unordered_map<string, set<pair<string,int>, decltype(cmp)>> mp2;
+    unordered_map<string, set<pair<string,int>, decltype(cmp_1)>> mp2;
     FoodRatings(vector<string>& f, vector<string>& c, vector<int>& r) {
         int n = f.size();
         for (int i = 0; i <n; ++i){
             mp1[f[i]] = c[i];
             mp3[f[i]] = r[i];
-            mp2[c[i]].emplace(pair<string, int>(f[i],r[i]));
+            mp2[c[i]].emplace(f[i],r[i]);
         }
 
     }
@@ -4949,7 +4949,7 @@ public:
         int r = mp3[f1];
         mp3[f1] = r1;
         mp2[c].erase(pair<string, int>(f1,r));
-        mp2[c].emplace(pair<string, int>(f1,r1));
+        mp2[c].emplace(f1,r1);
     }
 
     string highestRated(string c1) {
@@ -6436,18 +6436,21 @@ int maxFrequencyElements(vector<int>& a) {
     for(auto& a1 : a) {
         mp[a1]++;
     }
+    multimap<int,int,greater<>> mp1;
+    for(auto& p : mp) {
+        mp1.emplace(p.second,p.first);
+    }
     int mx = 0;
     for(auto& a1 : a) {
         mx = max(mx,mp[a1]);
     }
-    for (auto& p : mp) {
-        if(p.second == mx) {
+    for (auto& p : mp1) {
+        if(p.first == mx) {
             ans += mx;
         }
     }
     return ans;
 }
-
 
 vector<int> beautifulIndices_1(string s, string a, string b, int k) {
     int n = s.size(), m1 = a.size(), m2 = b.size();
@@ -6480,123 +6483,85 @@ vector<int> beautifulIndices_1(string s, string a, string b, int k) {
     return ans;
 }
 
-
-
-int kmp_next[500001];
-
-void getNext(int m, string& a, string& b){
-    int j = 0;
-    // 初始化next[0]的值
-    kmp_next[0] = 0;
-    for(int i=1; i<m; ++i){
-        // 当这一位不匹配时，将j指向此位之前最大公共前后缀的位置
-        while(j>0 && b[i]!=b[j]) j=kmp_next[j-1];
-        // 如果这一位匹配，那么将j+1，继续判断下一位
-        if(b[i]==b[j]) ++j;
-        // 更新next[i]的值
-        kmp_next[i] = j;
+int minimumPushes_1(string w) {
+    int n = w.size();
+    if (n <= 8) return n;
+    if (8 < n && n <= 16) {
+        return 8 + (n-8)*2;
     }
+    if (16 < n && n <= 24) {
+        return 24+(n-16)*3;
+    }
+    if (n > 24) {
+        return 48 + (n-24)*4;
+    }
+    return n;
 }
 
-void kmp(int n,int m,string& a, string& b,vector<int>& vec){
-    int i, j = 0;
-    // 初始化位置p = -1
-    int p = -1;
-    // 初始化next数组
-    getNext(m,a,b);
-    for(i=0; i<n; ++i){
-        // 当这一位不匹配时，将j指向此位之前最大公共前后缀的位置
-        while(j>0 && b[j]!=a[i]) j=kmp_next[j-1];
-        // 如果这一位匹配，那么将j+1，继续判断下一位
-        if(b[j]==a[i]) ++j;
-        // 如果是子串(m位完全匹配)，则更新位置p的值，并中断程序
-        if(j==m){
-            p = i - m + 1;
-            vec.emplace_back(p);
-        }
+int minimumPushes(string w) {
+    int n = w.size(), ans = 0;
+    map<char, int> mp;
+    for(auto c : w) {
+        mp[c]++;
     }
-    // 返回位置p的值
-    return ;
-}
-
-vector<int> beautifulIndices(string s, string a, string b, int k) {
-    int n = s.size(), m1 = a.size(), m2 = b.size();
-    vector<int> veci,vecj,ans;
-    kmp(n, m1,s, a,veci);
-    kmp(n, m2,s, b,vecj);
-    int l1 = 0,l2 = 0, n1 = veci.size(), n2 = vecj.size();
-    while (l1 < n1 && l2 < n2) {
-        if (abs(veci[l1] - vecj[l2]) <= k) {
-            ans.emplace_back(veci[l1]);
-            ++l1;
-        } else {
-            if (vecj[l2] < veci[l1]) {
-                ++l2;
-            } else {
-                ++l1;
-            }
+    int m = mp.size();
+    vector<int> vec;
+    for (auto& p : mp) {
+        auto[a,b] = p;
+        vec.emplace_back(b);
+    }
+    sort(vec.begin(),vec.end(),[&](int i, int j){return i > j;});
+    for (int i = 0 ; i < m; ++i) {
+        if (i <= 7) ans += vec[i];
+        if (7 < i && i <= 15) {
+            ans += vec[i] * 2;
         }
+        if (15 < i && i <= 23) {
+            ans += vec[i] * 3;
+        }
+        if (i > 23) {
+            ans += vec[i] * 4;
+        }
+
     }
     return ans;
 }
 
-/**
- * 数位 DP + 二分
- * 注意 ： long long memo[m][m][2][2];
-        memset(memo,-1,sizeof(memo));
-        开数组比 vector 快；
-        dfs 不传 string
- * lc: https://leetcode.cn/problems/maximum-number-that-sum-of-the-prices-is-less-than-or-equal-to-k/description/
- * @param k1
- * @param x
- * @return
- */
-long long findMaximumNumber(long long k1, int x) {
-
-    auto check = [&](long long num) {
-        auto bin = bitset<60>(num).to_string();
-        auto s = bin.substr(bin.find('1'));
-        int m = s.size();
-        long long memo[m][m][2][2];
-        memset(memo,-1,sizeof(memo));
-        function<long long(int,int,int,int)> dfs = [&](int i, int j, int k, int l){
-            if (i == m) {
-                return (long long)j;
-            }
-            if (memo[i][j][k][l] != -1) return memo[i][j][k][l];
-            long long& res = memo[i][j][k][l];
-            res = 0;
-            if (!l) {
-                res += dfs(i+1,j,0,0);
-            }
-            int up = k ? (s[i] - '0') : 1;
-            for (int m1 = 1-l; m1 <= up; ++m1) {
-                if (m1 == 1 && ((m-i) % x == 0)) {
-                    res += dfs(i+1,j+1,k && m1 == up,1);
+vector<int> countOfPairs_1(int n, int x, int y) {
+    vector<int> ans(n);
+    map<int,int> mp;
+    if (abs(x-y) <= 1) {
+        for (int i = 0; i < n; ++i) {
+            ans[i] = (n-i-1)*2;
+        }
+        return ans;
+    } else {
+        int x1 = min(x,y), y1 = max(x,y);
+        x1 -= 1, y1 -= 1;
+        ans[0] = n*2;
+        for (int i = 0; i < n-1; ++i) {
+            for (int j = i+1; j < n; ++j) {
+                if (y1 <= i || x1 >= j) {
+                    mp[j-i]++;
                 } else {
-                    res += dfs(i+1,j,k && m1 == up,1);
+                    int dis = min(j-i,abs(i-x1)+abs(j-y1)+1);
+                    mp[dis]++;
                 }
             }
-            return res;
-        };
-        return dfs(0,0,1,0) <= k1;
-    };
-
-    long long r = (long long)1e15, l = 1, ans = 1;
-    while (l <= r) {
-        long long mid = (r+l) / 2;
-        if (check(mid)) {
-            ans = max(ans, mid);
-            l = mid + 1;
-        } else {
-            r = mid -1;
         }
+        for (auto p : mp) {
+            auto [a,b] = p;
+            ans[a-1] = b*2;
+        }
+        return ans;
     }
     return ans;
 }
 
+
+
+
 int main() {
-    auto ans = findMaximumNumber(9, 1);
     return 0;
 }
 
@@ -6736,8 +6701,8 @@ int main() {
 
 /**
  * impl list :
+ * 7.5 dijkstra/floyd (两种)
  * 7.6 贡献法
- * 7.7 dijkstra/floyd (两种)
  * 7.8 巫师的力量总和
  * 8. 莫队算法
  * 1. 370 周赛第 3，4 题

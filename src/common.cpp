@@ -71,3 +71,113 @@ int numberOfGoodPartitions(vector<int> &a) {
     ans = q_pow1(2,len-1);// c(n,0)+...+c(n,n) == 2^n
     return ans;
 }
+
+/**
+ * 差分
+ */
+
+/**
+ * 差分数组 + 分类讨论 + 数学不等式思维
+ * https://leetcode.cn/problems/count-the-number-of-houses-at-a-certain-distance-ii/description/
+ * @param n
+ * @param x
+ * @param y
+ * @return
+ */
+vector<long long> countOfPairs(int n, int x, int y) {
+    // 确保 x <= y
+    if (x > y) {
+        swap(x, y);
+    }
+    vector<long long> ans(n);
+    if (x + 1 >= y) {
+        for (int i = 1; i < n; i++) {
+            ans[i - 1] = (n - i) * 2;
+        }
+        return ans;
+    }
+
+    vector<int> diff(n + 1, 0);
+
+    auto add = [&](int l, int r) {
+        diff[l]++;
+        diff[r + 1]--;
+    };
+
+    for (int i = 1; i < n; i++) {
+        if (i <= x) {
+            int k = (x + y + 1) / 2;
+            add(1, k - i);
+            add(x - i + 2, x - i + y - k);
+            add(x - i + 1, x - i + 1 + n - y);
+        } else if (i <= (x + y - 1) / 2) {
+            int k = i + (y - x + 1) / 2;
+            add(1, k - i);
+            add(i - x + 2, i - x + y - k);
+            add(i - x + 1, i - x + 1 + n - y);
+        } else {
+            add(1, n - i);
+        }
+    }
+
+    long long sum_d = 0;
+    for (int i = 0; i < n; i++) {
+        sum_d += diff[i + 1];
+        ans[i] = sum_d * 2;
+    }
+    return ans;
+}
+
+/**
+ * 差分数组 + 分类讨论 + 数学不等式思维
+ * https://leetcode.cn/problems/count-the-number-of-houses-at-a-certain-distance-ii/description/
+ * @param n
+ * @param x
+ * @param y
+ * @return
+ */
+vector<long long> diff_template(int n, int x, int y) {
+    // 确保 x <= y
+    if (x > y) {
+        swap(x, y);
+    }
+    vector<long long> ans(n);
+    // 特殊情况
+    if (x + 1 >= y) {
+        for (int i = 1; i < n; i++) {
+            ans[i - 1] = (n - i) * 2;
+        }
+        return ans;
+    }
+    // 初始化差分数组
+    vector<int> diff(n + 1, 0);
+    // add
+    auto add = [&](int l, int r) {
+        diff[l]++;
+        diff[r + 1]--;
+    };
+
+    for (int i = 1; i < n; i++) {
+        if (i <= x) {
+            int k = (x + y + 1) / 2;
+            add(1, k - i);
+            add(x - i + 2, x - i + y - k);
+            add(x - i + 1, x - i + 1 + n - y);
+        } else if (i <= (x + y - 1) / 2) {
+            int k = i + (y - x + 1) / 2;
+            add(1, k - i);
+            add(i - x + 2, i - x + y - k);
+            add(i - x + 1, i - x + 1 + n - y);
+        } else {
+            add(1, n - i);
+        }
+    }
+
+    // 求和得到 ans
+    long long sum_d = 0;
+    for (int i = 0; i < n; i++) {
+        sum_d += diff[i + 1];
+        ans[i] = sum_d * 2;
+    }
+    return ans;
+}

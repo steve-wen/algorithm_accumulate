@@ -157,3 +157,59 @@ int count(string s1, string s2, int a, int b) {
     int cnt2 = dfs2(0,0,1,0);
     return (cnt2-cnt1+MOD)%MOD;
 }
+
+/**
+ * 数位 DP + 二分
+ * 注意 ： long long memo[m][m][2][2];
+        memset(memo,-1,sizeof(memo));
+        开数组比 vector 快；
+        dfs 不传 string，速度快
+ * lc: https://leetcode.cn/problems/maximum-number-that-sum-of-the-prices-is-less-than-or-equal-to-k/description/
+ * @param k1
+ * @param x
+ * @return
+ */
+long long findMaximumNumber(long long k1, int x) {
+
+    auto check = [&](long long num) {
+        auto bin = bitset<60>(num).to_string();
+        auto s = bin.substr(bin.find('1'));
+        const int m = s.size();
+        long long memo[60][60][2][2];
+        memset(memo,-1,sizeof(memo));
+        function<long long(int,int,int,int)> dfs = [&](int i, int j, int k, int l){
+            if (i == m) {
+                return (long long)j;
+            }
+            if (memo[i][j][k][l] != -1) return memo[i][j][k][l];
+            long long& res = memo[i][j][k][l];
+            res = 0;
+            if (!l) {
+                res += dfs(i+1,j,0,0);
+            }
+            int up = k ? (s[i] - '0') : 1;
+            for (int m1 = 1-l; m1 <= up; ++m1) {
+                if (m1 == 1 && ((m-i) % x == 0)) {
+                    res += dfs(i+1,j+1,k && m1 == up,1);
+                } else {
+                    res += dfs(i+1,j,k && m1 == up,1);
+                }
+            }
+            return res;
+        };
+        return dfs(0,0,1,0) <= k1;
+    };
+
+    long long r = (long long)1e15, l = 1, ans = 1;
+    while (l <= r) {
+        long long mid = (r+l) / 2;
+        if (check(mid)) {
+            ans = max(ans, mid);
+            l = mid + 1;
+        } else {
+            r = mid -1;
+        }
+    }
+    return ans;
+}
+
