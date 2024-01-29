@@ -1,5 +1,4 @@
 #include <bits/stdc++.h>
-
 using namespace std;
 
 using ll = long long;
@@ -976,7 +975,7 @@ int minimumCost(vector<int>& s, vector<int>& t, vector<vector<int>>& r) {
  * @return
  */
 // 带边权，注意
-int findTheCity(int n, vector<vector<int>>& e, int d) {
+int findTheCity_1(int n, vector<vector<int>>& e, int d) {
     // 建图
     unordered_map<int, vector<pair<int,int>>> g;
     for (auto & e1 : e) {
@@ -6558,8 +6557,64 @@ vector<int> countOfPairs_1(int n, int x, int y) {
     return ans;
 }
 
+int countKeyChanges(string s) {
+    int ans = 0, n = s.size();
+    for (int i = 1; i < n; ++i) {
+        if (!(abs(s[i]-s[i-1]) == 32 || abs(s[i]-s[i-1]) == 0)) {
+            ++ans;
+        }
+    }
+    return ans;
+}
 
+int maximumLength(vector<int>& a) {
+    int n = a.size(), ans = 1;
+    vector<int> b;
+    unordered_map<int,int> mp;
+    for (auto a1 : a) {
+        mp[a1]++;
+        if (mp[a1] == 2) {
+            b.emplace_back(a1);
+        }
+    }
+    sort(b.begin(),b.end());
+    unordered_map<int,int> mp1;
+    set<long long> st1(a.begin(),a.end());
+    set<long long> st2(b.begin(),b.end());
+    for (int i = 0; i < b.size(); ++i) {
+        if (!mp1[b[i]]) {
+            int cnt = 1;
+            mp1[b[i]] = 1;
+            long long tmp = (long long)b[i]*b[i];
+            while(st2.count(tmp) && !mp1[tmp]) {
+                ++cnt;
+                mp1[tmp] = 1;
+                tmp *= tmp;
+            }
+            cnt *= 2;
+            if (st1.count(tmp) && !mp1[tmp]) {
+                ++cnt;
+            } else {
+                --cnt;
+            }
+            ans = max(ans,cnt);
+        }
+    }
+    int cnt1 = count(a.begin(),a.end(),1);
+    if (cnt1 % 2 == 0) cnt1--;
+    ans = max(cnt1,ans);
+    return ans;
+}
 
+long long flowerGame(int n, int m) {
+    long long ans = 0;
+    long long n1 = n/2 + (n%2);
+    long long n2 = n/2 ;
+    long long m1 = m/2 + (m%2);
+    long long m2 = m/2 ;
+    ans = n1 * m2 + n2 * m1;
+    return ans;
+}
 
 int main() {
     return 0;
