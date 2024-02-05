@@ -6367,6 +6367,25 @@ long long flowerGame(int n, int m) {
     return ans;
 }
 
+int numberOfPairs(vector<vector<int>>& p) {
+    int n = p.size();
+    int ans = 0;
+    sort(p.begin(), p.end(),[&](auto p1, auto p2){return p1[0] < p2[0] || (p1[0] == p2[0] && p1[1] > p2[1]);});
+
+    for (int i = 0; i < n-1; ++i) {
+        int mx = -(1e9+1);
+        int a1 = p[i][0], a2 = p[i][1];
+        for (int j = i+1; j < n; ++j) {
+            int b1 = p[j][0], b2 = p[j][1];
+            if (b2 <= a2 && b2 > mx) {
+                ++ans;
+                mx = b2;
+            }
+        }
+    }
+    return ans;
+}
+
 int main() {
     map<string,int> mp;
     mp["a"] = 1;
