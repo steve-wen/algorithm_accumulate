@@ -6367,6 +6367,12 @@ long long flowerGame(int n, int m) {
     return ans;
 }
 
+/**
+ * 排序 + 枚举 (技巧)
+ * https://leetcode.cn/problems/find-the-number-of-ways-to-place-people-ii/description/
+ * @param p
+ * @return
+ */
 int numberOfPairs(vector<vector<int>>& p) {
     int n = p.size();
     int ans = 0;
@@ -6386,9 +6392,9 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
+
 int main() {
-    map<string,int> mp;
-    mp["a"] = 1;
+
     return 0;
 }
 
