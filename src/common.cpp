@@ -181,3 +181,47 @@ vector<long long> diff_template(int n, int x, int y) {
     }
     return ans;
 }
+
+/**
+ * 离散化 + 二维差分
+ * @param f
+ * @return
+ */
+int fieldOfGreatestBlessing(vector<vector<int>>& f) {
+    int ans = 0;
+    vector<long> x,y;
+    for (auto& f1 : f) {
+        // 为离散化做准备
+        x.emplace_back((long)f1[0] * 2 + (long)f1[2]);
+        x.emplace_back((long)f1[0] * 2 - (long)f1[2]);
+        y.emplace_back((long)f1[1] * 2 + (long)f1[2]);
+        y.emplace_back((long)f1[1] * 2 - (long)f1[2]);
+    }
+    // 为离散化做准备，有序性
+    sort(x.begin(), x.end());
+    sort(y.begin(), y.end());
+    int n = x.size();
+    vector<vector<int>> diff(n + 2, vector<int>(n + 2));
+    for (auto& f1 : f) {
+        // 离散化（以下标顺序作为参数）
+        int x1 = lower_bound(x.begin(),x.end(), (long)f1[0] * 2 - (long)f1[2]) - x.begin(); // 下标做差
+        int x2 = lower_bound(x.begin(),x.end(), (long)f1[0] * 2 + (long)f1[2]) - x.begin();
+        int y1 = lower_bound(y.begin(), y.end(), (long)f1[1] * 2 - (long)f1[2]) - y.begin();
+        int y2 = lower_bound(y.begin(), y.end(), (long)f1[1] * 2 + (long)f1[2]) - y.begin();
+        // 二维差分
+        ++diff[1 + x1][1 + y1];
+        --diff[2 + x2][1 + y1];
+        --diff[1 + x1][2 + y2];
+        ++diff[2 + x2][2 + y2];
+    }
+    // 二维差分
+    int sum_d = 0;
+    for (int i = 1; i < n + 2; ++i) {
+        for (int j = 1; j < n + 2; ++j) {
+            sum_d = (diff[i - 1][j] + diff[i][j - 1] - diff[i - 1][j - 1] + diff[i][j]);
+            diff[i][j] = sum_d; // 需要更新 diff[i][j]
+            ans = max(ans, sum_d);
+        }
+    }
+    return ans;
+}

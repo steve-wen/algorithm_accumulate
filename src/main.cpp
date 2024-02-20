@@ -2148,40 +2148,6 @@ int maxNonDecreasingLength(vector<int>& nums1, vector<int>& nums2) {
     return ans;
 }
 
-int fieldOfGreatestBlessing(vector<vector<int>>& f) {
-    int ans = 0;
-    vector<long> x,y;
-    for (auto& f1 : f) {
-        x.emplace_back((long)f1[0] * 2 + (long)f1[2]);
-        x.emplace_back((long)f1[0] * 2 - (long)f1[2]);
-        y.emplace_back((long)f1[1] * 2 + (long)f1[2]);
-        y.emplace_back((long)f1[1] * 2 - (long)f1[2]);
-    }
-    sort(x.begin(), x.end());
-    sort(y.begin(), y.end());
-    int n = x.size();
-    vector<vector<int>> diff(n + 2, vector<int>(n + 2));
-    for (auto& f1 : f) {
-        int x1 = lower_bound(x.begin(),x.end(), (long)f1[0] * 2 - (long)f1[2]) - x.begin();
-        int x2 = lower_bound(x.begin(),x.end(), (long)f1[0] * 2 + (long)f1[2]) - x.begin();
-        int y1 = lower_bound(y.begin(), y.end(), (long)f1[1] * 2 - (long)f1[2]) - y.begin();
-        int y2 = lower_bound(y.begin(), y.end(), (long)f1[1] * 2 + (long)f1[2]) - y.begin();
-        ++diff[1 + x1][1 + y1];
-        --diff[2 + x2][1 + y1];
-        --diff[1 + x1][2 + y2];
-        ++diff[2 + x2][2 + y2];
-    }
-    int dSum = 0;
-    for (int i = 1; i < n + 2; ++i) {
-        for (int j = 1; j < n + 2; ++j) {
-            dSum = (diff[i - 1][j] + diff[i][j - 1] - diff[i - 1][j - 1] + diff[i][j]);
-            diff[i][j] = dSum;
-            ans = max(ans, dSum);
-        }
-    }
-    return ans;
-}
-
 string shiftingLetters(string s, vector<vector<int>>& vec) {
     int n = s.size(), dSum = 0;
     vector<int> diff(n + 1);
@@ -6391,7 +6357,6 @@ int numberOfPairs(vector<vector<int>>& p) {
     }
     return ans;
 }
-
 
 int main() {
 
