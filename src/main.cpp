@@ -6394,7 +6394,7 @@ public:
                 cur->children[c-'a'] = new Node1();
             }
             cur = cur->children[c-'a'];
-            if (z[n-i-1] == i+1) {
+            if (z[n-i-1] == i+1) { // 此处注意 ？
                 cur->cnt++;
             }
         }
@@ -6432,9 +6432,72 @@ public:
 };
 
 
+/**
+ * 分数不用记忆化？ 分数用 3 种情况(3 个下标来表示？)
+ * @param a
+ * @return
+ */
+int maxOperations(vector<int>& a) {
+    int n = a.size();
+    int b1 = a[0]+a[1], b2 = a[0]+a[n-1], b3 = a[n-2]+a[n-1];
+    int memo1[n][n], memo2[n][n], memo3[n][n];
+    memset(memo1,-1,sizeof(memo1));
+    memset(memo2,-1,sizeof(memo2));
+    memset(memo3,-1,sizeof(memo3));
+    function<int(int,int)> dfs1 = [&](int i, int j){
+        if (abs((j-i)) < 1 || i >= j) return 0;
+        if (memo1[i][j] != -1) return memo1[i][j];
+        int& res = memo1[i][j];
+        res = 0;
+        if (a[i] + a[i+1] == b1) {
+            res = 1+dfs1(i+2,j);
+        }
+        if (a[i] + a[j] == b1) {
+            res = max(res, 1+dfs1(i+1,j-1));
+        }
+        if (a[j-1]+a[j] == b1) {
+            res = max(res, 1+dfs1(i,j-2));
+        }
+        return res;
+    };
+    function<int(int,int)> dfs2 = [&](int i, int j){
+        if (abs((j-i)) < 1 || i >= j) return 0;
+        if (memo2[i][j] != -1) return memo2[i][j];
+        int& res = memo2[i][j];
+        res = 0;
+        if (a[i] + a[i+1] == b2) {
+            res = 1+dfs2(i+2,j);
+        }
+        if (a[i] + a[j] == b2) {
+            res = max(res, 1+dfs2(i+1,j-1));
+        }
+        if (a[j-1]+a[j] == b2) {
+            res = max(res, 1+dfs2(i,j-2));
+        }
+        return res;
+    };
+    function<int(int,int)> dfs3 = [&](int i, int j){
+        if (abs((j-i)) < 1 || i >= j) return 0;
+        if (memo3[i][j] != -1) return memo3[i][j];
+        int& res = memo3[i][j];
+        res = 0;
+        if (a[i] + a[i+1] == b3) {
+            res = 1+dfs3(i+2,j);
+        }
+        if (a[i] + a[j] == b3) {
+            res = max(res, 1+dfs3(i+1,j-1));
+        }
+        if (a[j-1]+a[j] == b3) {
+            res = max(res, 1+dfs3(i,j-2));
+        }
+        return res;
+    };
+    int ans = 0;
+    ans = max(1+dfs1(2,n-1), max(1+dfs2(1,n-2),1+dfs3(0,n-3)));
+    return ans;
+}
 
 int main() {
-
     return 0;
 }
 
