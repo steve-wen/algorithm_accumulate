@@ -12,6 +12,7 @@ using namespace std;
 
 /**
  * LCS 最长公共子序列
+ * 时间复杂度 O(n^2)
  * https://leetcode.cn/problems/longest-common-subsequence/description/
  * @param s1
  * @param s2
@@ -37,6 +38,7 @@ int longestCommonSubsequence(string s1, string s2) {
 
 /**
  * LIS 最长递增子序列
+ * 时间复杂度 O(n^2)
  * 枚举选哪个 , memo 记忆
  * https://leetcode.cn/problems/longest-increasing-subsequence/description/
  * @param
@@ -65,8 +67,16 @@ int lengthOfLIS(vector<int>& a) {
     return ans+1;
 }
 
+/**
+ * 与最长递增子序列类似
+ * 时间复杂度 O(nlogn)
+ * 枚举选哪个 + 有序性 (lower_bound 二分的运用)
+ * https://leetcode.cn/problems/maximize-consecutive-elements-in-an-array-after-modification/description/
+ * @param a
+ * @return
+ */
 int maxSelectedElements(vector<int>& a) {
-    int n = 0, ans = 0;
+    int n = a.size(), ans = 0;
     sort(a.begin(), a.end());
     int memo[100001][2];
     memset(memo,-1,sizeof(memo));
@@ -75,7 +85,7 @@ int maxSelectedElements(vector<int>& a) {
         if (memo[i][j] != -1) return memo[i][j];
         int& res = memo[i][j];
         res = 0;
-        int k = lower_bound(a.begin()+i,a.end(),a[i]+j) - a.begin();
+        int k = lower_bound(a.begin()+i+1,a.end(),a[i]+j) - a.begin();
         if (k >= n) return 0;
         if (a[k] == a[i]+j) {
             res = dfs(k,1)+1;
@@ -91,3 +101,31 @@ int maxSelectedElements(vector<int>& a) {
     }
     return ans+1;
 }
+
+/**
+ * LPS 最长回文子序列
+ * 时间复杂度 O(n^2)
+ * https://leetcode.cn/problems/longest-palindromic-subsequence/submissions/505786924/
+ * @param
+ * @param
+ * @return
+ */
+int longestPalindromeSubseq(string s) {
+    int n = s.size();
+    int memo[1001][1001];
+    memset(memo,-1,sizeof(memo));
+    function<int(int, int)> dfs = [&](int i, int j){
+        if (i ==j) return 1;
+        if (i > j) return 0;
+        if (memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        if (s[i] == s[j]) {
+            res = dfs(i+1,j-1)+2;
+        } else {
+            res = max(dfs(i+1,j), dfs(i,j-1));
+        }
+        return res;
+    };
+    return dfs(0,n-1);
+}
+
