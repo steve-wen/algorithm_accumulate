@@ -601,49 +601,6 @@ vector<int> shortestAlternatingPaths(int n, vector<vector<int>>& r, vector<vecto
 }
 
 /**
- * 多源 bfs, 模板
- * @param w
- * @return
- */
-vector<vector<int>> highestPeak(vector<vector<int>>& w) {
-    int m = w.size(), n = w[0].size();
-    // 遍历方向准备
-    vector<vector<int>> vec{{-1,0},{1,0},{0,-1},{0,1}};
-    // 标记
-    vector<vector<int>> mark(m, vector<int>(n));
-    // 初始化 起始点，mark, 距离 d
-    queue<pair<int,int>> q;
-    for (int i = 0; i < m; ++i) {
-        for (int j = 0; j < n; ++j) {
-            if (w[i][j]) {
-                q.emplace(i,j);
-                w[i][j] = 0;
-                mark[i][j] = 1;
-            }
-        }
-    }
-    int d = 1;
-    // 遍历 bfs
-    while (!q.empty()){
-        for (int i = q.size(); i; --i){
-            auto [j, k] = q.front();
-            q.pop();
-            for (auto& vec1:vec) {
-                auto j1 = j+vec1[0], k1 = k+vec1[1];
-                if (j1 >= 0 && j1 < m && k1 >= 0 && k1 < n && !mark[j1][k1]) {
-                    q.emplace(j1,k1);
-                    w[j1][k1] = d;
-                    mark[j1][k1] = 1;
-                }
-            }
-
-        }
-        ++d;
-    }
-    return w;
-}
-
-/**
  * bfs : 一次遍历， 拓扑排序， 注意 q 是 quiet 数组， q1 是队列
  * @param r
  * @param q
