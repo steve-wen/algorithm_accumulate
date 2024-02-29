@@ -338,3 +338,45 @@ int findTheCity_1(int n, vector<vector<int>>& e, int d) {
     return ans;
 }
 
+/**
+ * 网格图: 循环遍历 + 记忆化搜索(dfs)
+ * 时间复杂度 O(m*n)
+ * https://leetcode.cn/problems/number-of-increasing-paths-in-a-grid/description/
+ * @param g
+ * @return
+ */
+int countPaths(vector<vector<int>>& g) {
+    int m = g.size(), n = g[0].size(), mod = (int)1e9 +7;
+    // 遍历方向准备
+    vector<vector<int>> vec{{-1,0},{1,0},{0,-1},{0,1}};
+    int cnt = m*n;
+
+    vector<vector<int>> mark(m, vector<int>(n));
+
+    int memo[m][n];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int)> dfs = [&](int i, int j){
+        if (memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        res = 0;
+        for (auto &vec1: vec) {
+            auto i1 = i + vec1[0], j1 = j + vec1[1];
+            if (i1 >= 0 && i1 < m && j1 >= 0 && j1 < n && !mark[i1][j1] && g[i1][j1] > g[i][j]) {
+                mark[i1][j1] = 1;
+                res = (res +(dfs(i1,j1)+1)) % mod;
+                mark[i1][j1] = 0;
+            }
+        }
+        return res;
+    };
+    for (int i = 0; i < m;++i) {
+        for (int j = 0; j < n; ++j) {
+            mark[i][j] = 1;
+            cnt = (cnt + dfs(i,j))%mod;
+            mark[i][j] = 0;
+        }
+    }
+    return cnt;
+}
+
+
