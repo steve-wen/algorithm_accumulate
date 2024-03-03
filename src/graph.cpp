@@ -353,7 +353,7 @@ int countPaths(vector<vector<int>>& g) {
 
     vector<vector<int>> mark(m, vector<int>(n));
 
-    int memo[m][n];
+    int memo[101][101];
     memset(memo,-1,sizeof(memo));
     function<int(int,int)> dfs = [&](int i, int j){
         if (memo[i][j] != -1) return memo[i][j];

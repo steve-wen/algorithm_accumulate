@@ -295,7 +295,7 @@ public:
     void maintain(int o) {
         mx[o] = max(mx[o * 2],mx[o * 2 + 1]);
     }
-    // 初始化
+    // 初始化 o 从 1 开始
     void build(vector<int> &a, int o, int l, int r) {
         // 边界条件
         if (l == r) {
@@ -310,7 +310,7 @@ public:
         maintain(o);
     }
 
-    // 线段树上二分 获取下标 ind
+    // 线段树上二分 获取下标 ind, L是左边界
     int index(int o, int l, int r, int L, int val) {
         if (mx[o] <= val) return 5e4+2;
         if (l == r) return l;
@@ -331,7 +331,7 @@ public:
             int j = min(q[i][0],q[i][1]), k =  max(q[i][0],q[i][1]);
             if (j == k || h[j] < h[k]) ans[i] = k;
             else {
-                auto ind = index(1,1,n,k+2,h[j]);
+                auto ind = index(1,1,n,k+2,h[j]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
                 if (ind != 5e4+2) ans[i] = ind-1;
             }
         }

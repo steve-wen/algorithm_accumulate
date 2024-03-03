@@ -1326,7 +1326,185 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
+/**
+ * 并查集 注意 连通
+ * https://leetcode.cn/problems/find-all-people-with-secret/description/
+ * @param n
+ * @param m
+ * @param f
+ * @return
+ */
+//vector<int> findAllPeople(int n, vector<vector<int>>& m, int f) {
+//    sort(m.begin(),m.end(),[&](vector<int> a, vector<int> b){return a[2] < b[2];});
+//    set<int> st;
+//    st.emplace(0);
+//    st.emplace(f);
+//    int n1 = m.size();
+//    for (int i = 0; i < n1; ++i) {
+//        vector<int> a{m[i][0], m[i][1]};
+//        while(i <n-1 && m[i+1][2] == m[i][2]) {
+//            ++i;
+//            a.emplace_back(m[i][0]);
+//            a.emplace_back(m[i][1]);
+//        }
+//
+//    }
+//
+//}
+
+vector<int> resultArray_1(vector<int>& a) {
+    int n = a.size();
+    vector<int> a1, a2;
+    a1.emplace_back(a[0]);
+    a2.emplace_back(a[1]);
+    for (int i = 2; i < n; ++i) {
+        auto a3 = a[i];
+        if (a1.back() > a2.back()){
+            a1.emplace_back(a3);
+        } else {
+            a2.emplace_back(a3);
+        }
+    }
+    vector<int> res = a1;
+    for (auto& a3 : a2) {
+        res.emplace_back(a3);
+    }
+    return res;
+}
+
+int countSubmatrices(vector<vector<int>>& g, int k) {
+    int m = g.size(), n = g[0].size(), ans = 0;
+    vector<vector<int>> pre(m+2,vector<int>(n+2));
+    for (int i = 1; i < m + 1; ++i) {
+        for (int j = 1; j < n + 1; ++j) {
+            pre[i][j] = ( pre[i - 1][j] +  pre[i][j - 1] -  pre[i - 1][j - 1] +  g[i-1][j-1]);
+            ans += pre[i][j] <= k;
+        }
+    }
+    return ans;
+}
+
+int minimumOperationsToWriteY(vector<vector<int>>& g) {
+    int ans = 0,n = g.size();
+    vector<int> cnt1(3), cnt2(3);
+    for (int i =0; i <= n/2; ++i) {
+        cnt1[g[i][i]]++;
+    }
+    for (int i =0; i < n/2; ++i) {
+        cnt1[g[i][n-1-i]]++;
+    }
+    for (int i =n/2+1; i < n; ++i) {
+        cnt1[g[i][n/2]]++;
+    }
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            cnt2[g[i][j]]++;
+        }
+    }
+    cnt2[0] -= cnt1[0];
+    cnt2[1] -= cnt1[1];
+    cnt2[2] -= cnt1[2];
+    int ind1 = 0, mx1 = 0, ind2 = 0, mx2 = 0;
+    for (int i = 0; i < 3; ++i) {
+        if (cnt1[i] > mx1) {
+            mx1 = cnt1[i];
+            ind1 = i;
+        }
+        if (cnt2[i] > mx2) {
+            mx2 = cnt2[i];
+            ind2 = i;
+        }
+    }
+    sort(cnt1.begin(),cnt1.end());
+    sort(cnt2.begin(),cnt2.end());
+    ans += (cnt1[0]+cnt1[1]+cnt2[0]+cnt2[1]);
+    if (ind1 == ind2) {
+        ans += min(mx1-cnt1[1],mx2-cnt2[1]);
+    }
+    return ans;
+}
+
+/**
+ * map计数有误 注意
+ * 注意用线段树
+ * @param a
+ * @return
+ */
+vector<int> resultArray(vector<int>& a) {
+    int n = a.size();
+    map<int,int> p1,p2;
+    vector<int> a1,a2;
+    multiset<int> st1, st2;
+    st1.emplace(a[0]);
+    st2.emplace(a[1]);
+    a1.emplace_back(a[0]);
+    a2.emplace_back(a[1]);
+    p1[a[0]] =1;
+    p2[a[1]] =1;
+
+    for (int i = 2; i < n; ++i) {
+        auto a3 = a[i];
+        int cnt1 = 0, cnt2 = 0;
+        if (st1.upper_bound(a3) == st1.end()) {
+            cnt1 = 0;
+        } else {
+            if (st1.upper_bound(a3) == st1.begin()) {
+                cnt1 = st1.size();
+            } else {
+                cnt1 = st1.size()-p1[*(--(st1.upper_bound(a3)))];
+            }
+        }
+        if (st2.upper_bound(a3) == st2.end()) {
+            cnt2 = 0;
+        } else {
+            if (st2.upper_bound(a3) == st2.begin()) {
+                cnt2 = st2.size();
+            } else {
+                cnt2 = st2.size()-p2[*(--(st2.upper_bound(a3)))];
+            }
+        }
+        if (cnt1 > cnt2) {
+            a1.emplace_back(a3);
+            if (p1[a3] > 0) p1[a3]++;
+            else {
+                p1[a3] = p1[*(--st1.lower_bound(a3))]+1;
+            }
+            st1.emplace(a3);
+
+        } else if (cnt1 < cnt2){
+            a2.emplace_back(a3);
+            if (p2[a3] > 0) p2[a3]++;
+            else {
+                p2[a3] = p2[*(--st2.lower_bound(a3))]+1;
+            }
+            st2.emplace(a3);
+        } else if (cnt1 == cnt2 && st1.size() > st2.size()) {
+            a2.emplace_back(a3);
+            if (p2[a3] > 0) p2[a3]++;
+            else {
+                p2[a3] = p2[*(--st2.lower_bound(a3))]+1;
+            }
+            st2.emplace(a3);
+        } else {
+            a1.emplace_back(a3);
+            if (p1[a3] > 0) p1[a3]++;
+            else {
+                p1[a3] = p1[*(--st1.lower_bound(a3))]+1;
+            }
+            st1.emplace(a3);
+        }
+    }
+    vector<int> res = a1;
+    for (auto& a3 : a2) {
+        res.emplace_back(a3);
+    }
+    return res;
+}
+
 int main() {
+    vector<int> g{26,65,84,14,30};
+    auto tmp =resultArray(g);
+
     return 0;
 }
 
