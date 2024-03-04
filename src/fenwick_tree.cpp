@@ -172,7 +172,52 @@ vector<int> countSmaller(vector<int>& a) {
     return ans;
 }
 
+class Fenwick_2 {
+    vector<int> tree;
+
+public:
+    Fenwick_2(int n) : tree(n) {}
+
+    // 把下标为 i 的元素增加 1
+    // 每次 O(logn)
+    void add(int i) {
+        while (i < tree.size()) {
+            tree[i] += 1;
+            i += i & -i;
+        }
+    }
+
+    // 返回下标在 [1,i] 的元素之和
+    // 每次 O(logn)
+    int pre(int i) {
+        int res = 0;
+        while (i > 0) {
+            res += tree[i];
+            i &= i - 1;
+        }
+        return res;
+    }
+};
+
 long long numberOfPairs(vector<int>& a1, vector<int>& a2, int d) {
+    long long ans = 0;
+    int n = a1.size();
+    vector<int> a(n);
+    for (int i =0; i < n; ++i) {
+        a[i] = a1[i]-a2[i];
+    }
+    auto b = a;
+    ranges::sort(b);
+    b.erase(unique(b.begin(), b.end()), b.end());
+    int m = b.size();
 
-
+    // 树状数组
+    Fenwick_2 t1(m + 1);
+    for (int i = 0; i < n; ++i) {
+        int x = a[i]+d;
+        int v = ranges::lower_bound(b, x) - b.begin()+1;
+        ans += (long long)t1.pre(v);
+        t1.add(ranges::lower_bound(b, a[i]) - b.begin() + 1);
+    }
+    return ans;
 }
