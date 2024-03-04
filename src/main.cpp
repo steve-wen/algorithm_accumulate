@@ -1424,86 +1424,7 @@ int minimumOperationsToWriteY(vector<vector<int>>& g) {
     return ans;
 }
 
-/**
- * map计数有误 注意
- * 注意用线段树
- * @param a
- * @return
- */
-vector<int> resultArray(vector<int>& a) {
-    int n = a.size();
-    map<int,int> p1,p2;
-    vector<int> a1,a2;
-    multiset<int> st1, st2;
-    st1.emplace(a[0]);
-    st2.emplace(a[1]);
-    a1.emplace_back(a[0]);
-    a2.emplace_back(a[1]);
-    p1[a[0]] =1;
-    p2[a[1]] =1;
-
-    for (int i = 2; i < n; ++i) {
-        auto a3 = a[i];
-        int cnt1 = 0, cnt2 = 0;
-        if (st1.upper_bound(a3) == st1.end()) {
-            cnt1 = 0;
-        } else {
-            if (st1.upper_bound(a3) == st1.begin()) {
-                cnt1 = st1.size();
-            } else {
-                cnt1 = st1.size()-p1[*(--(st1.upper_bound(a3)))];
-            }
-        }
-        if (st2.upper_bound(a3) == st2.end()) {
-            cnt2 = 0;
-        } else {
-            if (st2.upper_bound(a3) == st2.begin()) {
-                cnt2 = st2.size();
-            } else {
-                cnt2 = st2.size()-p2[*(--(st2.upper_bound(a3)))];
-            }
-        }
-        if (cnt1 > cnt2) {
-            a1.emplace_back(a3);
-            if (p1[a3] > 0) p1[a3]++;
-            else {
-                p1[a3] = p1[*(--st1.lower_bound(a3))]+1;
-            }
-            st1.emplace(a3);
-
-        } else if (cnt1 < cnt2){
-            a2.emplace_back(a3);
-            if (p2[a3] > 0) p2[a3]++;
-            else {
-                p2[a3] = p2[*(--st2.lower_bound(a3))]+1;
-            }
-            st2.emplace(a3);
-        } else if (cnt1 == cnt2 && st1.size() > st2.size()) {
-            a2.emplace_back(a3);
-            if (p2[a3] > 0) p2[a3]++;
-            else {
-                p2[a3] = p2[*(--st2.lower_bound(a3))]+1;
-            }
-            st2.emplace(a3);
-        } else {
-            a1.emplace_back(a3);
-            if (p1[a3] > 0) p1[a3]++;
-            else {
-                p1[a3] = p1[*(--st1.lower_bound(a3))]+1;
-            }
-            st1.emplace(a3);
-        }
-    }
-    vector<int> res = a1;
-    for (auto& a3 : a2) {
-        res.emplace_back(a3);
-    }
-    return res;
-}
-
 int main() {
-    vector<int> g{26,65,84,14,30};
-    auto tmp =resultArray(g);
 
     return 0;
 }
@@ -1644,6 +1565,7 @@ int main() {
 
 /**
  * impl list :
+ * 1.树状数组，二维前缀和模板整理，并查集整理
  * 7.6 贡献法
  * 7.8 巫师的力量总和
  * 8. 莫队算法

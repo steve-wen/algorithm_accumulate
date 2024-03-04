@@ -198,8 +198,10 @@ int fieldOfGreatestBlessing(vector<vector<int>>& f) {
         y.emplace_back((long)f1[1] * 2 - (long)f1[2]);
     }
     // 为离散化做准备，有序性
-    sort(x.begin(), x.end());
-    sort(y.begin(), y.end());
+    ranges::sort(x);
+    x.erase(unique(x.begin(),x.end()),x.end());
+    ranges::sort(y);
+    y.erase(unique(y.begin(),y.end()),y.end());
     int n = x.size();
     vector<vector<int>> diff(n + 2, vector<int>(n + 2));
     for (auto& f1 : f) {
