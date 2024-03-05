@@ -1361,28 +1361,10 @@ public:
 
     // 把下标为 i 的元素增加 1 (动态更新 +1)
     // 每次 O(logn)
-    void update(int val1, int val2) {
-        while (val1 < tree.size()) {
-            tree[val1] -= 1;
-            val1 += val1 & val1;
-        }
-        while (val2 < tree.size()) {
-            tree[val2] += 1;
-            val2 += val2 & -val2;
-        }
-    }
-
-    // 常数优化：O(n) 建树
-    // https://oi-wiki.org/ds/fenwick/#tricks
-    void init(vector<int>& b) { // len(tree) = len(a) + 1
-        for (int i = 0; i < b.size(); ++i){
-            int v = b[i];
-            int i0 = i+1;
-            tree[i0] += v;
-            int j = i0 + i0&-i0;
-            if ( j < tree.size()) {
-                tree[j] += tree[i0];
-            }
+    void add(int i, int val) {
+        while (i < tree.size()) {
+            tree[i] += val;
+            i += i & -i;
         }
     }
 
@@ -1400,44 +1382,39 @@ public:
     }
 };
 
-vector<int> kth(vector<int> &nums, vector<vector<int>>& change, int k) {
+vector<int> kth(vector<int> &nums, int k) {
     // 离散化 (以下标作为比较对象)
     int n = nums.size();
     auto sorted = nums;
+    auto b = nums;
     ranges::sort(sorted);
+    ranges::sort(b);
     sorted.erase(unique(sorted.begin(), sorted.end()), sorted.end());
     int m = sorted.size();
 
-    vector<int> a,b(m+1);
     // 树状数组
     Fenwick_kth t(m + 1);
-    for (auto& a1 : nums) {
-        auto ind = ranges::lower_bound(sorted, a1) - sorted.begin();
-        b[ind]++;
+    vector<int> ans(n);
+    for (int i =0; i < n; ++i) {
+        auto a1 = nums[i];
+        auto ind = ranges::lower_bound(sorted, a1) - sorted.begin()+1;
+        t.add(ind,1);
+        if (k > i+1) {
+            ans[i] = -1;
+        } else {
+            ans[i] = b[t.kth(k)-1];
+        }
     }
-    t.init(b);
-    vector<int> ans(change.size());
-    for (int i = 0; i < change.size(); i++) {
-        auto c = change[i];
-        int x1 = nums[c[0]], x2 = c[1];
-        int v1 = ranges::lower_bound(sorted, x1) - sorted.begin() + 1;
-        int v2 = ranges::lower_bound(sorted, x2) - sorted.begin() + 1;
-        t.update(v1,v2);
-        ans[i] = t.kth(k);
-    }
+
     return ans;
 }
 
 int main() {
-    vector<int> nums{8,6,3,4};
-    vector<vector<int>> change{{0,2},{2,5},{3,6},{1,4},{0,8}};
-    auto ans = kth(nums,change,2);
+    vector<int> nums{8,6,3,4,2,1,2};
+    auto ans = kth(nums,1);
     return 0;
 }
 
-//数对 (a,b) 由整数 a 和 b 组成，其数对距离定义为 a 和 b 的绝对差值。
-//
-//给你一个整数数组 nums 和一个整数 k ，数对由 nums[i] 和 nums[j] 组成且满足 0 <= i < j < nums.length 。返回 所有数对距离中 第 k 小的数对距离。
 
 /**
  * luogu
@@ -1575,7 +1552,8 @@ int main() {
 
 /**
  * impl list :
- * 1.并查集整理
+ * 1.并查集整理 kth?
+ * 2. 主席树？
  * 7.6 贡献法
  * 7.8 巫师的力量总和
  * 8. 莫队算法
