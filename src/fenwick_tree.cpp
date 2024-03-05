@@ -10,6 +10,10 @@ using namespace std;
  * 树状数组 (动态前缀和)
  * 解决问题 : 1.求数组中大于/小于某个数的个数,(且该数组在动态更新) : 离散化排序 + 树状数组
             2. 求数组的前缀和/区间和 (与下标有关)：初始化树状数组(for 循环 update) + 树状数组
+   与线段树区别 : 线段树 : 一个数组， 更新一个子数组的值（都加上一个数，把子数组内的元素取反，...）
+               查询一个子数组的值（求和，求最大值）
+
+   下标从 1 开始
  * https://leetcode.cn/problems/distribute-elements-into-two-arrays-ii/description/
  * @param a
  * @return
@@ -20,7 +24,7 @@ class Fenwick {
 public:
     Fenwick(int n) : tree(n) {}
 
-    // 把下标为 i 的元素增加 1
+    // 把下标为 i 的元素增加 1 (动态更新 +1)
     // 每次 O(logn)
     void add(int i) {
         while (i < tree.size()) {
@@ -172,6 +176,11 @@ vector<int> countSmaller(vector<int>& a) {
     return ans;
 }
 
+/**
+ * 树状数组
+ * 注意 lower_bound, upper_bound 是否 +1 的合理运用
+ * https://leetcode.cn/problems/number-of-pairs-satisfying-inequality/description/
+ */
 class Fenwick_2 {
     vector<int> tree;
 
@@ -212,12 +221,67 @@ long long numberOfPairs(vector<int>& a1, vector<int>& a2, int d) {
     int m = b.size();
 
     // 树状数组
-    Fenwick_2 t1(m + 1);
+    Fenwick_2 t1(m + 2);
     for (int i = 0; i < n; ++i) {
         int x = a[i]+d;
-        int v = ranges::lower_bound(b, x) - b.begin()+1;
+        int v = ranges::upper_bound(b, x) - b.begin();
         ans += (long long)t1.pre(v);
         t1.add(ranges::lower_bound(b, a[i]) - b.begin() + 1);
     }
     return ans;
 }
+
+/**
+ * 差分树状数组
+ * 支持区间修改, 区间查询
+ * O(logn)
+ */
+class Fenwick_Diff {
+
+public:
+    vector<vector<int>> tree;
+    Fenwick_Diff(int n) : tree(n+1,vector<int>(2)) {}
+
+    // _add
+    void _add(int i, int val) {
+        int iv = i*val;
+        while (i < tree.size()) {
+            tree[i][0] += val;
+            tree[i][1] += iv;
+            i += i & -i;
+        }
+    }
+
+    // a[l] 到 a[r] 增加 val
+    // 1<=l<=r<=n
+    void add(int l, int r, int val) {
+        _add(l,val);
+        _add(r+1,-val);
+    }
+
+    // 求前缀和 a[1] + ... + a[i]
+    // 1<=i<=n
+    int pre(int i) {
+        int s0 = 0, s1 = 0, i0 =i;
+        while (i > 0) {
+            s0 += tree[i][0];
+            s1 += tree[i][1];
+            i &= i - 1;
+        }
+        return (i0+1)*s0 - s1;
+    }
+
+    // 求区间和 a[l] + ... + a[r]
+    // 1<=l<=r<=n
+    int query(int l, int r) {
+        return pre(r)-pre(l-1);
+    }
+};
+
+void test_Fenwick_Diff(vector<int>& a, int l, int r, int val, int& ans){
+    int n = a.size();
+    Fenwick_Diff t(n+1);
+    t.add(l+1,r+1,val);
+    ans = t.query(l+1,r+1);
+}
+

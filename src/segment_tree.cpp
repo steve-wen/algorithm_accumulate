@@ -7,7 +7,7 @@ using namespace std;
 */
 
 /**
- * lazy segment tree : lazy 线段树  (本质是递归)
+ * lazy segment tree : lazy 线段树  (本质是递归) (区间更新 + 区间查询)
  *  0. 解决问题 ：一个数组， 更新一个子数组的值（都加上一个数，把子数组内的元素取反，...）
  *              查询一个子数组的值（求和，求最大值）
  *  1. 两大思想：
@@ -20,6 +20,8 @@ using namespace std;
  *     如果这个值 != 0 表示更新操作在这个区间停住了， 不继续递归更新子区间了
  *
  *     如果后面又来了一个更新，破坏了有 lazy tag 的区间，那么这个区间就得继续递归更新了
+ *
+ *  3. 下标从 1 开始
  *
  *  to_do 作用理解？
  *
@@ -206,7 +208,7 @@ public:
 };
 
 /**
- * 线段树， segment tree
+ * 线段树， segment tree (单点更新 + 区间查询)
  * lc.no.2286
  */
 class BookMyShow {

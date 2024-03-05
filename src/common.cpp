@@ -227,3 +227,21 @@ int fieldOfGreatestBlessing(vector<vector<int>>& f) {
     }
     return ans;
 }
+
+/**
+ * 二维前缀和模板
+ * @param g
+ * @param k
+ * @return
+ */
+int countSubmatrices(vector<vector<int>>& g, int k) {
+    int m = g.size(), n = g[0].size(), ans = 0;
+    vector<vector<int>> pre(m+2,vector<int>(n+2));
+    for (int i = 1; i < m + 1; ++i) {
+        for (int j = 1; j < n + 1; ++j) {
+            pre[i][j] = ( pre[i - 1][j] +  pre[i][j - 1] -  pre[i - 1][j - 1] +  g[i-1][j-1]);
+            ans += pre[i][j] <= k;
+        }
+    }
+    return ans;
+}

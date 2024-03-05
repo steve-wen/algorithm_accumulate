@@ -8,7 +8,7 @@ using ll = long long;
 #define se second
 #define fi first
 #define tostring(a) (ostringstream() << a).str()
-#define endl "/n"
+//#define endl "/n"
 
 typedef pair<int,int> pii;
 typedef pair<long,long> pll;
@@ -1352,82 +1352,92 @@ int numberOfPairs(vector<vector<int>>& p) {
 //
 //}
 
-vector<int> resultArray_1(vector<int>& a) {
-    int n = a.size();
-    vector<int> a1, a2;
-    a1.emplace_back(a[0]);
-    a2.emplace_back(a[1]);
-    for (int i = 2; i < n; ++i) {
-        auto a3 = a[i];
-        if (a1.back() > a2.back()){
-            a1.emplace_back(a3);
-        } else {
-            a2.emplace_back(a3);
-        }
-    }
-    vector<int> res = a1;
-    for (auto& a3 : a2) {
-        res.emplace_back(a3);
-    }
-    return res;
-}
 
-int countSubmatrices(vector<vector<int>>& g, int k) {
-    int m = g.size(), n = g[0].size(), ans = 0;
-    vector<vector<int>> pre(m+2,vector<int>(n+2));
-    for (int i = 1; i < m + 1; ++i) {
-        for (int j = 1; j < n + 1; ++j) {
-            pre[i][j] = ( pre[i - 1][j] +  pre[i][j - 1] -  pre[i - 1][j - 1] +  g[i-1][j-1]);
-            ans += pre[i][j] <= k;
-        }
-    }
-    return ans;
-}
+class Fenwick_kth {
+    vector<int> tree;
 
-int minimumOperationsToWriteY(vector<vector<int>>& g) {
-    int ans = 0,n = g.size();
-    vector<int> cnt1(3), cnt2(3);
-    for (int i =0; i <= n/2; ++i) {
-        cnt1[g[i][i]]++;
-    }
-    for (int i =0; i < n/2; ++i) {
-        cnt1[g[i][n-1-i]]++;
-    }
-    for (int i =n/2+1; i < n; ++i) {
-        cnt1[g[i][n/2]]++;
-    }
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            cnt2[g[i][j]]++;
+public:
+    Fenwick_kth(int n) : tree(n) {}
+
+    // 把下标为 i 的元素增加 1 (动态更新 +1)
+    // 每次 O(logn)
+    void update(int val1, int val2) {
+        while (val1 < tree.size()) {
+            tree[val1] -= 1;
+            val1 += val1 & val1;
+        }
+        while (val2 < tree.size()) {
+            tree[val2] += 1;
+            val2 += val2 & -val2;
         }
     }
-    cnt2[0] -= cnt1[0];
-    cnt2[1] -= cnt1[1];
-    cnt2[2] -= cnt1[2];
-    int ind1 = 0, mx1 = 0, ind2 = 0, mx2 = 0;
-    for (int i = 0; i < 3; ++i) {
-        if (cnt1[i] > mx1) {
-            mx1 = cnt1[i];
-            ind1 = i;
-        }
-        if (cnt2[i] > mx2) {
-            mx2 = cnt2[i];
-            ind2 = i;
+
+    // 常数优化：O(n) 建树
+    // https://oi-wiki.org/ds/fenwick/#tricks
+    void init(vector<int>& b) { // len(tree) = len(a) + 1
+        for (int i = 0; i < b.size(); ++i){
+            int v = b[i];
+            int i0 = i+1;
+            tree[i0] += v;
+            int j = i0 + i0&-i0;
+            if ( j < tree.size()) {
+                tree[j] += tree[i0];
+            }
         }
     }
-    sort(cnt1.begin(),cnt1.end());
-    sort(cnt2.begin(),cnt2.end());
-    ans += (cnt1[0]+cnt1[1]+cnt2[0]+cnt2[1]);
-    if (ind1 == ind2) {
-        ans += min(mx1-cnt1[1],mx2-cnt2[1]);
+
+    // 权值树状数组查询第 k 小
+    int kth(int k) {
+        int sum = 0, x = 0;
+        for (int i = log2(tree.size()); ~i; --i) {
+            x += 1 << i;                    // 尝试扩展
+            if (x >= tree.size() || sum + tree[x] >= k)  // 如果扩展失败
+                x -= 1 << i;
+            else
+                sum += tree[x];
+        }
+        return x + 1;
+    }
+};
+
+vector<int> kth(vector<int> &nums, vector<vector<int>>& change, int k) {
+    // 离散化 (以下标作为比较对象)
+    int n = nums.size();
+    auto sorted = nums;
+    ranges::sort(sorted);
+    sorted.erase(unique(sorted.begin(), sorted.end()), sorted.end());
+    int m = sorted.size();
+
+    vector<int> a,b(m+1);
+    // 树状数组
+    Fenwick_kth t(m + 1);
+    for (auto& a1 : nums) {
+        auto ind = ranges::lower_bound(sorted, a1) - sorted.begin();
+        b[ind]++;
+    }
+    t.init(b);
+    vector<int> ans(change.size());
+    for (int i = 0; i < change.size(); i++) {
+        auto c = change[i];
+        int x1 = nums[c[0]], x2 = c[1];
+        int v1 = ranges::lower_bound(sorted, x1) - sorted.begin() + 1;
+        int v2 = ranges::lower_bound(sorted, x2) - sorted.begin() + 1;
+        t.update(v1,v2);
+        ans[i] = t.kth(k);
     }
     return ans;
 }
 
 int main() {
-
+    vector<int> nums{8,6,3,4};
+    vector<vector<int>> change{{0,2},{2,5},{3,6},{1,4},{0,8}};
+    auto ans = kth(nums,change,2);
     return 0;
 }
+
+//数对 (a,b) 由整数 a 和 b 组成，其数对距离定义为 a 和 b 的绝对差值。
+//
+//给你一个整数数组 nums 和一个整数 k ，数对由 nums[i] 和 nums[j] 组成且满足 0 <= i < j < nums.length 。返回 所有数对距离中 第 k 小的数对距离。
 
 /**
  * luogu
@@ -1565,7 +1575,7 @@ int main() {
 
 /**
  * impl list :
- * 1.树状数组，二维前缀和模板整理，并查集整理
+ * 1.并查集整理
  * 7.6 贡献法
  * 7.8 巫师的力量总和
  * 8. 莫队算法
