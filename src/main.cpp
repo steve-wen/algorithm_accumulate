@@ -1409,6 +1409,58 @@ vector<int> kth(vector<int> &nums, int k) {
     return ans;
 }
 
+class Fenwick_Max {
+
+public:
+    vector<int> tree;
+    vector<int> a;
+    Fenwick_Max(int n) : tree(n+1) {}
+
+    // _add
+    void update(int i, int val) {
+        a[i] = val;
+        while (i < tree.size()) {
+            // 枚举受影响的区间
+            tree[i] = a[i];
+            for (int j = 1; j < (i & -i); j *= 2) {
+                tree[i] = max(tree[i], tree[i - j]);
+            }
+            i += i & -i;
+        }
+    }
+
+    // 求区间和 a[l] + ... + a[r]
+    // 1<=l<=r<=n
+    int getmax(int l, int r) {
+        int ans = 0;
+        while (r >= l) {
+            ans = max(ans, a[r]);
+            --r;
+            for (; r - (r & -r) >= l; r -= (r & -r)) {
+                // 注意，循环条件不要写成 r - lowbit(r) + 1 >= l
+                // 否则 l = 1 时，r 跳到 0 会死循环
+                ans = max(ans, tree[r]);
+            }
+        }
+        return ans;
+    }
+};
+
+vector<int> mx(vector<int> &nums) {
+    // 离散化 (以下标作为比较对象)
+    int n = nums.size();
+
+    // 树状数组
+    Fenwick_Max t(n + 1);
+    t.a.resize(n+1);
+    vector<int> ans(n);
+    for (int i =0; i < n; ++i) {
+        t.update(i+1,nums[i]);
+    }
+
+    return ans;
+}
+
 int main() {
     vector<int> nums{8,6,3,4,2,1,2};
     auto ans = kth(nums,1);
@@ -1552,7 +1604,7 @@ int main() {
 
 /**
  * impl list :
- * 1.并查集整理 kth?
+ * 1.并查集整理 kth? max
  * 2. 主席树？
  * 7.6 贡献法
  * 7.8 巫师的力量总和
