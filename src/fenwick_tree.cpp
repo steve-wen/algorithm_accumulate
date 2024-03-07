@@ -285,3 +285,74 @@ void test_Fenwick_Diff(vector<int>& a, int l, int r, int val, int& ans){
     ans = t.query(l+1,r+1);
 }
 
+/**
+ * 差分树状数组
+ * 支持单点修改, 区间查询最值
+ * https://leetcode.cn/problems/sliding-window-maximum/description/
+ * O(log^2 (n))
+ */
+class Fenwick_Max {
+
+public:
+    vector<int> tree;
+    vector<int> a;
+    Fenwick_Max(int n) : tree(n+1) {}
+
+    // _add
+    void update(int i, int val) {
+        a[i] = val;
+        while (i < tree.size()) {
+            // 枚举受影响的区间
+            tree[i] = a[i];
+            for (int j = 1; j < (i & -i); j *= 2) {
+                tree[i] = max(tree[i], tree[i - j]);
+            }
+            i += i & -i;
+        }
+    }
+
+    // 求区间和 a[l] + ... + a[r]
+    // 1<=l<=r<=n
+    int getmax(int l, int r) {
+        int ans = -1e5; // 初始值，可根据题目设置
+        while (r >= l) {
+            ans = max(ans, a[r]);
+            --r;
+            for (; r - (r & -r) >= l; r -= (r & -r)) {
+                // 注意，循环条件不要写成 r - lowbit(r) + 1 >= l
+                // 否则 l = 1 时，r 跳到 0 会死循环
+                ans = max(ans, tree[r]);
+            }
+        }
+        return ans;
+    }
+};
+
+int mx(vector<int> &nums) {
+    int n = nums.size();
+
+    // 树状数组
+    Fenwick_Max t(n);
+    t.a.resize(n+1);
+    for (int i =0; i < n; ++i) {
+        t.update(i+1,nums[i]);
+    }
+    int ans = 0;
+    ans = t.getmax(5,7);
+    return ans;
+}
+
+vector<int> maxSlidingWindow_1(vector<int>& nums, int k) {
+    int n = nums.size();
+    Fenwick_Max t(n);
+    t.a.resize(n+1);
+    for (int i =0; i < n; ++i) {
+        t.update(i+1,nums[i]);
+    }
+    vector<int> ans(n-k+1);
+    for (int i =0; i <= n-k; ++i) {
+        ans[i] = t.getmax(i+1,i+k);
+    }
+    return ans;
+}
+

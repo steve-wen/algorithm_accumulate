@@ -1370,15 +1370,14 @@ public:
 
     // 权值树状数组查询第 k 小
     int kth(int k) {
-        int sum = 0, x = 0;
-        for (int i = log2(tree.size()); ~i; --i) {
-            x += 1 << i;                    // 尝试扩展
-            if (x >= tree.size() || sum + tree[x] >= k)  // 如果扩展失败
-                x -= 1 << i;
-            else
-                sum += tree[x];
+        int x = 0;
+        for (int i = 1 << std::__lg(tree.size()-1); i; i /= 2) {
+            if (x + i <= tree.size()-1 && k > tree[x + i -1]) {
+                x += i;
+                k -= tree[x-1];
+            }
         }
-        return x + 1;
+        return x;
     }
 };
 
@@ -1405,72 +1404,12 @@ vector<int> kth(vector<int> &nums, int k) {
             ans[i] = b[t.kth(k)-1];
         }
     }
-
     return ans;
 }
 
-class Fenwick_Max {
-
-public:
-    vector<int> tree;
-    vector<int> a;
-    Fenwick_Max(int n) : tree(n+1) {}
-
-    // _add
-    void update(int i, int val) {
-        a[i] = val;
-        while (i < tree.size()) {
-            // 枚举受影响的区间
-            tree[i] = a[i];
-            for (int j = 1; j < (i & -i); j *= 2) {
-                tree[i] = max(tree[i], tree[i - j]);
-            }
-            i += i & -i;
-        }
-    }
-
-    // 求区间和 a[l] + ... + a[r]
-    // 1<=l<=r<=n
-    int getmax(int l, int r) {
-        int ans = 0;
-        while (r >= l) {
-            ans = max(ans, a[r]);
-            --r;
-            for (; r - (r & -r) >= l; r -= (r & -r)) {
-                // 注意，循环条件不要写成 r - lowbit(r) + 1 >= l
-                // 否则 l = 1 时，r 跳到 0 会死循环
-                ans = max(ans, tree[r]);
-            }
-        }
-        return ans;
-    }
-};
-
-int mx(vector<int> &nums) {
-    int n = nums.size();
-
-    // 树状数组
-    Fenwick_Max t(n + 1);
-    t.a.resize(n+1);
-    int ans = 0;
-    for (int i =0; i < n; ++i) {
-        t.update(i+1,nums[i]);
-    }
-    ans = t.getmax(5,7);
-    return ans;
-}
-
-class Solution {
-public:
-    vector<int> leftmostBuildingQueries(vector<int>& h, vector<vector<int>>& q) {
-
-
-    }
-};
 
 int main() {
-    vector<int> nums{8,6,3,4,2,1,2};
-    auto ans = mx(nums);
+
     return 0;
 }
 
@@ -1611,11 +1550,10 @@ int main() {
 
 /**
  * impl list :
- * 1.并查集整理  max 2736 题 注意
- * 2. 主席树？ <-> kth?
+ * 1.并查集整理
+ * 2. 主席树？ <-> kth? 莫队算法
  * 7.6 贡献法
  * 7.8 巫师的力量总和
- * 8. 莫队算法
  * 4. 2200 难度题
  * 5. 灵神 总结/归纳 的周赛题单（附难度分和知识点）-> 对应练习
  * 6. no.887 鸡蛋掉落
