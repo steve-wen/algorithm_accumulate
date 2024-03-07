@@ -8,8 +8,9 @@ using namespace std;
 
 /**
  * lazy segment tree : lazy 线段树  (本质是递归) (区间更新 + 区间查询)
- *  0. 解决问题 ：一个数组， 更新一个子数组的值（都加上一个数，把子数组内的元素取反，...）
- *              查询一个子数组的值（求和，求最大值）
+ *  0. 解决问题 ：1. 一个数组， 更新一个子数组的值（都加上一个数，把子数组内的元素取反，...）
+ *              2. 查询一个子数组的值（求和，求最大值）
+ *              3. index 二分; 查询 [L,R] 内第一个大于 val 的数的下标
  *  1. 两大思想：
  *      1.1 挑选 O(n) 个特殊区间，使得任意一个区间可以拆分为 O(log n) 个特殊区间 (用最近公共祖先思考)
  *          O(n) <= 4n, 分治思想， 满二叉树， 递归
@@ -313,15 +314,15 @@ public:
     }
 
     // 线段树上二分 获取下标 ind, L是左边界
-    int index(int o, int l, int r, int L, int val) {
+    int index(int o, int l, int r, int L, int R, int val) {
         if (mx[o] <= val) return 5e4+2;
         if (l == r) return l;
         int mid = (l+r)/2;
-        if (L <= mid && mx[o*2] > val) {
-            auto ind = index(o*2, l, mid,L, val);
+        if (L <= mid && mx[o*2] > val && R >= mid) {
+            auto ind = index(o*2, l, mid,L,R, val);
             if (ind != (int)5e4+2) return ind;
         }
-        return index(o*2+1, mid+1, r, L,val);
+        return index(o*2+1, mid+1, r, L,R,val);
     }
 
     vector<int> leftmostBuildingQueries(vector<int>& h, vector<vector<int>>& q) {
@@ -333,7 +334,7 @@ public:
             int j = min(q[i][0],q[i][1]), k =  max(q[i][0],q[i][1]);
             if (j == k || h[j] < h[k]) ans[i] = k;
             else {
-                auto ind = index(1,1,n,k+2,h[j]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+                auto ind = index(1,1,n,k+2,n,h[j]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
                 if (ind != 5e4+2) ans[i] = ind-1;
             }
         }

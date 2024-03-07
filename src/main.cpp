@@ -1446,24 +1446,31 @@ public:
     }
 };
 
-vector<int> mx(vector<int> &nums) {
-    // 离散化 (以下标作为比较对象)
+int mx(vector<int> &nums) {
     int n = nums.size();
 
     // 树状数组
     Fenwick_Max t(n + 1);
     t.a.resize(n+1);
-    vector<int> ans(n);
+    int ans = 0;
     for (int i =0; i < n; ++i) {
         t.update(i+1,nums[i]);
     }
-
+    ans = t.getmax(5,7);
     return ans;
 }
 
+class Solution {
+public:
+    vector<int> leftmostBuildingQueries(vector<int>& h, vector<vector<int>>& q) {
+
+
+    }
+};
+
 int main() {
     vector<int> nums{8,6,3,4,2,1,2};
-    auto ans = kth(nums,1);
+    auto ans = mx(nums);
     return 0;
 }
 
@@ -1604,8 +1611,8 @@ int main() {
 
 /**
  * impl list :
- * 1.并查集整理 kth? max
- * 2. 主席树？
+ * 1.并查集整理  max 2736 题 注意
+ * 2. 主席树？ <-> kth?
  * 7.6 贡献法
  * 7.8 巫师的力量总和
  * 8. 莫队算法
