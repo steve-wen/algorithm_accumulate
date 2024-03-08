@@ -1407,7 +1407,6 @@ vector<int> kth(vector<int> &nums, int k) {
     return ans;
 }
 
-
 int main() {
 
     return 0;

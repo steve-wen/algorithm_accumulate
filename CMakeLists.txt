@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD 20)
 file(GLOB_RECURSE CXX_SOURCE ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
 # 这里 SOURCE 表示所有用于编译成内置函数库的 cpp 文件
-set(SOURCE ${CXX_SOURCE})
+set(SOURCE ${CXX_SOURCE}
+        src/dsu.cpp)
 
 #获取所有资源文件
 #file(GLOB_RECURSE RESOURCE_FILE ${PROJECT_SOURCE_DIR}/resource/*.*)
