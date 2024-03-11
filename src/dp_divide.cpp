@@ -153,3 +153,35 @@ public:
         return dfs(k - 1,n-1, n - 1);
     }
 };
+
+/**
+ * 划分型 dp
+ * f[i][j]: 表示 第 i 次划分，以 j 结尾的子数组(子区间) 的最大和;
+ * 时间复杂度(O(n*k))
+ * 注意 f[i][j] 遍历的顺序， 注意递推式的变形, 边遍历边维护 w (mx),减少时间复杂度
+ * https://leetcode.cn/problems/maximum-strength-of-k-disjoint-subarrays/description/
+ * @param a
+ * @param k
+ * @return
+ */
+long long maximumStrength(vector<int>& a, int k) {
+    int n = a.size();
+    vector<long long> s(n+1);
+    for(int i =0; i < n; ++i) {
+        s[i+1] = s[i]+a[i];
+    }
+    vector<vector<long long>> f(k+1,vector<long long>(n+1));
+    for (int i = 1; i <= k; ++i) {
+        long long w = LLONG_MIN;
+        for (int j = i; j <= n; ++j) {
+            w = max(w,f[i-1][j-1]+(long long)(k-i+1)*(s[j-1])*(long long)(i%2 == 0 ? 1 : -1));
+            f[i][j] = (long long)(k-i+1)*s[j]*(long long)(i%2 == 0 ? -1 : 1) + w;
+        }
+    }
+    long long ans = LLONG_MIN;
+    for (int i = k; i <= n; ++i) {
+        ans = max(ans,f[k][i]);
+    }
+    return ans;
+}
+

@@ -43,3 +43,161 @@ public:
         return -1;
     }
 };
+
+/**
+ * 并查集 注意 连通, 较为典型的运用
+ * https://leetcode.cn/problems/find-all-people-with-secret/description/
+ * @param n
+ * @param m
+ * @param f
+ * @return
+ */
+
+struct dsu_1 {
+    vector<size_t> fa, size;
+
+    explicit dsu_1(size_t size_) : fa(size_), size(size_, 1) {
+        iota(fa.begin(), fa.end(), 0);
+    }
+    // 平均时间复杂度 O(1)， 找根节点
+    size_t find(size_t x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }
+
+    // 平均时间复杂度 O(1), 合并两棵树， fa[x] 作为新的根节点
+    void unite(size_t x, size_t y) {
+        x = find(x), y = find(y);
+        if (x == y) return;
+        fa[y] = x;
+        size[x] += size[y];
+    }
+
+    // 平均时间复杂度 O(1)
+    // 要删除一个叶子节点，我们可以将其父亲设为自己。
+    void erase(size_t x) {
+        --size[find(x)];
+        fa[x] = x;
+    }
+
+    // 将 x节点 移动到 y 节点所在的树
+    void move(size_t x, size_t y) {
+        auto fx = find(x), fy = find(y);
+        if (fx == fy) return;
+        fa[x] = fy;
+        --size[fx], ++size[fy];
+    }
+};
+
+vector<int> findAllPeople(int n, vector<vector<int>>& m, int f) {
+    sort(m.begin(),m.end(),[&](vector<int> a, vector<int> b){return a[2] < b[2];});
+    unordered_set<int> st;
+    st.emplace(0);
+    st.emplace(f);
+    dsu_1 ds(n+1);
+    ds.unite(0,f);
+    int n1 = m.size();
+    for (int i = 0; i < n1; ++i) {
+        vector<int> a{m[i][0], m[i][1]};
+        while(i <n1-1 && m[i+1][2] == m[i][2]) {
+            ++i;
+            a.emplace_back(m[i][0]);
+            a.emplace_back(m[i][1]);
+        }
+        int fa = -1;
+        for (int j = 0; j < a.size(); j+=2) {
+            ds.unite(a[j],a[j+1]);
+        }
+        for (int j = 0; j < a.size(); j+=2) {
+            if (st.count(a[j]) || st.count(a[j+1])) {
+                fa = ds.find(a[j]);
+            }
+        }
+        for (int j = 0; j < a.size(); j+=2) {
+            if (ds.find(a[j]) == fa) {
+                st.emplace(a[j]);
+                st.emplace(a[j+1]);
+            } else {
+                ds.erase(a[j]);
+                ds.erase(a[j+1]);
+            }
+        }
+    }
+    vector<int> ans(st.begin(),st.end());
+    return ans;
+}
+
+/**
+ * 并查集 + 离线思想 (离线注意)
+ * 离线：对 query 进行排序等（同时记录下标）， 按照想要的顺序进行遍历
+ */
+struct dsu_2 {
+    vector<size_t> fa, size;
+
+    explicit dsu_2(size_t size_) : fa(size_), size(size_, 1) {
+        iota(fa.begin(), fa.end(), 0);
+    }
+    // 平均时间复杂度 O(1)， 找根节点
+    size_t find(size_t x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }
+
+    // 平均时间复杂度 O(1), 合并两棵树， fa[x] 作为新的根节点
+    void unite(size_t x, size_t y) {
+        x = find(x), y = find(y);
+        if (x == y) return;
+        fa[y] = x;
+        size[x] += size[y];
+    }
+
+    // 平均时间复杂度 O(1)
+    // 要删除一个叶子节点，我们可以将其父亲设为自己。
+    void erase(size_t x) {
+        --size[find(x)];
+        fa[x] = x;
+    }
+
+    // 将 x节点 移动到 y 节点所在的树
+    void move(size_t x, size_t y) {
+        auto fx = find(x), fy = find(y);
+        if (fx == fy) return;
+        fa[x] = fy;
+        --size[fx], ++size[fy];
+    }
+};
+
+class Solution_1 {
+    const int dirs[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+public:
+    vector<int> maxPoints(vector<vector<int>> &grid, vector<int> &queries) {
+        int m = grid.size(), n = grid[0].size(), mn = m * n;
+
+        dsu_2 ds(mn+1);
+        // 矩阵元素从小到大排序，方便离线
+        vector<vector<int>> a(mn, vector<int>(3));
+        for (int i = 0; i < m; ++i)
+            for (int j = 0; j < n; ++j)
+                a[i * n + j] = {grid[i][j], i, j};
+        sort(a.begin(), a.end());
+
+        // 查询的下标按照查询值从小到大排序，方便离线
+        int k = queries.size();
+        vector<int> id (k);
+        iota(id.begin(), id.end(), 0);
+        sort(id.begin(), id.end(), [&](int i, int j) { return queries[i] < queries[j]; });
+
+        vector<int> ans(k);
+        int j = 0;
+        for (int i : id) {
+            int q = queries[i];
+            for (; j < mn && a[j][0] < q; ++j) {
+                int x = a[j][1], y = a[j][2];
+                // 枚举周围四个格子，值小于 q 才可以合并
+                for (auto &d : dirs) {
+                    int x2 = x + d[0], y2 = y + d[1];
+                    if (0 <= x2 && x2 < m && 0 <= y2 && y2 < n && grid[x2][y2] < q)
+                        ds.unite(x * n + y, x2 * n + y2); // 把坐标压缩成一维的编号
+                }
+            }
+            if (grid[0][0] < q)
+                ans[i] = ds.size[ds.find(0)]; // 左上角的连通块的大小
+        }
+        return ans;
+    }
+};
+

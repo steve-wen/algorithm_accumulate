@@ -1353,6 +1353,7 @@ int numberOfPairs(vector<vector<int>>& p) {
 //}
 
 
+// kth 小, 已正确；注意归纳
 class Fenwick_kth {
     vector<int> tree;
 
@@ -1370,14 +1371,15 @@ public:
 
     // 权值树状数组查询第 k 小
     int kth(int k) {
-        int x = 0;
-        for (int i = 1 << std::__lg(tree.size()-1); i; i /= 2) {
-            if (x + i <= tree.size()-1 && k > tree[x + i -1]) {
-                x += i;
-                k -= tree[x-1];
-            }
+        int sum = 0, x = 0;
+        for (int i = log2(tree.size()); ~i; --i) {
+            x += 1 << i;                    // 尝试扩展
+            if (x >= tree.size() || sum + tree[x] >= k)  // 如果扩展失败
+                x -= 1 << i;
+            else
+                sum += tree[x];
         }
-        return x;
+        return x + 1;
     }
 };
 
@@ -1401,14 +1403,16 @@ vector<int> kth(vector<int> &nums, int k) {
         if (k > i+1) {
             ans[i] = -1;
         } else {
-            ans[i] = b[t.kth(k)-1];
+            ans[i] = sorted[t.kth(k)-1];
         }
     }
+
     return ans;
 }
 
 int main() {
-
+    vector<int> nums{8,6,3,4,2,1,2,3,2,1,1,3,4,5};
+    auto ans = kth(nums,3);
     return 0;
 }
 
@@ -1549,7 +1553,7 @@ int main() {
 
 /**
  * impl list :
- * 1.并查集整理
+ * 1.并查集整理，熟练运用; 1.2 练习对应分数的题目，包括速度
  * 2. 主席树？ <-> kth? 莫队算法
  * 7.6 贡献法
  * 7.8 巫师的力量总和
