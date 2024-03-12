@@ -8,7 +8,7 @@ using namespace std;
 
 /**
  * 树状数组 (动态前缀和)
- * 解决问题 : 1.求数组中大于/小于某个数的个数,(且该数组在动态更新) : 离散化排序 + 树状数组
+ * 解决问题 : 1.求数组中大于/小于某个数的个数,(且该数组在动态更新) : 离散化排序 + 树状数组 (只能全局查询)
             2. 求数组的前缀和/区间和 (与下标有关)：初始化树状数组(for 循环 update) + 树状数组
    与线段树区别 : 线段树 : 一个数组， 更新一个子数组的值（都加上一个数，把子数组内的元素取反，...）
                查询一个子数组的值（求和，求最大值）
@@ -355,4 +355,66 @@ vector<int> maxSlidingWindow_1(vector<int>& nums, int k) {
     }
     return ans;
 }
+
+/**
+ * 树状数组，求 kth 小
+ * 只能求全局 k 小值
+ * 时间复杂度 O(logn)
+ */
+// kth 小, 已正确；注意归纳
+class Fenwick_kth {
+    vector<int> tree;
+
+public:
+    Fenwick_kth(int n) : tree(n) {}
+
+    // 把下标为 i 的元素增加 1 (动态更新 +1)
+    // 若不离散化，即把元素本身 + 1, 此时 1. 元素不能有负数, 2. 数据范围不能过大；否则，进行离散化
+    // 每次 O(logn)
+    void add(int i, int val) {
+        while (i < tree.size()) {
+            tree[i] += val;
+            i += i & -i;
+        }
+    }
+
+    // 权值树状数组查询第 k 小， 返回的是相应的 i 值
+    int kth(int k) {
+        int sum = 0, x = 0;
+        for (int i = log2(tree.size()); ~i; --i) {
+            x += 1 << i;                    // 尝试扩展
+            if (x >= tree.size() || sum + tree[x] >= k)  // 如果扩展失败
+                x -= 1 << i;
+            else
+                sum += tree[x];
+        }
+        return x + 1;
+    }
+};
+
+vector<int> kth(vector<int> &nums, int k) {
+    // 离散化 (以下标作为比较对象)
+    int n = nums.size();
+    auto sorted = nums;
+    ranges::sort(sorted);
+    sorted.erase(unique(sorted.begin(), sorted.end()), sorted.end());
+    int m = sorted.size();
+
+    // 树状数组
+    Fenwick_kth t(m + 1);
+    vector<int> ans(n);
+    for (int i =0; i < n; ++i) {
+        auto a1 = nums[i];
+        auto ind = ranges::lower_bound(sorted, a1) - sorted.begin()+1;
+        t.add(ind,1);
+        if (k > i+1) {
+            ans[i] = -1;
+        } else {
+            ans[i] = sorted[t.kth(k)-1]; // 因为传入的 ind+1, 所以此处 t.kth(k)-1; sorted 是排序且去重后的数组
+        }
+    }
+
+    return ans;
+}
+
 

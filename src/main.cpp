@@ -1326,93 +1326,65 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
-/**
- * 并查集 注意 连通
- * https://leetcode.cn/problems/find-all-people-with-secret/description/
- * @param n
- * @param m
- * @param f
- * @return
- */
-//vector<int> findAllPeople(int n, vector<vector<int>>& m, int f) {
-//    sort(m.begin(),m.end(),[&](vector<int> a, vector<int> b){return a[2] < b[2];});
-//    set<int> st;
-//    st.emplace(0);
-//    st.emplace(f);
-//    int n1 = m.size();
-//    for (int i = 0; i < n1; ++i) {
-//        vector<int> a{m[i][0], m[i][1]};
-//        while(i <n-1 && m[i+1][2] == m[i][2]) {
-//            ++i;
-//            a.emplace_back(m[i][0]);
-//            a.emplace_back(m[i][1]);
-//        }
-//
-//    }
-//
-//}
-
-
-// kth 小, 已正确；注意归纳
-class Fenwick_kth {
-    vector<int> tree;
-
+class CountIntervals {
 public:
-    Fenwick_kth(int n) : tree(n) {}
+    set<pair<int,int>> st;
+    int cnt = 0;
+    CountIntervals() {
 
-    // 把下标为 i 的元素增加 1 (动态更新 +1)
-    // 每次 O(logn)
-    void add(int i, int val) {
-        while (i < tree.size()) {
-            tree[i] += val;
-            i += i & -i;
-        }
     }
 
-    // 权值树状数组查询第 k 小
-    int kth(int k) {
-        int sum = 0, x = 0;
-        for (int i = log2(tree.size()); ~i; --i) {
-            x += 1 << i;                    // 尝试扩展
-            if (x >= tree.size() || sum + tree[x] >= k)  // 如果扩展失败
-                x -= 1 << i;
-            else
-                sum += tree[x];
+    void add(int l, int r) {
+        if (st.empty()) {
+            cnt += (r-l+1);
+            st.emplace(l,r);
+        } else {
+            auto it = st.upper_bound(pair<int,int>(l,r));
+            if (it == st.end()) {
+                --it;
+                if (it->second >= l) {
+                    cnt += max(0,r-it->second);
+                    l = it->first;
+                    st.erase(it);
+                    st.emplace(l,r);
+                } else {
+                    cnt += r-l+1;
+                    st.emplace(l,r);
+                }
+            } else {
+                auto it1 = prev(it,1);
+                if (r < it->first) {
+                    if (l > it1->second) {
+                        cnt += r-l+1;
+                        st.emplace(l,r);
+                    } else {
+                        l = it1->first;
+                        cnt += max(0,r-it1->second);
+                        r = max(r,it1->second);
+                        st.emplace(l,r);
+                    }
+                } else {
+                    if (l > it1->second) {
+                        cnt += r-l+1;
+                        st.emplace(l,r);
+                    } else {
+                        l = it1->first;
+                        cnt += max(0,r-it1->second);
+                        r = max(r,it1->second);
+                        st.emplace(l,r);
+                    }
+                }
+            }
         }
-        return x + 1;
+
+    }
+
+    int count() {
+
     }
 };
 
-vector<int> kth(vector<int> &nums, int k) {
-    // 离散化 (以下标作为比较对象)
-    int n = nums.size();
-    auto sorted = nums;
-    auto b = nums;
-    ranges::sort(sorted);
-    ranges::sort(b);
-    sorted.erase(unique(sorted.begin(), sorted.end()), sorted.end());
-    int m = sorted.size();
-
-    // 树状数组
-    Fenwick_kth t(m + 1);
-    vector<int> ans(n);
-    for (int i =0; i < n; ++i) {
-        auto a1 = nums[i];
-        auto ind = ranges::lower_bound(sorted, a1) - sorted.begin()+1;
-        t.add(ind,1);
-        if (k > i+1) {
-            ans[i] = -1;
-        } else {
-            ans[i] = sorted[t.kth(k)-1];
-        }
-    }
-
-    return ans;
-}
-
 int main() {
-    vector<int> nums{8,6,3,4,2,1,2,3,2,1,1,3,4,5};
-    auto ans = kth(nums,3);
     return 0;
 }
 
@@ -1554,7 +1526,7 @@ int main() {
 /**
  * impl list :
  * 1.并查集整理，熟练运用; 1.2 练习对应分数的题目，包括速度
- * 2. 主席树？ <-> kth? 莫队算法
+ * 2. 主席树？ <-> kth? 莫队算法  主席树看 b 站视频， 结合洛谷
  * 7.6 贡献法
  * 7.8 巫师的力量总和
  * 4. 2200 难度题
