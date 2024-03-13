@@ -1326,65 +1326,56 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
-class CountIntervals {
-public:
-    set<pair<int,int>> st;
-    int cnt = 0;
-    CountIntervals() {
+const int maxn = 2e5 + 5;
+int a[maxn];
+vector<int> v;
 
+inline int getid(int x) { return lower_bound(v.begin(), v.end(), x) - v.begin() + 1; }
+
+struct Node {
+    int l, r, sum;
+} hjt[maxn * 40];
+int cnt, root[maxn];
+
+void insert(int l, int r, int pre, int &now, int p) {
+    hjt[++cnt] = hjt[pre];
+    now = cnt;
+    hjt[now].sum++;
+    if (l == r) return;
+    int m = (l + r) >> 1;       //>>1    =     /2
+    if (p <= m) insert(l, m, hjt[pre].l, hjt[now].l, p);
+    else insert(m + 1, r, hjt[pre].r, hjt[now].r, p);
+}
+
+int query(int l, int r, int L, int R, int k) {
+    if (l == r) return l;
+    int m = (l + r) >> 1;
+    int tmp = hjt[hjt[R].l].sum - hjt[hjt[L].l].sum;
+    if (k <= tmp) return query(l, m, hjt[L].l, hjt[R].l, k);
+    else return query(m + 1, r, hjt[L].r, hjt[R].r, k - tmp);
+}
+
+vector<int> range_kth(vector<int> &vec, vector<vector<int>> &q) {
+    int n = vec.size(), m = q.size();
+    vector<int> ans(m);
+    for (int i = 1; i <= n; i++)
+        v.push_back(a[i] = vec[i - 1]);
+    std::sort(v.begin(), v.end());
+    v.erase(std::unique(v.begin(), v.end()), v.end());
+    for (int i = 1; i <= n; i++)
+        insert(1, n, root[i - 1], root[i], getid(a[i]));
+
+    for (int i = 0; i < m; ++i) {
+        auto l = q[i][0], r = q[i][1], k = q[i][2];
+        ans[i] = v[query(1, n, root[l - 1], root[r], k) - 1];
     }
-
-    void add(int l, int r) {
-        if (st.empty()) {
-            cnt += (r-l+1);
-            st.emplace(l,r);
-        } else {
-            auto it = st.upper_bound(pair<int,int>(l,r));
-            if (it == st.end()) {
-                --it;
-                if (it->second >= l) {
-                    cnt += max(0,r-it->second);
-                    l = it->first;
-                    st.erase(it);
-                    st.emplace(l,r);
-                } else {
-                    cnt += r-l+1;
-                    st.emplace(l,r);
-                }
-            } else {
-                auto it1 = prev(it,1);
-                if (r < it->first) {
-                    if (l > it1->second) {
-                        cnt += r-l+1;
-                        st.emplace(l,r);
-                    } else {
-                        l = it1->first;
-                        cnt += max(0,r-it1->second);
-                        r = max(r,it1->second);
-                        st.emplace(l,r);
-                    }
-                } else {
-                    if (l > it1->second) {
-                        cnt += r-l+1;
-                        st.emplace(l,r);
-                    } else {
-                        l = it1->first;
-                        cnt += max(0,r-it1->second);
-                        r = max(r,it1->second);
-                        st.emplace(l,r);
-                    }
-                }
-            }
-        }
-
-    }
-
-    int count() {
-
-    }
-};
+    return ans;
+}
 
 int main() {
+    vector<int> vec{1,2,3,4,5,6,7,8,9};
+    vector<vector<int>> q{{1,2,1},{1,5,3},{4,8,2},{2,6,3},{0,5,3}};
+    auto ans = range_kth(vec,q);
     return 0;
 }
 
