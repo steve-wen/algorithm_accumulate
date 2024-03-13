@@ -358,7 +358,7 @@ vector<int> maxSlidingWindow_1(vector<int>& nums, int k) {
 
 /**
  * 树状数组，求 kth 小
- * 只能求全局 k 小值
+ * 只能求全局 k 小值 且 静态
  * 时间复杂度 O(logn)
  */
 // kth 小, 已正确；注意归纳
