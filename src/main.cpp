@@ -1366,6 +1366,7 @@ vector<int> range_kth(vector<int> &vec, vector<vector<int>> &q) {
         insert(1, n, root[i - 1], root[i], getid(a[i]));
 
     for (int i = 0; i < m; ++i) {
+        // 此处 l,r 的范围是 1 <= l <= r <= n; 注意与 下标的对应关系
         auto l = q[i][0], r = q[i][1], k = q[i][2];
         ans[i] = v[query(1, n, root[l - 1], root[r], k) - 1];
     }
