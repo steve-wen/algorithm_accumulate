@@ -1326,9 +1326,103 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
+/**
+ * 普通莫队算法
+ */
+class Modui_Common{
+    static const int maxn = 5e4 + 5;
+    int a[maxn],pos[maxn],cnt[maxn];
+    long long ans[maxn];
+    long long res;
+    struct Q
+    {
+        int l,r,k;
+    }q[maxn];
+    void Add(int n) { cnt[a[n]]++; res+=cnt[a[n]]*cnt[a[n]]-(cnt[a[n]]-1)*(cnt[a[n]]-1); }
+    void Sub(int n) { cnt[a[n]]--; res-=(cnt[a[n]]+1)*(cnt[a[n]]+1)-cnt[a[n]]*cnt[a[n]]; }
 
+    vector<long long> modui_common(vector<int>& vec, vector<vector<int>>& que, int k) {
+        int n = vec.size(),m = que.size();
+        int siz = sqrt(n);
+        for(int i=1;i<=n;i++)
+        {
+            a[i] = vec[i-1];
+            pos[i]=i/siz;
+        }
+        for(int i=0;i<m;i++)
+        {
+            q[i].l = que[i][0];
+            q[i].r = que[i][1];
+            q[i].k=i;
+        }
+        std::sort(q,q+m,[&](Q x,Q y){
+            return pos[x.l]==pos[y.l]?x.r<y.r:pos[x.l]<pos[y.l];
+        });
+        int l=1,r=0;
+        for(int i=0;i<m;i++)
+        {
+            while(q[i].l<l) Add(--l);
+            while(q[i].r>r) Add(++r);
+            while(q[i].l>l) Sub(l++);
+            while(q[i].r<r) Sub(r--);
+            ans[q[i].k]=res;
+        }
+        vector<long long> result(ans,ans+m);
+        return result;
+    }
+};
+
+/**
+ * 普通莫队
+ * 小 Z 的袜子，已解决
+ */
+class Modui_Common_1{
+    static const int maxn = 5e4 + 5;
+    int a[maxn],pos[maxn],cnt[maxn];
+    long long ans[maxn];
+    long long res;
+    struct Q
+    {
+        int l,r,k;
+    }q[maxn];
+    void Add(int n) { cnt[a[n]]++; res+=(cnt[a[n]]*(cnt[a[n]]-1))/2-((cnt[a[n]]-1)*(cnt[a[n]]-2))/2; }
+    void Sub(int n) { cnt[a[n]]--; res-=(cnt[a[n]]+1)*(cnt[a[n]])/2-(cnt[a[n]]*(cnt[a[n]]-1))/2; }
+
+    vector<long long> modui_common(vector<int>& vec, vector<vector<int>>& que) {
+        int n = vec.size(),m = que.size();
+        int siz = sqrt(n);
+        for(int i=1;i<=n;i++)
+        {
+            a[i] = vec[i-1];
+            pos[i]=i/siz;
+        }
+        for(int i=0;i<m;i++)
+        {
+            q[i].l = que[i][0];
+            q[i].r = que[i][1];
+            q[i].k=i;
+        }
+        std::sort(q,q+m,[&](Q x,Q y){
+            return pos[x.l]==pos[y.l]?x.r<y.r:pos[x.l]<pos[y.l];
+        });
+        int l=1,r=0;
+        for(int i=0;i<m;i++)
+        {
+            while(q[i].l<l) Add(--l);
+            while(q[i].r>r) Add(++r);
+            while(q[i].l>l) Sub(l++);
+            while(q[i].r<r) Sub(r--);
+            ans[q[i].k]=res;
+        }
+        vector<long long> result(ans,ans+m);
+        return result;
+    }
+};
 
 int main() {
+    vector<int> vec{1,2,3,4,5,2,3,4,2,2};
+    vector<vector<int>> que{{1,3},{2,8},{1,10},{1,9},{3,9}};
+    auto ans = modui_common(vec,que);
     return 0;
 }
 
@@ -1469,8 +1563,8 @@ int main() {
 
 /**
  * impl list :
- * 1.并查集整理，熟练运用; 1.2 练习对应分数的题目，包括速度
- * 2. 主席树？ <-> kth? 莫队算法-> 莫队的应用，注意
+ * 1. 1.2 练习对应分数的题目，包括速度
+ * 2. 主席树？ <-> kth? 莫队算法(了解分块思想)-> 莫队的应用，注意 cf 题单，套路等
  * 7.6 贡献法
  * 7.8 巫师的力量总和
  * 4. 2200 难度题
