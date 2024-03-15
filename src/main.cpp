@@ -685,53 +685,6 @@ vector<vector<int>> getAncestors(int n, vector<vector<int>>& e) {
     return vec;
 }
 
-/**
- * 最短环 ： bfs + 记录父节点（pre)
- * @param n
- * @param e
- * @return
- */
-int findShortestCycle(int n, vector<vector<int>>& e) {
-    int ans = 1e4;
-
-    unordered_map<int, vector<int>> g;
-    for (auto & e1 : e) {
-        g[e1[1]].emplace_back(e1[0]);
-        g[e1[0]].emplace_back(e1[1]);
-    }
-
-    for (int i = 0; i < n; ++i) {
-        int tmp = 1e4;
-        // dis 数组记录距离 且 < 1 时未访问过，有 mark/vis 的作用
-        vector<int> dis(n,-1);
-        // 初始化
-        dis[i] = 0;
-        queue<pair<int,int>> q;
-        q.emplace(i,-1);
-        while (!q.empty()){
-            // 找到环
-            if (tmp != 1e4) break;
-            for (int k = q.size(); k; --k) {
-                auto q1 = q.front();
-                q.pop();
-                // b 为父节点
-                auto&[a,b] = q1;
-                for (auto& j : g[a]) {
-                    if (dis[j] < 0) { // j 未访问过
-                        dis[j] = dis[a]+1;
-                        q.emplace(j,a);
-                    } else if (j != b) { // j 访问过且不是 a 的父节点，找到环
-                        tmp = dis[a]+dis[j]+1;
-                        break;
-                    }
-                }
-            }
-        }
-        ans = min(ans,tmp);
-    }
-    return ans == 1e4 ? -1 : ans;
-}
-
 // 结合 bitset 与灵神的位运算文章结合
 /**
  *
@@ -1326,103 +1279,41 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
-/**
- * 普通莫队算法
- */
-class Modui_Common{
-    static const int maxn = 5e4 + 5;
-    int a[maxn],pos[maxn],cnt[maxn];
-    long long ans[maxn];
-    long long res;
-    struct Q
-    {
-        int l,r,k;
-    }q[maxn];
-    void Add(int n) { cnt[a[n]]++; res+=cnt[a[n]]*cnt[a[n]]-(cnt[a[n]]-1)*(cnt[a[n]]-1); }
-    void Sub(int n) { cnt[a[n]]--; res-=(cnt[a[n]]+1)*(cnt[a[n]]+1)-cnt[a[n]]*cnt[a[n]]; }
-
-    vector<long long> modui_common(vector<int>& vec, vector<vector<int>>& que, int k) {
-        int n = vec.size(),m = que.size();
-        int siz = sqrt(n);
-        for(int i=1;i<=n;i++)
-        {
-            a[i] = vec[i-1];
-            pos[i]=i/siz;
+int dieSimulator(int n, vector<int>& r) {
+    int mod = 1e9+7;
+    int memo[5001][7][16];
+    memset(memo,-1, sizeof(memo));
+    function<int(int,int,int)> dfs = [&](int i, int j, int k){
+        if (i < 0) {
+            if (k <= r[j]) {
+                return 1;
+            }
+            return 0;
         }
-        for(int i=0;i<m;i++)
-        {
-            q[i].l = que[i][0];
-            q[i].r = que[i][1];
-            q[i].k=i;
+        if (memo[i][j][k] != -1) return memo[i][j][k];
+        int& res = memo[i][j][k];
+        res = 0;
+        for (int l = 0; l < 6; ++l) {
+            if (j != l) {
+                res = (res + dfs(i-1,l,1)) % mod;
+            } else {
+                if (k < r[j]) {
+                    res = (res + dfs(i-1,l,k+1))%mod;
+                }
+            }
         }
-        std::sort(q,q+m,[&](Q x,Q y){
-            return pos[x.l]==pos[y.l]?x.r<y.r:pos[x.l]<pos[y.l];
-        });
-        int l=1,r=0;
-        for(int i=0;i<m;i++)
-        {
-            while(q[i].l<l) Add(--l);
-            while(q[i].r>r) Add(++r);
-            while(q[i].l>l) Sub(l++);
-            while(q[i].r<r) Sub(r--);
-            ans[q[i].k]=res;
-        }
-        vector<long long> result(ans,ans+m);
-        return result;
+        return res;
+    };
+    int ans = 0;
+    for (int i = 0; i < 6; ++i) {
+        ans = (ans+dfs(n-1,i,1))%mod;
     }
-};
-
-/**
- * 普通莫队
- * 小 Z 的袜子，已解决
- */
-class Modui_Common_1{
-    static const int maxn = 5e4 + 5;
-    int a[maxn],pos[maxn],cnt[maxn];
-    long long ans[maxn];
-    long long res;
-    struct Q
-    {
-        int l,r,k;
-    }q[maxn];
-    void Add(int n) { cnt[a[n]]++; res+=(cnt[a[n]]*(cnt[a[n]]-1))/2-((cnt[a[n]]-1)*(cnt[a[n]]-2))/2; }
-    void Sub(int n) { cnt[a[n]]--; res-=(cnt[a[n]]+1)*(cnt[a[n]])/2-(cnt[a[n]]*(cnt[a[n]]-1))/2; }
-
-    vector<long long> modui_common(vector<int>& vec, vector<vector<int>>& que) {
-        int n = vec.size(),m = que.size();
-        int siz = sqrt(n);
-        for(int i=1;i<=n;i++)
-        {
-            a[i] = vec[i-1];
-            pos[i]=i/siz;
-        }
-        for(int i=0;i<m;i++)
-        {
-            q[i].l = que[i][0];
-            q[i].r = que[i][1];
-            q[i].k=i;
-        }
-        std::sort(q,q+m,[&](Q x,Q y){
-            return pos[x.l]==pos[y.l]?x.r<y.r:pos[x.l]<pos[y.l];
-        });
-        int l=1,r=0;
-        for(int i=0;i<m;i++)
-        {
-            while(q[i].l<l) Add(--l);
-            while(q[i].r>r) Add(++r);
-            while(q[i].l>l) Sub(l++);
-            while(q[i].r<r) Sub(r--);
-            ans[q[i].k]=res;
-        }
-        vector<long long> result(ans,ans+m);
-        return result;
-    }
-};
+    return ans;
+}
 
 int main() {
-    vector<int> vec{1,2,3,4,5,2,3,4,2,2};
-    vector<vector<int>> que{{1,3},{2,8},{1,10},{1,9},{3,9}};
-    auto ans = modui_common(vec,que);
+    vector<int> r{1,1,2,2,2,3};
+    auto ans = dieSimulator(2,r);
     return 0;
 }
 

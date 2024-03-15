@@ -424,3 +424,105 @@ vector<vector<int>> highestPeak(vector<vector<int>>& w) {
     }
     return w;
 }
+
+/**
+ * 最短环 ： bfs + 记录父节点（pre)
+ * 时间复杂度 (On^3)
+ * 注意用 vector 代替 unordered_map 建图, 可缩短时间
+ * https://leetcode.cn/problems/shortest-cycle-in-a-graph/description/
+ * @param n
+ * @param e
+ * @return
+ */
+int findShortestCycle(int n, vector<vector<int>>& e) {
+    int ans = 1e4;
+
+    vector<vector<int>> g(n+1);
+    for (auto & e1 : e) {
+        g[e1[1]].emplace_back(e1[0]);
+        g[e1[0]].emplace_back(e1[1]);
+    }
+
+    for (int i = 0; i < n; ++i) {
+        int tmp = 1e4;
+        // dis 数组记录距离 且 < 1 时未访问过，有 mark/vis 的作用
+        vector<int> dis(n,-1);
+        // 初始化
+        dis[i] = 0;
+        queue<pair<int,int>> q;
+        q.emplace(i,-1);
+        while (!q.empty()){
+            // 找到环
+            if (tmp != 1e4) break;
+            for (int k = q.size(); k; --k) {
+                auto q1 = q.front();
+                q.pop();
+                // b 为父节点
+                auto&[a,b] = q1;
+                for (auto& j : g[a]) {
+                    if (dis[j] < 0) { // j 未访问过
+                        dis[j] = dis[a]+1;
+                        q.emplace(j,a);
+                    } else if (j != b) { // j 访问过且不是 a 的父节点，找到环
+                        tmp = dis[a]+dis[j]+1;
+                        ans = min(ans,tmp);
+//                        break; // break 可剪枝
+                    }
+                }
+            }
+        }
+    }
+    return ans == 1e4 ? -1 : ans;
+}
+
+/**
+ * 找环，同时统计出入度数
+ * bfs
+ * https://leetcode.cn/problems/minimum-degree-of-a-connected-trio-in-a-graph/description/
+ * 时间复杂度 (On^3)
+ * 注意用 vector 代替 unordered_map 建图, 可缩短时间
+ * @param n
+ * @param e
+ * @return
+ */
+int minTrioDegree(int n, vector<vector<int>>& e) {
+    int ans = 1e4;
+    vector<vector<int>> g(n+1);
+    for (auto & e1 : e) {
+        g[e1[1]].emplace_back(e1[0]);
+        g[e1[0]].emplace_back(e1[1]);
+    }
+
+    for (int i = 1; i <= n; ++i) {
+        int tmp = 1e4, cnt = 0;
+        // dis 数组记录距离 且 < 1 时未访问过，有 mark/vis 的作用
+        vector<int> dis(n+1,-1);
+        // 初始化
+        dis[i] = 0;
+        queue<pair<int,int>> q;
+        q.emplace(i,-1);
+        while (!q.empty()){
+            // 找到环
+            if (tmp != 1e4) break;
+            for (int k = q.size(); k; --k) {
+                auto q1 = q.front();
+                q.pop();
+                // b 为父节点
+                auto&[a,b] = q1;
+                for (auto& j : g[a]) {
+                    if (dis[j] < 0) { // j 未访问过
+                        dis[j] = dis[a]+1;
+                        q.emplace(j,a);
+                    } else if (j != b) { // j 访问过且不是 a 的父节点，找到环
+                        tmp = dis[a]+dis[j]+1;
+                        cnt = g[a].size()-2+g[b].size()-2+g[j].size()-2;
+                        if (tmp == 3) {
+                            ans = min(ans,cnt);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return ans == 1e4 ? -1 : ans;
+}
