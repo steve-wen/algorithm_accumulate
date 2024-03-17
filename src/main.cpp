@@ -1280,13 +1280,13 @@ int numberOfPairs(vector<vector<int>>& p) {
 }
 
 
-int main() {
-    return 0;
-}
+//int main() {
+//    return 0;
+//}
 
 
 /**
- * luogu
+ * luogu/nowcoder
  */
 //#include <bits/stdc++.h>
 //
@@ -1296,69 +1296,40 @@ int main() {
 //    ios::sync_with_stdio(false);
 //    cin.tie(nullptr);
 //
-//    int n;
-//    cin >> n;
-//    vector<int> r(n+1);
-//    vector<int> a(n+1); // 找根
-//    vector<vector<int>> g(n+1);
-//    for (int i = 0; i < n; ++i) {
-//        int b;
-//        cin >> b >> r[b];
-//        int m;
-//        cin >> m;
-//        for (int j = 0; j < m; ++j) {
-//            int k;
-//            cin >> k;
-//            g[b].emplace_back(k);
-//            a[k] = 1;// 找根
-//        }
-//
+//    long long a,b;
+//    cin >> a;
+//    b = a%495;
+//    if (b == 0) {
+//        cout << -1;
+//        return 0;
 //    }
-//
-//    int root = 0;
-//    for (int i = 1; i <= n; ++i) {
-//        if (!a[i]) root = i; // 找根
-//    }
-//
-//    int memo[n+1][3];
-//    memset(memo,-1,sizeof(memo));
-//    // 需特殊处理叶子节点
-//    function<int(int,int)> dfs = [&](int i, int j){
-//        if (g[i].size() == 0 && j == 2) return (int)2e7; // 处理叶子为 red
-//        if(memo[i][j] != -1) return memo[i][j];
-//        int& res = memo[i][j];
-//        res = 0;
-//        int tmp = (int)2e7;
-//        if (j == 0) {
-//            res += r[i];
+//    for (int k = 0; k <= 9; ++k) {
+//        if ((b * 10 + k)%495 == 0) {
+//            cout << k;
+//            return 0;
 //        }
-//        for (auto k : g[i]) {
-//            int k0 = dfs(k,0), k1 = dfs(k,1), k2 = dfs(k,2);
-//            if (j == 0) {
-//                res += min(k0,k1);
-//            } else if (j == 1){
-//                if (g[k].size() == 0) {
-//                    res += k0;
-//                } else {
-//                    res += min(k0,k2);
-//                }
-//            } else {
-//                if (g[k].size() == 0) {
-//                    res += k0;
-//                    tmp = 0;
-//                } else {
-//                    res += min(k0,k2);
-//                }
-//                tmp = min(tmp,k0-k2);
+//    }
+//    for (int j = 0; j <=9; ++j) {
+//        int c = b*10 +j;
+//        for (int k = 0; k <= 9; ++k) {
+//            if ((c * 10 + k)%495 == 0) {
+//                cout << j<<k;
+//                return 0;
 //            }
 //        }
-//        if (j == 2) {
-//            res += max(0, tmp);
+//    }
+//    for (int i =0; i <= 9; ++i) {
+//        int c = b*10 +i;
+//        for (int j = 0; j <=9; ++j) {
+//            int d = c*10+j;
+//            for (int k = 0; k <= 9; ++k) {
+//                if ((d * 10 + k)%495 == 0) {
+//                    cout <<i<< j<<k;
+//                    return 0;
+//                }
+//            }
 //        }
-//        return res;
-//    };
-//    int ans = min(dfs(root,0),dfs(root,2));
-//    cout<<ans;
+//    }
 //    return 0;
 //}
 
@@ -1422,7 +1393,8 @@ int main() {
 /**
  * impl list :
  * 1. 1.2 练习对应分数的题目，包括速度
- * 2. 主席树？ <-> kth? 莫队算法(了解分块思想)-> 莫队的应用，注意 cf 题单，套路等
+ * 2. 莫队算法(了解分块思想)-> 莫队的应用，注意 cf 题单，套路等
+ * 3. 练习 CF 题单等; 多类型比赛并行打
  * 7.6 贡献法
  * 7.8 巫师的力量总和
  * 4. 2200 难度题
