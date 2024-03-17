@@ -185,3 +185,76 @@ long long maximumStrength(vector<int>& a, int k) {
     return ans;
 }
 
+/**
+ * 中心扩展法 + 划分型 dp
+ * 中心扩展法 -> 统计回文字符串; 时间复杂度 O(n^2)
+ * @param s
+ * @param k
+ * @return
+ */
+int maxPalindromes(string s, int k) {
+    int n = s.size();
+    if (k == 1) return n;
+    vector<vector<bool>> b(n,vector<bool>(n));
+    // 中心扩展法 时间复杂度 O(n^2); 统计回文字符串
+    // 长度为奇数时的中心扩展
+    for (int i = 0; i < n; ++i) {
+        b[i][i] = true;
+        int j = i -1, l = i+1;
+        while(j >= 0 && l < n && s[j] == s[l]) {
+            b[j][l] = true;
+            --j;
+            ++l;
+        }
+    }
+    // 长度为偶数时的中心扩展
+    for (int i = 0; i < n-1; ++i) {
+        if (s[i] == s[i+1]) {
+            b[i][i+1] = true;
+            int j = i-1, l = i+2;
+            while(j >= 0 && l < n && s[j] == s[l]) {
+                b[j][l] = true;
+                --j;
+                ++l;
+            }
+        }
+    }
+    // 划分型 dp
+    int memo[100+1][100+1];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int)> dfs = [&](int i, int j) {
+        if (i < 0) return 0;
+        if(memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        if (j-i+1 >= k && b[i][j]) {
+            res = max(dfs(i-1,j), dfs(i-1,i-1)+1);
+        } else {
+            res = max(dfs(i-1,i-1),dfs(i-1,j));
+        }
+        return res;
+    };
+    return dfs(n-1,n-1);
+}
+
+//int minHeightShelves(vector<vector<int>>& b, int d) {
+//    int n = b.size();
+//    vector<int> s(n+1);
+//    for(int i =0; i < n; ++i) {
+//        s[i+1] = s[i]+b[i][0];
+//    }
+//    vector<vector<int>> f(n+1,vector<int>(n+1,1e6));
+//    for (int i = 1; i <= n; ++i) {
+//        int w = b[i][1];
+//        for (int j = i+1; j <= n && s[j] - s[i-1] <= d; ++j) {
+//            if (b[j][1])
+//            f[i][j] = (long long)(k-i+1)*s[j]*(long long)(i%2 == 0 ? -1 : 1) + w;
+//        }
+//    }
+//    long long ans = LLONG_MIN;
+//    for (int i = k; i <= n; ++i) {
+//        ans = max(ans,f[k][i]);
+//    }
+//    return ans;
+//
+//}
+

@@ -126,3 +126,24 @@ int minimumTimeToInitialState(string w, int k) {
     }
     return ans;
 }
+
+/**
+ * string 中 find 的使用, 结合 string::npos
+ * @param s
+ * @return
+ */
+bool isSubstringPresent(string s) {
+    vector<string> vec;
+    int n = s.size();
+    for (int i = 0; i < n-1; ++i) {
+        string str{s[i]};
+        str += s[i+1];
+        vec.emplace_back(str);
+    }
+    reverse(s.begin(),s.end());
+    for (auto c : vec) {
+        if (s.find(c) != string::npos) return true; // string::npos 的合理使用，注意 string 的 find 返回的不是 true,false; 是 string:: npos
+    }
+    return false;
+}
+

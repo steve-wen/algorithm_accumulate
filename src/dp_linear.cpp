@@ -129,3 +129,41 @@ int longestPalindromeSubseq(string s) {
     return dfs(0,n-1);
 }
 
+/**
+ * 朴素线性 dp
+ * https://leetcode.cn/problems/dice-roll-simulation/description/
+ * @param n
+ * @param r
+ * @return
+ */
+int dieSimulator(int n, vector<int>& r) {
+    int mod = 1e9+7;
+    int memo[n+1][7][16];
+    memset(memo,-1, sizeof(memo));
+    function<int(int,int,int)> dfs = [&](int i, int j, int k){
+        if (i <= 0) {
+            if (k <= r[j]) {
+                return 1;
+            }
+            return 0;
+        }
+        if (memo[i][j][k] != -1) return memo[i][j][k];
+        int& res = memo[i][j][k];
+        res = 0;
+        for (int l = 0; l < 6; ++l) {
+            if (j != l) {
+                res = (res + dfs(i-1,l,1)) % mod;
+            } else {
+                if (k < r[j]) {
+                    res = (res + dfs(i-1,l,k+1))%mod;
+                }
+            }
+        }
+        return res;
+    };
+    int ans = 0;
+    for (int i = 0; i < 6; ++i) {
+        ans = (ans+dfs(n-1,i,1))%mod;
+    }
+    return ans;
+}

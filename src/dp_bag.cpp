@@ -94,4 +94,54 @@ int waysToReachTarget(int t, vector<vector<int>>& a) {
     return dfs(n-1,t);
 }
 
-
+/**
+ * 分组背包
+ * https://leetcode.cn/problems/minimize-the-difference-between-target-and-chosen-elements/description/
+ * @param a
+ * @param t
+ * @return
+ */
+int minimizeTheDifference(vector<vector<int>>& a, int t) {
+    int m = a.size(), n = a[0].size();
+    int mn = 0, mx = 0;
+    for (int i = 0; i < m; ++i) {
+        sort(a[i].begin(), a[i].end());
+    }
+    for (int i = 0; i < m; ++i) {
+        mn += a[i][0];
+        mx += a[i][n-1];
+    }
+    int memo[71][5000];
+    memset(memo,-1, sizeof(memo));
+    function<int(int,int)> dfs = [&](int i, int j) {
+        if (i < 0) {
+            if (j == 0) return 1;
+            return 0;
+        }
+        if (memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        res = 0;
+        for (int k = 0; k < n; ++k) {
+            if (j-a[i][k] >= 0) {
+                res = max(res,dfs(i-1,j-a[i][k]));
+            }
+        }
+        return res;
+    };
+    if (mx <= t) return t-mx; // 注意特判,减少部分时间
+    if (mn >= t) return mn -t;
+    int ans = 4900;
+    for (int i = t; i >=mn; --i) {
+        if (dfs(m-1,i) == 1) {
+            ans = t-i;
+            break;
+        }
+    }
+    for (int i = t+1; i <= mx; ++i) {
+        if (dfs(m-1,i) == 1) {
+            ans = min(ans,i-t);
+            break;
+        }
+    }
+    return ans;
+}
