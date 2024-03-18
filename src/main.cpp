@@ -1279,103 +1279,28 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
-const int MOD = 1'000'000'007;
-const int MX = 100'000; // C(n,k) n
-
-// 快速幂取 MOD
-long long q_pow(long long x, int n) {
-    long long res = 1;
-    for (; n > 0; n /= 2) {
-        if (n % 2) {
-            res = res * x % MOD;
-        }
-        x = x * x % MOD;
-    }
-    return res;
-}
-
-int sumOfPower(vector<int>& a, int k) {
-    int n = a.size();
-    long long memo[n+1][k+1][n+1];
-    memset(memo,-1,sizeof(memo));
-    function<long long (int,int,int)> dfs = [&](int i, int j, int l){
-        if (l < 0) return (long long)0;
-        if (i < 0) {
-            if (j == 0 && l == 0) return (long long)1;
-            return (long long)0;
-        }
-        if (memo[i][j][l] != -1) return memo[i][j][l];
-        long long& res = memo[i][j][l];
-        res = 0;
-        if (a[i] > j) {
-            res = (res+dfs(i-1,j,l))%MOD;
-        } else {
-            res = (res+dfs(i-1,j,l))%MOD;
-            res = (res +dfs(i-1,j-a[i],l-1))%MOD;
-        }
-        return res;
-    };
-
-    long long ans = 0;
-    for (int i = 1; i <= n; ++i) {
-        long long cnt = dfs(n-1,k,i);
-        ans = (ans+ cnt * q_pow(2,n-i))%MOD;
-    }
-    return ans;
-}
-
 //int main() {
 //    return 0;
 //}
 
 
 /**
- * luogu/nowcoder
+ * luogu/nowcoder/codeforces
  */
-//#include <bits/stdc++.h>
-//
-//using namespace std;
-//
-//int main() {
-//    ios::sync_with_stdio(false);
-//    cin.tie(nullptr);
-//
-//    long long a,b;
-//    cin >> a;
-//    b = a%495;
-//    if (b == 0) {
-//        cout << -1;
-//        return 0;
-//    }
-//    for (int k = 0; k <= 9; ++k) {
-//        if ((b * 10 + k)%495 == 0) {
-//            cout << k;
-//            return 0;
-//        }
-//    }
-//    for (int j = 0; j <=9; ++j) {
-//        int c = b*10 +j;
-//        for (int k = 0; k <= 9; ++k) {
-//            if ((c * 10 + k)%495 == 0) {
-//                cout << j<<k;
-//                return 0;
-//            }
-//        }
-//    }
-//    for (int i =0; i <= 9; ++i) {
-//        int c = b*10 +i;
-//        for (int j = 0; j <=9; ++j) {
-//            int d = c*10+j;
-//            for (int k = 0; k <= 9; ++k) {
-//                if ((d * 10 + k)%495 == 0) {
-//                    cout <<i<< j<<k;
-//                    return 0;
-//                }
-//            }
-//        }
-//    }
-//    return 0;
-//}
+#include <bits/stdc++.h>
+
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    long long a,b,c,d;
+    cin >> a >> b >>c;
+    d = ((a+c-1)/c) * ((b+c-1)/c);
+    cout<<d;
+    return 0;
+}
 
 /**
  * codeforces
