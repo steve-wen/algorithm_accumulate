@@ -1279,6 +1279,50 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
+const int MOD = 1'000'000'007;
+const int MX = 100'000; // C(n,k) n
+
+// 快速幂取 MOD
+long long q_pow(long long x, int n) {
+    long long res = 1;
+    for (; n > 0; n /= 2) {
+        if (n % 2) {
+            res = res * x % MOD;
+        }
+        x = x * x % MOD;
+    }
+    return res;
+}
+
+int sumOfPower(vector<int>& a, int k) {
+    int n = a.size();
+    long long memo[n+1][k+1][n+1];
+    memset(memo,-1,sizeof(memo));
+    function<long long (int,int,int)> dfs = [&](int i, int j, int l){
+        if (l < 0) return (long long)0;
+        if (i < 0) {
+            if (j == 0 && l == 0) return (long long)1;
+            return (long long)0;
+        }
+        if (memo[i][j][l] != -1) return memo[i][j][l];
+        long long& res = memo[i][j][l];
+        res = 0;
+        if (a[i] > j) {
+            res = (res+dfs(i-1,j,l))%MOD;
+        } else {
+            res = (res+dfs(i-1,j,l))%MOD;
+            res = (res +dfs(i-1,j-a[i],l-1))%MOD;
+        }
+        return res;
+    };
+
+    long long ans = 0;
+    for (int i = 1; i <= n; ++i) {
+        long long cnt = dfs(n-1,k,i);
+        ans = (ans+ cnt * q_pow(2,n-i))%MOD;
+    }
+    return ans;
+}
 
 //int main() {
 //    return 0;
@@ -1393,10 +1437,9 @@ int numberOfPairs(vector<vector<int>>& p) {
 /**
  * impl list :
  * 1. 1.2 练习对应分数的题目，包括速度
+ * 1.3 贡献法 巫师的力量总和 (熟悉此种思想和用法)
  * 2. 莫队算法(了解分块思想)-> 莫队的应用，注意 cf 题单，套路等
  * 3. 练习 CF 题单等; 多类型比赛并行打
- * 7.6 贡献法
- * 7.8 巫师的力量总和
  * 4. 2200 难度题
  * 5. 灵神 总结/归纳 的周赛题单（附难度分和知识点）-> 对应练习
  * 6. no.887 鸡蛋掉落
