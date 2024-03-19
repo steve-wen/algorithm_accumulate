@@ -15,6 +15,7 @@ using namespace std;
  * c : 背包容量
  * w[i] : 第 i 个物品的体积
  * v[i] : 第 i 个物品的价值
+ * 每种物品最多只能选一次
  * 返回: 所选物品体积不超过 c 的前提下, 所能得到的最大价值和
  */
 
@@ -120,11 +121,11 @@ int unbounded_bag(int c, vector<int> w, vector<int> v){
 }
 
 /**
- * 分组背包
+ * 多重背包
  * t : 背包容量
  * a[i][0] : 第 i 种物品的数量
  * a[i][1] : 第 i 种物品的单价
- * 每种物品可以在数量范围内选
+ * 每种物品可以在数量范围内重复选
  * 返回: 所选物品价值恰好等于 t 的前提下, 所能得到的方案数
  * https://leetcode.cn/problems/number-of-ways-to-earn-points/description/
  * @param t
@@ -154,6 +155,10 @@ int waysToReachTarget(int t, vector<vector<int>>& a) {
 
 /**
  * 分组背包
+ * 同一组内的物品至多/恰好选一个。
+ * 可以返回 1: 所选物品价值恰好等于 t 的前提下, 是否有成功的方案，成功返回 1, 否则返回 0
+ *         2: 所选物品价值恰好等于 t 的前提下, 能选的方案数总和
+ * 时间复杂度： O(k * m * n), m = a.size(), n = a[0].size()
  * https://leetcode.cn/problems/minimize-the-difference-between-target-and-chosen-elements/description/
  * @param a
  * @param t
@@ -202,4 +207,33 @@ int minimizeTheDifference(vector<vector<int>>& a, int t) {
         }
     }
     return ans;
+}
+
+/**
+ * 分组背包
+ * 同一组内的物品可以选数量范围内的任意个。
+ * 可以返回 1: 所选物品数量等于 k 的前提下， 物品的最大和/最大价值
+ * 时间复杂度： O(k * m * n), m = p.size(), n = p[0].size()
+ * https://leetcode.cn/problems/maximum-value-of-k-coins-from-piles/description/
+ * @param a
+ * @param t
+ * @return
+ */
+int maxValueOfCoins(vector<vector<int>>& p, int k) {
+    int n = p.size();
+    int memo[11][11];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int)> dfs = [&](int i, int j) {
+        if (j == 0 || i < 0) return 0;
+        if (memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        res = dfs(i-1,j);
+        int pre = 0;
+        for (int l = 0; l < min(j,(int)p[i].size()); ++l) {
+            pre += p[i][l];
+            res = max(res,dfs(i-1,j-l-1)+pre);
+        }
+        return res;
+    };
+    return dfs(n-1,k);
 }

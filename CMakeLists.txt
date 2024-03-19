@@ -10,7 +10,8 @@ file(GLOB_RECURSE CXX_SOURCE ${PROJECT_SOURCE_DIR}/src/*.cpp)
 set(SOURCE ${CXX_SOURCE}
         src/dsu.cpp
         src/hjt_segment_tree.cpp
-        src/modui.cpp)
+        src/modui.cpp
+        src/do_state_machine.cpp)
 
 #获取所有资源文件
 #file(GLOB_RECURSE RESOURCE_FILE ${PROJECT_SOURCE_DIR}/resource/*.*)

@@ -1279,28 +1279,28 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
-//int main() {
-//    return 0;
-//}
+int main() {
+    return 0;
+}
 
 
 /**
  * luogu/nowcoder/codeforces
  */
-#include <bits/stdc++.h>
-
-using namespace std;
-
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
-    long long a,b,c,d;
-    cin >> a >> b >>c;
-    d = ((a+c-1)/c) * ((b+c-1)/c);
-    cout<<d;
-    return 0;
-}
+//#include <bits/stdc++.h>
+//
+//using namespace std;
+//
+//int main() {
+//    ios::sync_with_stdio(false);
+//    cin.tie(nullptr);
+//
+//    long long a,b,c,d;
+//    cin >> a >> b >>c;
+//    d = ((a+c-1)/c) * ((b+c-1)/c);
+//    cout<<d;
+//    return 0;
+//}
 
 /**
  * codeforces
@@ -1361,9 +1361,10 @@ int main() {
 
 /**
  * impl list :
- * 1. 1.2 练习对应分数的题目，包括速度
+ * CF 的经典题, 注意练习
+ * 1. 1.2 练习对应分数的题目，包括速度 (注意速度) (注意对应分数)
  * 1.3 贡献法 巫师的力量总和 (熟悉此种思想和用法)
- * 2. 莫队算法(了解分块思想)-> 莫队的应用，注意 cf 题单，套路等
+ * 2. 注意 cf 题单，套路等
  * 3. 练习 CF 题单等; 多类型比赛并行打
  * 4. 2200 难度题
  * 5. 灵神 总结/归纳 的周赛题单（附难度分和知识点）-> 对应练习
