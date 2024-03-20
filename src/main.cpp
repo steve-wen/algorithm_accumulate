@@ -8,7 +8,6 @@ using ll = long long;
 #define se second
 #define fi first
 #define tostring(a) (ostringstream() << a).str()
-//#define endl "/n"
 
 typedef pair<int,int> pii;
 typedef pair<long,long> pll;
@@ -1286,49 +1285,30 @@ int numberOfPairs(vector<vector<int>>& p) {
 
 /**
  * luogu/nowcoder/codeforces
+ * "\n" 比 endl 快很多
  */
 #include <bits/stdc++.h>
 
 using namespace std;
+#define endl "\n"
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    int n;
+    int n, ans = 0;
     cin >> n;
-    unordered_map<string,int> mp1,mp2;
-    vector<int> b(n);
-    vector<string> str(n);
-    for (int i =0; i < n ; ++i) {
-        int a = 0;
-        string s;
-        cin >> s >> a;
-        b[i] = a;
-        str[i] = s;
-        mp1[s] += a;
-    }
-    int mx = 0;
-    for (auto p : mp1) {
-        mx = max(mx,p.second);
-    }
-    unordered_set<string> st;
-    for (auto p : mp1) {
-        if(mx == p.second){
-            st.emplace(p.first);
-        }
-    }
-    if (st.size() == 1) {
-        cout << *st.begin();
-        return 0;
-    }
 
-    for (int i =0; i <n; ++i) {
-        mp2[str[i]] += b[i];
-        if (mp2[str[i]] >= mx) {
-            cout << str[i];
-            return 0;
+    auto isp = [&](int a) {
+        for (int i = 2; i <= sqrt(a); ++i) {
+            if (a % i == 0) return false;
         }
-    }
+        return true;
+    };
+    if (isp(n)) cout << 1;
+    else if (n %2 == 0) cout << 2;
+    else if (isp(n-2)) cout << 2;
+    else cout <<3;
+
     return 0;
 }
 
