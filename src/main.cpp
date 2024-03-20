@@ -1291,42 +1291,44 @@ int numberOfPairs(vector<vector<int>>& p) {
 
 using namespace std;
 
-/**
- * 线性 dp + 优化
- * 时间复杂度 O(nk*n^(1/2))
- * 注意用的 dp, 不是记忆化 (平时注意结合使用，转化思维?)
- * https://codeforces.com/problemset/problem/414/B
- * @return
- */
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    int MOD = (int)1e9+7;
-    int n,k;
-    long long ans = 0;
-    cin >> n >> k;
-    vector<int> a(n);
-    iota(a.begin(),a.end(), 1);
-    vector<vector<long long>> f(k+1,vector<long long>(n+1));
-    for (int i = 1; i <= n;++i) {
-        f[1][i] = 1;
+    int n;
+    cin >> n;
+    unordered_map<string,int> mp1,mp2;
+    vector<int> b(n);
+    vector<string> str(n);
+    for (int i =0; i < n ; ++i) {
+        int a = 0;
+        string s;
+        cin >> s >> a;
+        b[i] = a;
+        str[i] = s;
+        mp1[s] += a;
     }
-
-    for (int i =2; i <= k; ++i) {
-        for (int j = 1; j <= n; ++j) {
-            for (int l = 1; l <= sqrt(j); ++l) {
-                if (j % l == 0 && l != sqrt(j)) {
-                    f[i][j] = (f[i][j] + f[i-1][l] + f[i-1][j/l])%MOD;
-                } else if (j % l == 0 && l == sqrt(j)) {
-                    f[i][j] = (f[i][j] + f[i-1][l])%MOD;
-                }
-            }
+    int mx = 0;
+    for (auto p : mp1) {
+        mx = max(mx,p.second);
+    }
+    unordered_set<string> st;
+    for (auto p : mp1) {
+        if(mx == p.second){
+            st.emplace(p.first);
         }
     }
-    for (int i = 1; i <= n; ++i) {
-        ans = (ans+f[k][i])%MOD;
+    if (st.size() == 1) {
+        cout << *st.begin();
+        return 0;
     }
-    cout<<ans;
+
+    for (int i =0; i <n; ++i) {
+        mp2[str[i]] += b[i];
+        if (mp2[str[i]] >= mx) {
+            cout << str[i];
+            return 0;
+        }
+    }
     return 0;
 }
 

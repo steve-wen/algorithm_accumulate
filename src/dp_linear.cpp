@@ -175,7 +175,7 @@ int dieSimulator(int n, vector<int>& r) {
 ///**
 // * 线性 dp + 优化
 // * 时间复杂度 O(nk*n^(1/2))
-// * 注意用的 dp, 不是记忆化 (平时注意结合使用，转化思维?)
+// * 注意用的 dp, 不是记忆化 (平时注意结合使用，转化思维? 记忆化容易超时)
 // * https://codeforces.com/problemset/problem/414/B
 // * @return
 // */
