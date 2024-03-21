@@ -8,18 +8,21 @@ using namespace std;
 
 /**
  * https://leetcode.cn/problems/subarray-with-elements-greater-than-varying-threshold/description/
+ * 每次操作平均时间复杂度 O(1)? O(logn)?
  * no.2334
  */
 
 struct dsu {
+    // fa 记录 x 所在树/集合 的根节点; size 记录根节点所在树的元素个数
     vector<size_t> fa, size;
-
+    // x 的初始 fa 是 x 本身; 注意 size 的初始化值 和 size 的合并方式; 此处与后面的统计方式有差异
     explicit dsu(size_t size_) : fa(size_), size(size_, 0) {
         iota(fa.begin(), fa.end(), 0);
     }
 
     size_t find(size_t x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }
 
+    //合并
     void unite(size_t x, size_t y) {
         x = find(x), y = find(y);
         fa[y] = x;
@@ -201,3 +204,62 @@ public:
     }
 };
 
+
+//https://codeforces.com/problemset/problem/28/B
+//#include <bits/stdc++.h>
+//
+//using namespace std;
+//#define endl "\n"
+//
+//struct dsu {
+//    vector<size_t> fa, size;
+//
+//    explicit dsu(size_t size_) : fa(size_), size(size_, 0) {
+//        iota(fa.begin(), fa.end(), 0);
+//    }
+//
+//    size_t find(size_t x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }
+//
+//    void unite(size_t x, size_t y) {
+//        x = find(x), y = find(y);
+//        fa[y] = x;
+//        size[x] += size[y]+1;
+//    }
+//};
+//
+//int main() {
+//    ios::sync_with_stdio(false);
+//    cin.tie(nullptr);
+//    int n;
+//    cin >> n;
+//
+//    vector<int> a(n);
+//    for (int i =0; i < n; ++i) {
+//        cin>> a[i];
+//    }
+//    vector<int> d(n);
+//    for (int i =0; i < n; ++i) {
+//        cin>> d[i];
+//    }
+//    unordered_set<int> st[n+1];
+//    dsu ds(n+1);
+//    for (int i =0; i <n; ++i) {
+//        if (i-d[i] >= 0) {
+//            ds.unite(i,i-d[i]);
+//        }
+//        if (i+d[i] < n){
+//            ds.unite(i,i+d[i]);
+//        }
+//    }
+//    for (int i =0; i <n; ++i) {
+//        st[ds.find(i)].emplace(i+1);
+//    }
+//    for (int i =0; i <n; ++i) {
+//        if(st[ds.find(i)].count(a[i]) == 0){
+//            cout <<"NO";
+//            return 0;
+//        }
+//    }
+//    cout << "YES";
+//    return 0;
+//}

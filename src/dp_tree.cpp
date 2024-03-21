@@ -10,6 +10,8 @@ using namespace std;
 *   换根 dp 模板
 *   lc.no.834 : 树中距离之和
 *   换根 ： 相邻节点换根
+*   先考虑一个节点 0,祖先 -1，并得到 ans[0]; 然后 从 0 开始交换相邻节点, 因为 ans[相邻节点] 之间最多相差 1; reroot 换根
+*   时间复杂度 O(n)
 */
 vector<int> sumOfDistancesInTree(int n, vector<vector<int>>& e) {
     vector<vector<int>> g(n);
@@ -42,7 +44,7 @@ vector<int> sumOfDistancesInTree(int n, vector<vector<int>>& e) {
 
 // lc.no.2858 : 可以到达每一个节点的最少边反转次数
 vector<int> minEdgeReversals(int n, vector<vector<int>>& e) {
-    vector<vector<pair<int,int>>> g;
+    vector<vector<pair<int,int>>> g(n);
     for (auto &e1: e) {
         int x = e1[0], y = e1[1];
         g[x].emplace_back(y,1); // 注意 emplace

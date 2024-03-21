@@ -1295,20 +1295,51 @@ using namespace std;
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    int n, ans = 0;
+    int n;
     cin >> n;
 
-    auto isp = [&](int a) {
-        for (int i = 2; i <= sqrt(a); ++i) {
-            if (a % i == 0) return false;
-        }
-        return true;
+    vector<vector<pair<int,int>>> g(n+1);
+    for (int i = 0; i < n-1;++i) {
+        int x,y;
+        cin >> x >>y;
+        g[x].emplace_back(y,1); // 注意 emplace
+        g[y].emplace_back(x,-1); // 建图
+    }
+    vector<int> ans(n+1);
+    function<void(int, int)> dfs = [&](int x, int fa) {
+        for (auto [y,dir]: g[x])
+            if (y != fa) {
+                ans[1] += dir < 0; // 计数
+                dfs(y, x);
+            }
     };
-    if (isp(n)) cout << 1;
-    else if (n %2 == 0) cout << 2;
-    else if (isp(n-2)) cout << 2;
-    else cout <<3;
+    dfs(1, -1);
 
+    function<void(int, int)> reroot = [&](int x, int fa) {
+        for (auto [y,dir]: g[x])
+            if (y != fa) {
+                ans[y] = ans[x]+dir; // 考虑相邻节点
+                reroot(y, x); // 互换根节点
+            }
+    };
+    reroot(1, -1);
+    vector<int> ind(n+1);
+    iota(ind.begin()+1,ind.end(),1);
+    sort(ind.begin()+1,ind.end(),[&](int i, int j){return ans[i] < ans[j];});
+    vector<int> vec{ind[1]};
+    int res = ans[ind[1]];
+    for (int i = 2; i <= n; ++i) {
+        if (ans[ind[i]] == ans[ind[i-1]]) {
+            vec.emplace_back(ind[i]);
+        } else {
+            break;
+        }
+    }
+    cout << res << endl;
+    sort(vec.begin(),vec.end());
+    for (int i = 0; i < vec.size();++i) {
+        cout << vec[i] << " ";
+    }
     return 0;
 }
 
