@@ -1291,17 +1291,45 @@ int numberOfPairs(vector<vector<int>>& p) {
 
 using namespace std;
 #define endl "\n"
+int MOD = 1e9+7;
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    double m,n;
-    cin >> m >>n;
-    double ans = 0;
-    for (int i =1 ;i <=m; ++i) {
-        ans += i*(pow(i/m,n)-pow((i-1)/m,n));
+    int a,b;
+    cin >> a>>b;
+    int c = min(a,b);
+    int d = max(a,b);
+    vector<int> vec{1};
+    for (int i = 2; i <=sqrt(c); ++i) {
+        if (c%i == 0) {
+            if (d%i == 0) {
+                vec.emplace_back(i);
+            }
+            if (d%(c/i) == 0 && i != c/i) {
+                vec.emplace_back(c/i);
+            }
+        }
     }
-    cout << ans;
+    if (d%c==0) {
+        vec.emplace_back(c);
+    }
+    sort(vec.begin(),vec.end());
+    int n;
+    cin >>  n;
+    while (n--) {
+        int l,r;
+        int ans = -1;
+        cin >> l >>r;
+        auto it = upper_bound(vec.begin(), vec.end(),r);
+        if (it != vec.begin()) {
+            --it;
+            if (*it >= l) {
+                ans = *it;
+            }
+        }
+        cout <<ans <<endl;
+    }
     return 0;
 }
 

@@ -236,25 +236,28 @@ int maxPalindromes(string s, int k) {
     return dfs(n-1,n-1);
 }
 
-//int minHeightShelves(vector<vector<int>>& b, int d) {
-//    int n = b.size();
-//    vector<int> s(n+1);
-//    for(int i =0; i < n; ++i) {
-//        s[i+1] = s[i]+b[i][0];
-//    }
-//    vector<vector<int>> f(n+1,vector<int>(n+1,1e6));
-//    for (int i = 1; i <= n; ++i) {
-//        int w = b[i][1];
-//        for (int j = i+1; j <= n && s[j] - s[i-1] <= d; ++j) {
-//            if (b[j][1])
-//            f[i][j] = (long long)(k-i+1)*s[j]*(long long)(i%2 == 0 ? -1 : 1) + w;
-//        }
-//    }
-//    long long ans = LLONG_MIN;
-//    for (int i = k; i <= n; ++i) {
-//        ans = max(ans,f[k][i]);
-//    }
-//    return ans;
-//
-//}
+int minHeightShelves(vector<vector<int>>& b, int d) {
+    int n = b.size();
+    vector<int> s(n+1);
+    for(int i =0; i < n; ++i) {
+        s[i+1] = s[i]+b[i][0];
+    }
+    vector<vector<int>> f(n+1,vector<int>(n+1,1e6));
+    f[0][0] = 0;
+    for (int i = 0; i <= n; ++i) {
+        int w = b[i][1];
+        for (int j = i; j <= n && s[j+1] - s[i] <= d; ++j) {
+            if (b[j][1] > w) {
+
+            }
+
+        }
+    }
+    long long ans = LLONG_MIN;
+    for (int i = k; i <= n; ++i) {
+        ans = max(ans,f[k][i]);
+    }
+    return ans;
+
+}
 
