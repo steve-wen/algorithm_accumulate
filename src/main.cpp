@@ -1278,7 +1278,85 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
+TreeNode* lcaDeepestLeaves(TreeNode* r1) {
+    int d1 = 0;
+    set<TreeNode*> a;
+    function<void(TreeNode*,int)> dfs = [&](TreeNode* r,int d){
+        if (r->left) {
+            dfs(r->left,d+1);
+        }
+        if (r->right) {
+            dfs(r->right,d+1);
+        }
+        if (r->left == nullptr && r->right == nullptr) {
+            d1 = max(d1,d);
+            return;
+        }
+    };
+    dfs(r1,0);
+    function<void(TreeNode*,int)> dfs1 = [&](TreeNode* r,int d){
+        if (r->left) {
+            dfs1(r->left,d+1);
+        }
+        if (r->right) {
+            dfs1(r->right,d+1);
+        }
+        if (r->left == nullptr && r->right == nullptr) {
+            if(d == d1) {
+                a.emplace(r);
+            }
+            return;
+        }
+    };
+    dfs1(r1,0);
+    int n = a.size();
+    auto check = [&](TreeNode* r,int d) {
+        int cnt = 0;
+        function<void(TreeNode*,int)> dfs3 = [&](TreeNode* r,int d){
+            if (r->left) {
+                dfs3(r->left,d+1);
+            }
+            if (r->right) {
+                dfs3(r->right,d+1);
+            }
+            if (r->left == nullptr && r->right == nullptr) {
+                if (a.count(r)) ++cnt;
+                return;
+            }
+        };
+        dfs3(r,d);
+        if (cnt == n) return true;
+        return false;
+    };
+    TreeNode* res = r1;
+    int ans = 0;
 
+    function<void(TreeNode*,int)> dfs2 = [&](TreeNode* r,int d){
+        if (r->left) {
+            if (check(r->left,d+1)) {
+                if (d+1 > ans) {
+                    res = r->left;
+                    ans = d+1;
+                }
+            }
+            dfs2(r->left,d+1);
+        }
+        if (r->right) {
+            if (check(r->right,d+1)) {
+                if (d+1 > ans) {
+                    res = r->right;
+                    ans = d+1;
+                }
+            }
+            dfs2(r->right,d+1);
+        }
+        if (r->left == nullptr && r->right == nullptr) {
+            return;
+        }
+    };
+    dfs2(r1,0);
+    return res;
+}
 
 int main() {
 
@@ -1396,6 +1474,7 @@ int main() {
 /**
  * impl list :
  * CF 的经典题, 注意练习
+ * 1.1 每日一题，注意写
  * 1. 1.2 练习对应分数的题目，包括速度 (注意速度) (注意对应分数)
  * 1.3 贡献法 巫师的力量总和 (熟悉此种思想和用法)
  * 2. 注意 cf 题单，套路等
