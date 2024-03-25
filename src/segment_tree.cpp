@@ -296,7 +296,7 @@ public:
 
     // 维护
     void maintain(int o) {
-        mx[o] = max(mx[o * 2],mx[o * 2 + 1]);
+        mx[o] = min(mx[o * 2],mx[o * 2 + 1]);
     }
     // 初始化 o 从 1 开始
     void build(vector<int> &a, int o, int l, int r) {
@@ -314,32 +314,52 @@ public:
     }
 
     // 线段树上二分 获取下标 ind, L是左边界
+    // 线段树二分获取最近下标的方法 可与 单调栈 相互转换使用
     int index(int o, int l, int r, int L, int R, int val) {
-        if (mx[o] <= val) return 5e4+2;
+        if (mx[o] >= val) return 1e5+2;
         if (l == r) return l;
         int mid = (l+r)/2;
-        if (L <= mid && mx[o*2] > val && R >= mid) {
+        if (L <= mid && mx[o*2] < val && R >= mid) {
             auto ind = index(o*2, l, mid,L,R, val);
-            if (ind != (int)5e4+2) return ind;
+            if (ind != (int)1e5+2) return ind;
         }
         return index(o*2+1, mid+1, r, L,R,val);
     }
 
-    vector<int> leftmostBuildingQueries(vector<int>& h, vector<vector<int>>& q) {
-        int n = h.size(), m = q.size();
+    vector<int> mostCompetitive(vector<int>& a, int k) {
+        int n = a.size();
         mx.resize(n*4);
-        vector<int> ans(m,-1);
-        build(h,1,1,n);
-        for (int i = 0; i < m; ++i) {
-            int j = min(q[i][0],q[i][1]), k =  max(q[i][0],q[i][1]);
-            if (j == k || h[j] < h[k]) ans[i] = k;
-            else {
-                auto ind = index(1,1,n,k+2,n,h[j]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
-                if (ind != 5e4+2) ans[i] = ind-1;
+        vector<int> ind(n,-1);
+        build(a,1,1,n);
+        for (int i = 0; i < n; ++i) {
+            auto ind1 = index(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+            if (ind1 != 1e5+2) ind[i] = ind1-1;
+        }
+        vector<int> ans;
+        for (int i =0; i < n; ++i) {
+            if (ans.size() == k) return ans;
+            if (n - ind[i] < k-ans.size() || ind[i] == -1) {
+                ans.emplace_back(a[i]);
             }
         }
         return ans;
     }
+
+//    vector<int> leftmostBuildingQueries(vector<int>& h, vector<vector<int>>& q) {
+//        int n = h.size(), m = q.size();
+//        mx.resize(n*4);
+//        vector<int> ans(m,-1);
+//        build(h,1,1,n);
+//        for (int i = 0; i < m; ++i) {
+//            int j = min(q[i][0],q[i][1]), k =  max(q[i][0],q[i][1]);
+//            if (j == k || h[j] < h[k]) ans[i] = k;
+//            else {
+//                auto ind = index(1,1,n,k+2,n,h[j]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+//                if (ind != 5e4+2) ans[i] = ind-1;
+//            }
+//        }
+//        return ans;
+//    }
 };
 
 // segment tree + dp : 线段树 + 动态规划  lc.no.2407

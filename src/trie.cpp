@@ -53,38 +53,45 @@ public:
 
 /**
  * 前缀分数和
+ * 字典树的灵活运用, 合理设置 Node 中的数据
  * lc.no.2416
  */
 class Node1 {
 public:
     array<Node1*, 26> children{};
-    int cnt = 0;
+    int cnt = 1e4+1;
+    int len = 5e3+1;
 };
 
 class Trie1 {
 public:
     Node1 *root = new Node1();
 
-    void insert(string w) {
+    void insert(string w,int i, int l) {
         Node1 *cur = root;
         for (auto c : w) {
             if (cur->children[c-'a'] == nullptr) {
                 cur->children[c-'a'] = new Node1();
             }
             cur = cur->children[c-'a'];
-            cur->cnt++;
+            if (cur->cnt != 1e4+1 && l >= cur->len) {
+                continue;
+            } else {
+                cur->cnt = i;
+                cur->len = l;
+            }
         }
     }
 
     int query(string p) { // dfs
         Node1 *cur = root;
-        int tmp = 0;
+        int tmp = -1;
         for (auto c : p) {
             if (cur->children[c-'a'] == nullptr) {
                 return tmp;
             }
             cur = cur->children[c-'a'];
-            tmp += cur->cnt;
+            tmp = cur->cnt;
         }
         return tmp;
     }
@@ -92,18 +99,50 @@ public:
 
 class Solution {
 public:
-    vector<int> sumPrefixScores(vector<string>& w) {
+
+    vector<int> stringIndices(vector<string>& w, vector<string>& q) {
+        for (auto& c : w) {
+            reverse(c.begin(),c.end());
+        }
+        for (auto& c : q) {
+            reverse(c.begin(),c.end());
+        }
+        int n = w.size(), m = q.size();
+        int mn = 1e4+1, ind = n;
+        for (int i = 0; i < n; ++i) {
+            if (w[i].size() < mn) {
+                ind = i;
+                mn = w[i].size();
+            }
+        }
         Trie1 t{};
         vector<int> ans;
-        for (auto& s : w) {
-            t.insert(s);
+        for (int i = 0; i < n; ++i) {
+            t.insert(w[i],i,w[i].size());
         }
-        for (auto& s : w) {
-            ans.emplace_back(t.query(s));
+        for (auto& s : q) {
+            auto tmp = t.query(s);
+            if (tmp == -1) {
+                tmp = ind;
+            }
+            ans.emplace_back(tmp);
         }
         return ans;
     }
+
+//    vector<int> sumPrefixScores(vector<string>& w) {
+//        Trie1 t{};
+//        vector<int> ans;
+//        for (auto& s : w) {
+//            t.insert(s);
+//        }
+//        for (auto& s : w) {
+//            ans.emplace_back(t.query(s));
+//        }
+//        return ans;
+//    }
 };
+
 
 /**
  * 字典树 + z_function

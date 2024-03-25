@@ -236,28 +236,36 @@ int maxPalindromes(string s, int k) {
     return dfs(n-1,n-1);
 }
 
+/**
+ * dp, 状态转移;
+ * 定义清楚 f[i] 这个状态的含义, 从前往后递推,注意思路过程
+ * 时间复杂度 (O(n*d))
+ * https://leetcode.cn/problems/filling-bookcase-shelves/description/
+ * @param b
+ * @param d
+ * @return
+ */
 int minHeightShelves(vector<vector<int>>& b, int d) {
     int n = b.size();
     vector<int> s(n+1);
     for(int i =0; i < n; ++i) {
         s[i+1] = s[i]+b[i][0];
     }
-    vector<vector<int>> f(n+1,vector<int>(n+1,1e6));
-    f[0][0] = 0;
-    for (int i = 0; i <= n; ++i) {
-        int w = b[i][1];
-        for (int j = i; j <= n && s[j+1] - s[i] <= d; ++j) {
-            if (b[j][1] > w) {
-
+    vector<int> f(n+1,1e6+1);
+    f[0] = 0;
+    f[1] = b[0][1];
+    for (int i = 2; i <= n; ++i) {
+        f[i] = f[i-1]+b[i-1][1];
+        int mx = b[i-1][1];
+        for (int j = i-1; j >= 0; --j) {
+            if (s[i]-s[j] <= d) {
+                mx = max(b[j][1],mx);
+                f[i] = min(f[i],f[j]+mx);
+            } else {
+                break;
             }
-
         }
     }
-    long long ans = LLONG_MIN;
-    for (int i = k; i <= n; ++i) {
-        ans = max(ans,f[k][i]);
-    }
-    return ans;
-
+    return f[n];
 }
 

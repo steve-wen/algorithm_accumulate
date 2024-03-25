@@ -294,17 +294,17 @@ void test_Fenwick_Diff(vector<int>& a, int l, int r, int val, int& ans){
 class Fenwick_Max {
 
 public:
-    vector<int> tree;
-    vector<int> a;
-    Fenwick_Max(int n) : tree(n+1) {}
+    vector<long long> tree;
+    vector<long long> a;
+    Fenwick_Max(long long n) : tree(n+1),a(n+1) {}
 
-    // _add
-    void update(int i, int val) {
-        a[i] = val;
+    // _add,update, 此时的 update 可以使得 a[i] 加上一个数值,变大或变小
+    void update(long long i, long long val) {
+        a[i] += val;
         while (i < tree.size()) {
             // 枚举受影响的区间
             tree[i] = a[i];
-            for (int j = 1; j < (i & -i); j *= 2) {
+            for (long long j = 1; j < (i & -i); j *= 2) {
                 tree[i] = max(tree[i], tree[i - j]);
             }
             i += i & -i;
@@ -313,8 +313,8 @@ public:
 
     // 求区间和 a[l] + ... + a[r]
     // 1<=l<=r<=n
-    int getmax(int l, int r) {
-        int ans = -1e5; // 初始值，可根据题目设置
+    long long getmax(long long l, long long r) {
+        long long ans = -1e5; // 初始值，可根据题目设置
         while (r >= l) {
             ans = max(ans, a[r]);
             --r;
@@ -327,6 +327,20 @@ public:
         return ans;
     }
 };
+
+vector<long long> mostFrequentIDs(vector<int>& b, vector<int>& f) {
+    long long n = 1e5+2, m = b.size();
+    vector<long long> ans(m);
+    Fenwick_Max t(n);
+    long long mx = 0;
+    for (long long i = 0; i < m; ++i) {
+        mx = max(mx,(long long)b[i]);
+        // 注意 update
+        t.update((long long)(b[i]+1),f[i]);
+        ans[i] = t.getmax(1,mx+1);
+    }
+    return ans;
+}
 
 int mx(vector<int> &nums) {
     int n = nums.size();

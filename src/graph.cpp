@@ -189,6 +189,81 @@ int findCheapestPrice(int n, vector<vector<int>>& f, int s, int des, int k) {
     return -1;
 }
 
+struct TreeNode {
+         int val;
+         TreeNode *left;
+         TreeNode *right;
+         TreeNode() : val(0), left(nullptr), right(nullptr) {}
+         TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+         TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+     };
+
+/**
+ * dfs 记录 父节点 +  bfs 记录来源节点和方向
+ * 注意理解灵神题解
+ * @param r0
+ * @param st
+ * @param des
+ * @return
+ */
+string getDirections(TreeNode* r0, int st, int des) {
+    vector<vector<pair<int,char>>> g(1e5+1);
+    string s;
+    function<void(TreeNode*)> dfs = [&](TreeNode* r){
+        if (r == nullptr) return;
+        if (r->left) {
+            g[r->val].emplace_back(r->left->val,'L');
+            g[r->left->val].emplace_back(r->val,'U');
+            dfs(r->left);
+        }
+        if (r->right) {
+            g[r->val].emplace_back(r->right->val,'R');
+            g[r->right->val].emplace_back(r->val,'U');
+            dfs(r->right);
+        }
+    };
+    dfs(r0);
+
+    // dis 数组记录距离 且 < 1 时未访问过，有 mark/vis 的作用
+    vector<int> dis(1e5+1,-1);
+    // 初始化
+    dis[st] = 0;
+
+    unordered_map<int,pair<int,char>> mp;
+    queue<pair<int,char>> q;
+    q.emplace(st,'a');
+    bool flag = false;
+    while (!q.empty()) {
+        if (flag) break;
+        for (int i = q.size(); i > 0; --i) {
+            auto q1 = q.front();
+            q.pop();
+
+            // b 为父节点
+            auto&[a,b] = q1;
+
+            if (a == des) {
+                flag = true;
+                break;
+            }
+            for (auto& [j,k] : g[a]) {
+                if (dis[j] < 0) { // j 未访问过
+                    dis[j] = dis[a]+1;
+                    q.emplace(j,k);
+                    mp[j] = pair<int,char>(a,k);
+                }
+            }
+        }
+    }
+    int a = des;
+    while (a != st) {
+        s += mp[a].second;
+        a = mp[a].first;
+    }
+    reverse(s.begin(),s.end());
+    return s;
+}
+
 /**
  * dijktra: 套 dijkstra 模板
  */
