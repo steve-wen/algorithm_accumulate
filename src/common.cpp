@@ -229,6 +229,58 @@ int fieldOfGreatestBlessing(vector<vector<int>>& f) {
 }
 
 /**
+ * 离散化 + 一维差分
+ * https://leetcode.cn/problems/number-of-flowers-in-full-bloom/description/
+ * @param f
+ * @return
+ */
+vector<int> fullBloomFlowers(vector<vector<int>>& f, vector<int>& p) {
+    vector<int> x;
+    for (auto f1 : f) {
+        x.emplace_back(f1[0]);
+        x.emplace_back(f1[1]);
+    }
+    // 为离散化做准备，有序性
+    ranges::sort(x);
+    x.erase(unique(x.begin(),x.end()),x.end());
+    int n = x.size();
+    // 差分数组
+    vector<int> diff(n + 1);
+    // mn 记录需要减少的值/量
+    vector<int> mn(n + 1);
+    for (auto& f1 : f) {
+        // 离散化（以下标顺序作为参数）
+        int x1 = lower_bound(x.begin(),x.end(), f1[0]) - x.begin(); // 下标做差
+        int x2 = lower_bound(x.begin(),x.end(), f1[1]) - x.begin();
+        // 二维差分
+        ++diff[x1];
+        --diff[1 + x2]; // 右闭区间
+        --mn[1 + x2];
+    }
+    int sum = 0;
+    vector<int> d(n+1);
+    // 差分累加
+    for (int i = 0; i < n+1; ++i) {
+        sum += diff[i];
+        d[i] = sum;
+    }
+    vector<int> ans;
+    for (auto p1 : p) {
+        if (p1 < x[0] || p1 >x[n-1]) {
+            ans.emplace_back(0);
+        } else {
+            int ind = upper_bound(x.begin(),x.end(), p1) - x.begin()-1;
+            if (p1 > x[ind]) {
+                ans.emplace_back(d[ind]+mn[ind+1]);
+            } else {
+                ans.emplace_back(d[ind]);
+            }
+        }
+    }
+    return ans;
+}
+
+/**
  * 二维前缀和模板
  * @param g
  * @param k
