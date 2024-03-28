@@ -1278,24 +1278,6 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
-/**
- * 前缀和, p[],f[]
- * @param nextVisit
- * @return
- */
-int firstDayBeenInAllRooms(vector<int>& a) {
-    int mod = 1e9 + 7;
-    int n = a.size();
-    vector<long long> p(n+1), f(n);
-    f[0] = 2;
-    p[1] = 2;
-    for (int i = 1; i < n; ++i) {
-        f[i] = p[i]-p[a[i]];
-    }
-
-    return 0;
-}
-
 //int main() {
 //
 //    return 0;
