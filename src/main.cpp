@@ -1278,27 +1278,13 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
-
-int maxEvents(vector<vector<int>>& e) {
-    int ans = 0, n = e.size();
-    vector<vector<int>> l(1e5+1);
-    for (auto e1 : e) {
-        l[e1[0]].emplace_back(e1[1]);
-    }
-    priority_queue<int,vector<int>,greater<>> q;
-    for (int i =1; i <= 1e5; ++i) {
-        for (auto a : l[i]) {
-            q.emplace(a);
-        }
-        while(!q.empty() && q.top() < i) {
-            q.pop();
-        }
-        if (!q.empty()) {
-            ++ans;
-            q.pop();
-        }
-    }
-    return ans;
+/**
+ * 前缀和, p[],f[]
+ * @param nextVisit
+ * @return
+ */
+int firstDayBeenInAllRooms(vector<int>& nextVisit) {
+    return 0;
 }
 
 //int main() {
