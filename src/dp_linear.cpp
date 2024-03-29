@@ -232,3 +232,48 @@ int firstDayBeenInAllRooms(vector<int>& a) {
     return p[n-1];
 }
 
+/**
+ * 离散化 + 线性 dp
+ * O(n)
+ * https://leetcode.cn/problems/maximum-profit-in-job-scheduling/description/
+ * @param s
+ * @param e
+ * @param p
+ * @return
+ */
+int jobScheduling(vector<int>& s, vector<int>& e, vector<int>& p) {
+    vector<int> a;
+    int n = s.size();
+    for (int i = 0; i < n; ++i) {
+        a.emplace_back(s[i]);
+        a.emplace_back(e[i]);
+    }
+    ranges::sort(a);
+    a.erase(unique(a.begin(),a.end()),a.end());
+    int m = a.size();
+    for (int i = 0; i < n; ++i) {
+        s[i] = lower_bound(a.begin(),a.end(),s[i]) - a.begin();
+        e[i] = lower_bound(a.begin(),a.end(),e[i]) - a.begin();
+    }
+    // b 记录初始位置的 各个组数
+    vector<vector<pair<int,int>>> b(m+1);
+    for (int i = 0; i < n; ++i) {
+        b[s[i]].emplace_back(e[i],p[i]);
+    }
+    vector<int> f(m+1);
+    for (int i = 0; i <= m; ++i) {
+        if (i > 0) {
+            f[i] = max(f[i],f[i-1]);
+        }
+        for (auto& b1 : b[i]) {
+            auto [c, d] = b1;
+            f[c] = max(f[c], f[i]+d);
+        }
+    }
+    int ans = 0;
+    for (int i = m; i >= 0; --i) {
+        ans = max(ans,f[i]);
+    }
+    return ans;
+}
+
