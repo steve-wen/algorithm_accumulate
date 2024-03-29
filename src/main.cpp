@@ -1278,6 +1278,10 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
+vector<int> decode(vector<int>& encoded) {
+
+}
+
 //int main() {
 //
 //    return 0;
