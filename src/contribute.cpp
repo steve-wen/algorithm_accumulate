@@ -178,3 +178,34 @@ public:
     }
 };
 
+/**
+ * 贡献法
+ * 记录子数组左右边界
+ * https://leetcode.cn/problems/count-unique-characters-of-all-substrings-of-a-given-string/description/
+ * @param s
+ * @return
+ */
+int uniqueLetterString(string s) {
+    vector<vector<int>> ind(27);
+    int n = s.size();
+    for (int i = 0; i < n; ++i) {
+        ind[s[i]-'A'].emplace_back(i);
+    }
+    int ans = 0;
+    for (int i = 0; i <= 25; ++i) {
+        int m = ind[i].size();
+        auto a = ind[i];
+        for (int j = 0; j < m; ++j) {
+            if (j -1 < 0 && j+1 >= m) {
+                ans += (n-1-a[j]+1)*(a[j]-0+1);
+            } else if (j -1 < 0) {
+                ans += (a[j+1]-a[j])*(a[j]-0+1);
+            } else if (j+1 >= m) {
+                ans += (n-1-a[j]+1)*(a[j]-a[j-1]);
+            } else {
+                ans += (a[j+1]-a[j])*(a[j]-a[j-1]);
+            }
+        }
+    }
+    return ans;
+}

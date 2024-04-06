@@ -126,6 +126,37 @@ vector<int> findAllPeople(int n, vector<vector<int>>& m, int f) {
     vector<int> ans(st.begin(),st.end());
     return ans;
 }
+/**
+ * https://leetcode.cn/problems/similar-string-groups/description/
+ * @param s
+ * @return
+ */
+int numSimilarGroups(vector<string>& s) {
+    int n = s.size();
+    dsu_1 ds(n+1);
+    auto check = [&](string& s1, string& s2) {
+        int m = s1.size(), cnt = 0;
+        for (int i = 0; i < m; ++i) {
+            if (s1[i] != s2[i]) {
+                ++cnt;
+            }
+        }
+        return cnt == 0 || cnt == 2;
+    };
+    for (int i = 0; i < n-1; ++i) {
+        for (int j = i+1; j < n; ++j) {
+            if (check(s[i],s[j])) {
+                ds.unite(i,j);
+            }
+        }
+    }
+    int ans = 0;
+    unordered_set<int> t;
+    for (int i = 0; i <n; ++i) {
+        t.emplace(ds.find(i));
+    }
+    return t.size();
+}
 
 /**
  * 并查集 + 离线思想 (离线注意)

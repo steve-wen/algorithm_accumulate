@@ -1034,7 +1034,7 @@ int diameterOfBinaryTree(TreeNode* root) {
 
 // 二叉树的最大路径和 no.124
 int maxPathSum(TreeNode* root) {
-    int ans = -1e3;
+    int ans = -10;
     function<int(TreeNode*)> dfs = [&](TreeNode* r){
         if (r == nullptr) return 0;
         int L = max(0,dfs(r->left)), R = max(0,dfs(r->right)); // 用 L，R 记录 dfs, 类似 memo 数组记忆化
@@ -1097,7 +1097,7 @@ int minCameraCover(TreeNode* root) {
     map<pair<TreeNode*,int>,int> memo;
     function<int(TreeNode*,int)> dfs = [&](TreeNode* r, int j){
         if (r == nullptr) {
-            return j == 0 ? (int)1e3 : 0;
+            return j == 0 ? (int)10 : 0;
         }
         if(memo.count(pair(r,j))) return memo[pair(r,j)];
         int& res = memo[pair(r,j)];
@@ -1278,47 +1278,44 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
-vector<int> decode(vector<int>& encoded) {
 
+int main() {
+    return 0;
 }
-
-//int main() {
-//
-//    return 0;
-//}
 
 /**
  * luogu/nowcoder/codeforces
  * "\n" 比 endl 快很多
  */
-#include <bits/stdc++.h>
 
-using namespace std;
-#define endl "\n"
-int MOD = 1e9+7;
-
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-    int n,x;
-    cin >> n>>x;
-    vector<int> a(n);
-    for (int i =0; i <n; ++i) {
-        cin >> a[i];
-    }
-    sort(a.begin(),a.end());
-    int n1 = lower_bound(a.begin(),a.end(),x) - a.begin();
-    int n2 = upper_bound(a.begin(),a.end(),x) -a.begin()-1;
-    int n3 = (n-1)/2;
-    if (n1 <= n3 && n2 >= n3) {
-        cout << 0;
-    } else if (n1 > n3) {
-        cout<< (n1-n3)*2-((n+1)%2);
-    } else if (n2 < n3) {
-        cout<< (n3-n2)*2-((n)%2);
-    }
-    return 0;
-}
+//#include <bits/stdc++.h>
+//
+//using namespace std;
+//#define endl "\n"
+//int MOD = 1e9+7;
+//
+//int main() {
+//    ios::sync_with_stdio(false);
+//    cin.tie(nullptr);
+//    int n,x;
+//    cin >> n>>x;
+//    vector<int> a(n);
+//    for (int i =0; i <n; ++i) {
+//        cin >> a[i];
+//    }
+//    sort(a.begin(),a.end());
+//    int n1 = lower_bound(a.begin(),a.end(),x) - a.begin();
+//    int n2 = upper_bound(a.begin(),a.end(),x) -a.begin()-1;
+//    int n3 = (n-1)/2;
+//    if (n1 <= n3 && n2 >= n3) {
+//        cout << 0;
+//    } else if (n1 > n3) {
+//        cout<< (n1-n3)*2-((n+1)%2);
+//    } else if (n2 < n3) {
+//        cout<< (n3-n2)*2-((n)%2);
+//    }
+//    return 0;
+//}
 
 /**
  * codeforces
@@ -1382,7 +1379,6 @@ int main() {
  * CF 的经典题, 注意练习
  * 1.1 每日一题，注意写;每日灵茶; 可根据灵神的视频总结模板等; 手机上看题目，然后口胡/看题解思路
  * 1. 1.2 练习对应分数的题目，包括速度 (注意速度) (注意对应分数)
- * 1.3 贡献法 巫师的力量总和 (熟悉此种思想和用法)
  * 2. 注意 cf 题单，套路等
  * 3. 练习 CF 题单等; 多类型比赛并行打
  * 4. 2200 难度题

@@ -288,6 +288,7 @@ void test_Fenwick_Diff(vector<int>& a, int l, int r, int val, int& ans){
 /**
  * 差分树状数组
  * 支持单点修改, 区间查询最值
+ * 可与 用单调队列,单调栈 有同样效果
  * https://leetcode.cn/problems/sliding-window-maximum/description/
  * O(log^2 (n))
  */
@@ -338,6 +339,35 @@ vector<long long> mostFrequentIDs(vector<int>& b, vector<int>& f) {
         // 注意 update
         t.update((long long)(b[i]+1),f[i]);
         ans[i] = t.getmax(1,mx+1);
+    }
+    return ans;
+}
+
+/**
+ * 树状数组 getmax 优化 dp
+ * https://leetcode.cn/problems/constrained-subsequence-sum/description/
+ * @param b
+ * @param k
+ * @return
+ */
+int constrainedSubsetSum(vector<int>& b, int k) {
+    int n = b.size();
+    vector<int> f(n);
+    f[0] = b[0];
+    Fenwick_Max t(n);
+    t.update(1,f[0]);
+    for (int i =1; i <n; ++i) {
+        if (i-k-1 >= 0) {
+            t.update(i-k,-f[i-k-1]);
+        }
+        auto tmp = t.getmax(max(i-k,0)+1,i);
+        tmp = max(0,(int)tmp);
+        f[i] = tmp+b[i];
+        t.update(i+1,f[i]);
+    }
+    int ans = f[0];
+    for (int i = 0; i < n; ++i) {
+        ans = max(ans,f[i]);
     }
     return ans;
 }

@@ -314,16 +314,29 @@ public:
     }
 
     // 线段树上二分 获取下标 ind, L是左边界
-    // 线段树二分获取最近下标的方法 可与 单调栈 相互转换使用
-    int index(int o, int l, int r, int L, int R, int val) {
+    // 线段树二分获取最近下标的方法(val 的右边离 val 最近的下标)
+    int index1(int o, int l, int r, int L, int R, int val) {
         if (mx[o] >= val) return 1e5+2;
         if (l == r) return l;
         int mid = (l+r)/2;
         if (L <= mid && mx[o*2] < val && R >= mid) {
-            auto ind = index(o*2, l, mid,L,R, val);
+            auto ind = index1(o*2, l, mid,L,R, val);
             if (ind != (int)1e5+2) return ind;
         }
-        return index(o*2+1, mid+1, r, L,R,val);
+        return index1(o*2+1, mid+1, r, L,R,val);
+    }
+
+    // 线段树上二分 获取下标 ind, L是左边界
+    // 线段树二分获取最近下标的方法(val 的左边离 val 最近的下标)
+    int index2(int o, int l, int r, int L, int R, int val) {
+        if (mx[o] >= val) return 1e5+2;
+        if (l == r) return l;
+        int mid = (l+r)/2;
+        if (L <= mid && mx[o*2+1] < val && R >= mid) {
+            auto ind = index2(o*2+1, mid+1, r, L,R,val);
+            if (ind != (int)1e5+2) return ind;
+        }
+        return index2(o*2, l, mid,L,R, val);
     }
 
     vector<int> mostCompetitive(vector<int>& a, int k) {
@@ -332,7 +345,7 @@ public:
         vector<int> ind(n,-1);
         build(a,1,1,n);
         for (int i = 0; i < n; ++i) {
-            auto ind1 = index(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+            auto ind1 = index1(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
             if (ind1 != 1e5+2) ind[i] = ind1-1;
         }
         vector<int> ans;
@@ -343,6 +356,25 @@ public:
             }
         }
         return ans;
+    }
+
+    int maxSumMinProduct(vector<int>& a) {
+        int n = a.size(), mod = 1e9+7;
+        vector<long long> s(n+1);
+        for (int i = 0; i < n; ++i) {
+            s[i+1] = s[i]+a[i];
+        }
+        mx.resize(n*4);
+        long long ans = 1;
+        build(a,1,1,n);
+        for (int i = 0; i < n; ++i) {
+            auto ind1 = index1(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+            auto ind2 = index2(1,1,n,1,i,a[i]);
+            if (ind1 == 1e5+2) ind1 = n+1;
+            if (ind2 == 1e5+2) ind2 = 0;
+            ans = max(ans,(s[ind1-1]-s[ind2])*(long long)a[i]);
+        }
+        return ans%mod;
     }
 
 //    vector<int> leftmostBuildingQueries(vector<int>& h, vector<vector<int>>& q) {

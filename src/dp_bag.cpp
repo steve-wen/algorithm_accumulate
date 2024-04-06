@@ -94,6 +94,53 @@ int sumOfPower(vector<int>& a, int k) {
     return ans;
 }
 
+
+/**
+ * 二维 0-1 背包;
+ * 注意 用 unordered_map<int,int> mp[51][51]; map 数组记忆化 针对大的数值
+ * 注意这种灵活的记忆化方式
+ * 注意 枚举以哪个下标为终点/起点
+ * i : 当前下标， j : 剩余的次数，长度,  v : 当前最小能量值
+ * mp[i][j][v]: 在 i 坐标时，剩余次数为 j , 当前最小能量值为 v 的情况下的能量和
+ * https://leetcode.cn/problems/find-the-sum-of-subsequence-powers/description/
+ * @param a
+ * @param k
+ * @return
+ */
+int sumOfPowers(vector<int>& a, int k) {
+    int n = a.size();
+    sort(a.begin(),a.end());
+    // map 数组记忆化
+    unordered_map<int,int> mp[51][51];
+    int mod = 1e9+7;
+
+    function<int(int,int,int)> dfs = [&](int i,int j, int v) {
+        if (j == 0) {
+            if (i >= 0) {
+                return v;
+            } else {
+                return 0;
+            }
+        }
+        if (mp[i][j].count(v)) {
+            return mp[i][j][v];
+        }
+        int& res = mp[i][j][v];
+        for (int l = i-1; l >= max(j-1,0); --l) {
+            res = (res+ dfs(l,j-1,min(v,abs(a[i]-a[l])))%mod)%mod;
+        }
+        return res;
+    };
+
+    long long ans = 0;
+
+    // 枚举终点
+    for (int i = n-1; i >=k-1; --i) {
+        ans = (ans + dfs(i,k-1,1e9)%mod)%mod;
+    }
+    return ans;
+}
+
 /**
  * 完全 背包 模板代码
  * c : 背包容量

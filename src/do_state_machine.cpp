@@ -36,3 +36,45 @@ int maxProfit(int k, vector<int>& p) {
     };
     return dfs(n-1,k,0);
 }
+
+/**
+ *  状态机 dp
+ *  dfs(i,j,k) 状态定义：本次在下标 i 处, 剩余 j 次，最大值 是 k 时的最小难度总和
+ *  注意遍历的过程中，维护最大值
+ *  时间复杂度(O(n^2*d))
+ *  https://leetcode.cn/problems/minimum-difficulty-of-a-job-schedule/description/
+ * @param a
+ * @param d
+ * @return
+ */
+int minDifficulty(vector<int>& a, int d) {
+    int n = a.size();
+    int memo[301][11][1001];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int,int)> dfs = [&](int i, int j, int k) {
+        if (i <= 0) {
+            if (j == 0) {
+                return k;
+            } else {
+                return (int)1e6;
+            }
+        }
+        if (j == 0) {
+            if (i == 0) {
+                return k;
+            } else {
+                return (int)1e6;
+            }
+        }
+        if (memo[i][j][k] != -1) return memo[i][j][k];
+        int& res = memo[i][j][k];
+        res = (int)1e6;
+        int mx = 0;
+        for (int l = i-1; l >= max(0,j-1); --l) {
+            mx = max(mx,a[l]);
+            res = min(res, dfs(l,j-1,mx)+k);
+        }
+        return res;
+    };
+    return dfs(n,d,0) >= 1e6 ? -1 : dfs(n,d,0);
+}

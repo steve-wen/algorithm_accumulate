@@ -54,3 +54,47 @@ int earliestSecondToMarkIndices(vector<int> &nums, vector<int> &changeIndices) {
     return ans > m ? -1 : ans;
 }
 
+/**
+ * 二分,注意 long long 和取模
+ * https://leetcode.cn/problems/sell-diminishing-valued-colored-balls/description/
+ * @param a
+ * @param b
+ * @return
+ */
+int maxProfit(vector<int>& a, int b) {
+    int mod = 1e9+7;
+    int n = a.size();
+    long long mx = *max_element(a.begin(),a.end());
+    long long ans = 0, cnt = 1e9+1, val = 0;
+
+    auto check = [&](long long mx, long long& tmp, long long& cnt1) -> bool {
+        for (auto a1 : a) {
+            cnt1 += (long long)max(0LL,a1-mx);
+            if (a1 > mx) {
+                tmp = (tmp+(long long)(a1+mx+1)*(a1-mx)/2%mod)%mod;
+            }
+        }
+        if (cnt1 >= b) {
+            return true;
+        }
+        return false;
+    };
+
+    int left = 0, right = mx;
+    while (left  <= right) {
+        long long mid = (left + right) / 2, tmp = 0,cnt1 = 0;
+        if (check(mid,tmp,cnt1)) {
+            left = mid + 1;
+            if (mid >= val) {
+                val = mid;
+                ans = tmp;
+                cnt = cnt1;
+            }
+        } else {
+            right = mid - 1;
+        }
+    }
+    // 注意负数取模
+    ans = ((ans-(long long)(cnt-b)*(val+1)%mod)%mod+mod)%mod;
+    return ans;
+}

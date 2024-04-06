@@ -297,3 +297,75 @@ int countSubmatrices(vector<vector<int>>& g, int k) {
     }
     return ans;
 }
+
+/**
+ * 前缀和 + 哈希表(记录下标) + 同余定理（移项，化简，结合哈希表）
+ * https://leetcode.cn/problems/make-sum-divisible-by-p/description/
+ * @param nums
+ * @param p
+ * @return
+ */
+int minSubarray(vector<int> &nums, int p) {
+    int n = nums.size(), ans = n, s[n + 1];
+    s[0] = 0;
+    for (int i = 0; i < n; ++i)
+        s[i + 1] = (s[i] + nums[i]) % p;
+    int x = s[n];
+    if (x == 0) return 0; // 移除空子数组（这行可以不要）
+
+    unordered_map<int, int> last;
+    for (int i = 0; i <= n; ++i) {
+        last[s[i]] = i;
+        auto it = last.find((s[i] - x + p) % p);
+        if (it != last.end())
+            ans = min(ans, i - it->second);
+    }
+    return ans < n ? ans : -1;
+}
+
+/**
+ * 前缀和 + 哈希表（记录下标）
+ * https://leetcode.cn/problems/find-the-longest-substring-containing-vowels-in-even-counts/description/
+ * @param nums
+ * @param p
+ * @return
+ */
+int findTheLongestSubstring(string s) {
+    int n = s.size();
+    unordered_map<string,int> mp1;
+    vector<vector<int>> mp(n+1,vector<int>(27));
+    for (int i = 0; i < n; ++i) {
+        mp[i+1]['a'-'a'] = mp[i]['a'-'a']+(s[i] == 'a');
+        mp[i+1]['e'-'a'] = mp[i]['e'-'a']+(s[i] == 'e');
+        mp[i+1]['i'-'a'] = mp[i]['i'-'a']+(s[i] == 'i');
+        mp[i+1]['o'-'a'] = mp[i]['o'-'a']+(s[i] == 'o');
+        mp[i+1]['u'-'a'] = mp[i]['u'-'a']+(s[i] == 'u');
+    }
+    int ans = 0;
+    for (int i = 0; i <= n; ++i) {
+        string str;
+        if (mp[i]['a'-'a']%2 == 0) {
+            str += 'a';
+        }
+        if (mp[i]['e'-'a']%2 == 0) {
+            str += 'e';
+        }
+        if (mp[i]['i'-'a']%2 == 0) {
+            str += 'i';
+        }
+        if (mp[i]['o'-'a']%2 == 0) {
+            str += 'o';
+        }
+        if (mp[i]['u'-'a']%2 == 0) {
+            str += 'u';
+        }
+        if (!mp1.count(str)) {
+            mp1[str] = i;
+        }
+        auto it = mp1.find(str);
+        if (it != mp1.end())
+            ans = max(ans, i - it->second);
+    }
+    return ans;
+}
+

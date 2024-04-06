@@ -11,7 +11,9 @@ set(SOURCE ${CXX_SOURCE}
         src/dsu.cpp
         src/hjt_segment_tree.cpp
         src/modui.cpp
-        src/do_state_machine.cpp)
+        src/do_state_machine.cpp
+        src/geometry.cpp
+        src/dp_games.cpp)
 
 #获取所有资源文件
 #file(GLOB_RECURSE RESOURCE_FILE ${PROJECT_SOURCE_DIR}/resource/*.*)
