@@ -17,7 +17,7 @@ int earliestSecondToMarkIndices(vector<int> &nums, vector<int> &changeIndices) {
     int n = nums.size(), m = changeIndices.size(), ans = m + 1;
     if (n > m) return -1;
 
-    auto check = [&](int mx) -> bool {
+    auto check = [&](int mx) {
         vector<int> last_t(n, -1);
         for (int t = 0; t < mx; t++) {
             last_t[changeIndices[t] - 1] = t;

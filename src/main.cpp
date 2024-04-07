@@ -1278,11 +1278,30 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
-vector<int> replaceNonCoprimes(vector<int>& nums) {
+long long minimumReplacement(vector<int>& a) {
+    long long ans = 0;
+    int n = a.size();
 
+    for (int i = n-2; i >= 0; --i) {
+        if (a[i] <= a[i+1]) {
+            continue;
+        } else {
+            if (a[i] % a[i+1] == 0) {
+                ans += (long long)(a[i]/a[i+1]-1);
+                a[i] = a[i+1];
+                continue;
+            } else {
+                int tmp = a[i]/a[i+1];
+                ++tmp;
+                ans += (long long)(tmp-1);
+                a[i] = a[i]/tmp;
+            }
+        }
+    }
+    return ans;
 }
 
-int main() {
+int main(){
     return 0;
 }
 
