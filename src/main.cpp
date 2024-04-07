@@ -1278,7 +1278,9 @@ int numberOfPairs(vector<vector<int>>& p) {
     return ans;
 }
 
+vector<int> replaceNonCoprimes(vector<int>& nums) {
 
+}
 
 int main() {
     return 0;
