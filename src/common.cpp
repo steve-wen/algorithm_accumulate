@@ -369,3 +369,35 @@ int findTheLongestSubstring(string s) {
     return ans;
 }
 
+/**
+ * 子数组统计套路 : 前缀和 + 哈希表  no.2949
+ *                数学： 余数化简，处理， 同余定理
+ * @param s
+ * @param k
+ * @return
+ */
+long long beautifulSubstrings(string s, int k) {
+    auto check = [&](char c){
+        if (c == 'a' || c == 'e' || c == 'i'||c == 'o'||c=='u') return true;
+        else return false;
+    };
+    int d = 1;
+    for (;d <= 2*k; ++d) {
+        if (d*d % (4 *k) == 0) {
+            break;
+        }
+    }
+    long ans = 0, n = s.size();
+    vector<int> pre(n+1);
+    for (int i = 0; i < n; ++i) {
+        pre[i+1] += (pre[i] + (check(s[i]) ? 1 : -1));
+    }
+    map<pair<int,int>,long> mp;
+//    mp[pair<int,int>(pre[0],0)] = 1;
+    for (int i = 0; i <=n; ++i) {
+        ans += mp[pair<int,int>(pre[i],i%d)];
+        ++mp[pair<int,int>(pre[i],i%d)];
+    }
+    return ans;
+}
+
