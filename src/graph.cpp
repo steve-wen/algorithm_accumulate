@@ -137,6 +137,52 @@ int minimumTime(vector<vector<int>>& g) {
 }
 
 /**
+ * dijkstra : 解决没有负边权的单源最短路， 时间复杂度（ElogN)
+ * 本质上是 dijkstra, 到一个点的转向次数最少(记为 d)，单源最短路
+ * https://leetcode.cn/problems/minimum-cost-to-make-at-least-one-valid-path-in-a-grid/description/
+ * @param g
+ * @return
+ */
+int minCost(vector<vector<int>>& g) {
+    int m = g.size(), n = g[0].size();
+
+    // 准备方向数组 vec
+    vector<vector<int>> vec{{0,0},{0,1},{0,-1},{1,0},{-1,0}};
+
+    // 初始化 dis 数组
+    vector<vector<int>> dis(m,vector<int>(n, 1e6));
+    dis[0][0] = 0;
+
+    // 小顶堆， 起点（0，0，0） 入堆
+    priority_queue<tuple<int,int,int>,vector<tuple<int,int,int>>,greater<>> q;
+    q.emplace(0,0,0);
+
+    while(true) {
+        auto[d,i,j] = q.top();
+        q.pop();
+        if (i == m-1 && j == n-1) {
+            return d;
+        }
+        // 此时的 d 不是最小值， 说明之前已更新过， continue; 类似 vis 的作用
+        if (d > dis[i][j]) continue;
+        // 遍历上下左右
+        for (int k = 1; k <= 4; ++k) {
+            auto vec1 = vec[k];
+            int i1 = i + vec1[0], j1 = j + vec1[1];
+            if (i1 >= 0 && i1 < m && j1 >= 0 && j1 < n) {
+                // 根据题目处理
+                int nd = d + (g[i][j] != k);
+                // 更新点
+                if (nd < dis[i1][j1]) {
+                    dis[i1][j1] = nd;
+                    q.emplace(nd,i1,j1);
+                }
+            }
+        }
+    }
+}
+
+/**
  * dijkstra : dijkstra 结合最多经过 k + 1 条边； 非负边权单源最短路 + 限定经过边数；
  *            用 dis 和 cnt 数组剪枝
  * @param n

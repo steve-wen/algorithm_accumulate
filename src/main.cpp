@@ -1174,52 +1174,6 @@ vector<int> maxSlidingWindow(vector<int>& a, int k) {
     return b;
 }
 
-// 环
-
-class Solution1 {
-public:
-    int minimumOperations(TreeNode* root) {
-        int ans = 0;
-        queue<TreeNode*> q;
-        q.emplace(root);
-        while (!q.empty()) {
-            int sz = q.size();
-            int cnt = 0;
-            vector<int> vec1, vec2;
-            unordered_map<int, int> mp;
-            for (int i = 0; i < sz; ++i) {
-                auto& q1 = q.front();
-                vec1.emplace_back(q1->val);
-                if (q1->left) {
-                    q.emplace(q1->left);
-                }
-                if (q1->right) {
-                    q.emplace(q1->right);
-                }
-                q.pop();
-            }
-            vec2 = vec1;
-            sort(vec2.begin(), vec2.end());
-            for (int i = 0; i < sz; ++i) {
-                mp[vec2[i]] = i;
-            }
-            vector<int> vis(sz);
-            for (int i = 0; i < sz; ++i) {
-                if (!vis[i]) {
-                    int tmp = i;
-                    while (!vis[tmp]) {
-                        vis[tmp] = 1;
-                        tmp = mp[vec1[tmp]];
-                    }
-                    ++cnt;
-                }
-            }
-            ans += (sz - cnt);
-
-        }
-        return ans;
-    }
-};
 
 
 int main(){
