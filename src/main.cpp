@@ -1174,9 +1174,58 @@ vector<int> maxSlidingWindow(vector<int>& a, int k) {
     return b;
 }
 
+int minRefuelStops(int t, int c, vector<vector<int>>& s) {
+    s.emplace_back(vector<int>{t,0});
+    int n = s.size();
+    unordered_map<long long,int> mp[n+2];
+    if (c < s[0][0]) {
+        return -1;
+    } else {
+        mp[0][c-s[0][0]] = 0;
+        if (s[0][1] != 0) {
+            mp[0][c-s[0][0]+s[0][1]] =1;
+        }
+    }
 
+    for (int i = 1; i < n; ++i) {
+        for (auto& p : mp[i-1]){
+            auto a = p.first;
+            auto b = p.second;
+            if (a >= s[i][0]-s[i-1][0]) {
+                mp[i][a-(long long)(s[i][0]-s[i-1][0])] = b;
+            }
+        }
+
+        for (auto& p : mp[i-1]){
+            auto a = p.first;
+            auto b = p.second;
+            if (a >= s[i][0]-s[i-1][0]) {
+                long long d = a-(long long)(s[i][0]-s[i-1][0])+(long long)s[i][1];
+                if (mp[i].count(d)) {
+                    mp[i][d] = min(mp[i][d],b+1);
+                } else {
+                    mp[i][d] = b+1;
+                }
+            }
+        }
+
+    }
+    if (mp[n-1].size() == 0) {
+        return -1;
+    } else {
+        int ans = n;
+        for (auto& p : mp[n-1]){
+            auto a = p.first;
+            auto b = p.second;
+            ans = min(ans,b);
+        }
+        return ans;
+    }
+}
 
 int main(){
+    vector<vector<int>> s{{98,5},{243,71},{320,137},{353,88},{427,153},{574,194},{686,134},{732,134},{818,29},{949,118}};
+    auto ans = minRefuelStops(1000,299,s);
     return 0;
 }
 
