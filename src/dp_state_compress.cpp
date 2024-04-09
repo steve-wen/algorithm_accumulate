@@ -5,6 +5,8 @@ using namespace std;
 /**
 *  状压 dp
 *  状态压缩
+*  数据范围很小 -> 暗示可以用状压之类的算法
+*  结合位运算
 */
 
 /**
@@ -125,7 +127,7 @@ int specialPerm(vector<int>& a) {
     int MOD = 1e9+7, n = a.size();
     int m = (1<<n) - 1;
     //long memo[m+1][n+1];
-    long memo[1000][1000];
+    long memo[17000][20];
     memset(memo,-1,sizeof(memo));
     function<long(int,int)> dfs = [&](int i, int j){
         if (i == 0) return 1L;
@@ -144,4 +146,41 @@ int specialPerm(vector<int>& a) {
         ans += dfs(m^ 1<<k, k);
     }
     return ans%MOD;
+}
+
+/**
+ *  记忆化搜索 + 状压
+ *  思想转换 : 排列 -> 遍历枚举集合里的合适元素
+ *  dfs(i,j,l) 表示当前可以选的下标集合为 i, 上一个数的下标是 j, 本次是第 l 次选
+ *  https://leetcode.cn/problems/maximize-score-after-n-operations/description/
+ * @param a
+ * @return
+ */
+int maxScore(vector<int>& a) {
+    int n = a.size();
+    int m = (1<<n) - 1;
+//    long long memo[m+1][n+1][n+2];
+    long long memo[17000][20][20];
+    memset(memo,-1,sizeof(memo));
+    function<long long (int,int,int)> dfs = [&](int i, int j,int l){
+        if (i == 0) return 0LL;
+        if (memo[i][j][l] != -1) return memo[i][j][l];
+        auto& res = memo[i][j][l];
+        res = 0;
+        for (int k = 0; k < n; ++k) {
+            if (i >> k & 1 ) {
+                if (l %2 == 0) {
+                    res = max(res,gcd(a[k],a[j]) *(l/2)+dfs(i ^ 1 << k,k,l+1));
+                } else {
+                    res = max(res,dfs(i ^ 1 << k,k,l+1));
+                }
+            }
+        }
+        return res;
+    };
+    long long ans = 0;
+    for (int k = 0; k < n; ++k) {
+        ans = max(ans,dfs(m^ 1<<k, k,2));
+    }
+    return ans;
 }

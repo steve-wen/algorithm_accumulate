@@ -10,7 +10,7 @@ using namespace std;
  * 组合数学 逆元
  */
 const int MOD = 1'000'000'007;
-const int MX = 100'000; // C(n,k) n
+const int MX = 500'000; // C(n,k) n
 
 // 快速幂取 MOD
 long long q_pow(long long x, int n) {
@@ -42,8 +42,13 @@ auto init_inv = [] {
     return 0;
 }();
 
+// 组合
 long long comb(int n, int k) {
     return fac[n] * inv_fac[k] % MOD * inv_fac[n - k] % MOD;
+}
+// 排列
+long long arra(int n, int k) {
+    return fac[n] * inv_fac[n - k] % MOD;
 }
 
 class Solution_inv {
@@ -63,6 +68,35 @@ public:
             }
         }
         return ans * q_pow(2, e) % MOD;
+    }
+
+    int countAnagrams(string s) {
+        long long ans = 1;
+        int n = s.size(), ind = 0;
+        vector<int> cnt(26);
+        for (int i = 0; i < n; ++i){
+            if (s[i] != ' ' && i != n-1) {
+                cnt[s[i]-'a']++;
+            } else {
+                if (i == n-1) {
+                    cnt[s[i]-'a']++;
+                    ++i;
+                }
+                long long l = i-ind;
+                ind = i+1;
+                long long tmp = arra(l,l);
+                for (int i = 0; i < 26; ++i) {
+                    if (cnt[i] > 1) {
+                        tmp = tmp*inv_fac[cnt[i]]% MOD;
+                    }
+                }
+                ans = ans * tmp %MOD;
+                for(auto& cnt1 : cnt){
+                    cnt1 = 0;
+                }
+            }
+        }
+        return ans;
     }
 };
 
@@ -88,12 +122,12 @@ public:
  * @param n
  * @return
  */
-int stringCount(int n) {
-    if (n < 4) return 0;
-    long long tmp = (q_pow(25,n) * 3 % MOD + (long long)n * q_pow(25,n-1) % MOD - (q_pow(24,n) * 3 % MOD + (long long)n * q_pow(24,n-1) * 2 % MOD - q_pow(23,n) - (long long)n * q_pow(23,n-1) % MOD)) % MOD;
-    long long ans = (q_pow(26,n) - tmp) % MOD;
-    return (ans + MOD) % MOD;
-}
+//int stringCount(int n) {
+//    if (n < 4) return 0;
+//    long long tmp = (q_pow(25,n) * 3 % MOD + (long long)n * q_pow(25,n-1) % MOD - (q_pow(24,n) * 3 % MOD + (long long)n * q_pow(24,n-1) * 2 % MOD - q_pow(23,n) - (long long)n * q_pow(23,n-1) % MOD)) % MOD;
+//    long long ans = (q_pow(26,n) - tmp) % MOD;
+//    return (ans + MOD) % MOD;
+//}
 
 /**
  *  隔板法，板和球一起计总数
