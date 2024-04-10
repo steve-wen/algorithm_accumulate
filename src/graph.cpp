@@ -50,6 +50,89 @@ int findTheCity(int n, vector<vector<int>> &edges, int distanceThreshold) {
 }
 
 /**
+ * 枚举子集 + floyd
+ * 时间复杂度 O(2^n * m^3)
+ * https://leetcode.cn/problems/number-of-possible-sets-of-closing-branches/description/
+ * @param n
+ * @param d
+ * @param r
+ * @return
+ */
+int numberOfSets(int n, int d, vector<vector<int>>& r) {
+    int m = r.size();
+    for (auto& r1 : r) {
+        if (r1[0] > r1[1]) {
+            swap(r1[0],r1[1]);
+        }
+    }
+    sort(r.begin(),r.end());
+    map<pair<int,int>,int> g;
+    if (m > 0) {
+        g[pair<int,int>(r[0][0],r[0][1])] = r[0][2];
+    }
+    for (int i = 1; i < m; ++i) {
+        if (r[i][0] == r[i-1][0] && r[i][1] == r[i-1][1]) {
+            continue;
+        } else {
+            g[pair<int,int>(r[i][0],r[i][1])] = r[i][2];
+        }
+    }
+    vector<int> path;
+    vector<vector<int>> ans;
+    function<void(int)> dfs = [&](int i) {
+        if (i == n) {
+            ans.emplace_back(path);
+            return;
+        }
+        dfs(i + 1);
+        path.emplace_back(i);
+        dfs(i + 1);
+        path.pop_back();
+    };
+    dfs(0);
+    int res = ans.size();
+    auto check = [&](int& res, vector<int>& ind) {
+        vector<vector<int>> w(n, vector<int>(n, 1e5+1)); // 防止加法溢出
+        int l = ind.size();
+        sort(ind.begin(),ind.end());
+        for (int i = 0; i < l-1; ++i) {
+            for (int j = i+1; j <l; ++j){
+                if (g.count(pair<int,int>(ind[i],ind[j]))) {
+                    w[ind[i]][ind[j]] = g[pair<int,int>(ind[i],ind[j])];
+                    w[ind[j]][ind[i]] = g[pair<int,int>(ind[i],ind[j])];
+                }
+            }
+        }
+
+        int memo[11][11][11];
+        memset(memo, -1, sizeof(memo)); // 除了 0, -1 的其他特殊值用 vector 初始化
+        function<int(int, int, int)> dfs = [&](int k, int i, int j) -> int {
+            if (k < 0) { // 递归边界
+                return w[ind[i]][ind[j]];
+            }
+            auto &res = memo[k][i][j]; // 注意这里是引用
+            if (res != -1) { // 之前计算过
+                return res;
+            }
+            return res = min(dfs(k - 1, i, j), dfs(k - 1, i, k) + dfs(k - 1, k, j));
+        };
+
+        for (int i = 0; i < l; i++) {
+            for (int j = 0; j < l; j++) {
+                if (j != i && dfs(l - 1, i, j) > d) {
+                    --res;
+                    return;
+                }
+            }
+        }
+    };
+    for (auto& ind : ans){
+        check(res,ind);
+    }
+    return res;
+}
+
+/**
  * Floyd, O(n^3)
  * https://leetcode.cn/problems/minimum-cost-to-convert-string-i/description/
  * @param s
