@@ -24,7 +24,7 @@ class Fenwick {
 public:
     Fenwick(int n) : tree(n) {}
 
-    // 把下标为 i 的元素增加 1 (动态更新 +1)
+    // 把下标为 i 的元素增加 1 (动态更新 +1)，下标从 1 开始
     // 每次 O(logn)
     void add(int i) {
         while (i < tree.size()) {
@@ -33,7 +33,14 @@ public:
         }
     }
 
-    // 返回下标在 [1,i] 的元素之和
+    void update(int i, int j) {
+        while (i < tree.size()) {
+            tree[i] += j;
+            i += i & -i;
+        }
+    }
+
+    // 返回下标在 [1,i] 的元素个数之和
     // 每次 O(logn)
     int pre(int i) {
         int res = 0;
@@ -196,7 +203,7 @@ public:
         }
     }
 
-    // 返回下标在 [1,i] 的元素之和
+    // 返回下标在 [1,i] 的元素个数之和
     // 每次 O(logn)
     int pre(int i) {
         int res = 0;

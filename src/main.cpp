@@ -684,78 +684,7 @@ vector<vector<int>> getAncestors(int n, vector<vector<int>>& e) {
     return vec;
 }
 
-// 结合 bitset 与灵神的位运算文章结合
-/**
- *
- * 位运算
- * @param vec
- * @param k
- * @return
- */
-int maxSum(vector<int>& vec, int k) {
-    ll mod = 1e9+7;
-    long ans = 0;
-    unordered_map<int,int> mp;
-    for (auto a : vec){
-        auto s = bitset<30>(a).to_string();
-        // 注意首尾下标
-        for (int i = 0, j = 29-i; j >= 0; ++i,--j) {
-            if (s[j] == '1') {
-                mp[i]++;
-            }
-        }
-    }
-    while (k) {
-        long tmp = 0;
-        for (int i = 0; i <= 29; ++i) {
-            if (mp[i] > 0) {
-                tmp += (long)pow(2,i);
-                --mp[i];
-            }
-        }
-        ans += tmp * tmp;
-        ans = ans % mod;
-        --k;
-    }
-    return ans;
-}
 
-/**
- * bitset 运用，整数转 bitset 转 string, 调用 string find 功能
- * @param s
- * @param n
- * @return
- */
-
-bool queryString(string s, int n) {
-    for (int i = 1; i <= n; ++i) {
-        auto bin = bitset<30>(i).to_string();
-        bin = bin.substr(bin.find('1'));
-        if (s.find(bin) == string::npos) return false;
-    }
-    return true;
-}
-
-/**
- * bitset 运用 .count(), 计算二进制里 1 的个数
- * @param nums
- * @param k
- * @return
- */
-
-int sumIndicesWithKSetBits(vector<int>& nums, int k) {
-    int ans = 0, n = nums.size();
-    for (int i = 0; i < n; ++i) {
-//        if (__builtin_popcount(i) == k) {
-//            ans += nums[i];
-//        }
-        // count() 二进制里 1 的个数
-        if (bitset<10>(i).count() == k) {
-            ans += nums[i];
-        }
-    }
-    return ans;
-}
 
 /**
  * 二分： 下限：l, 上限： r,  mid = (r+l)/2, 更新 ans = max/min (ans, mid);
@@ -1174,58 +1103,9 @@ vector<int> maxSlidingWindow(vector<int>& a, int k) {
     return b;
 }
 
-int minRefuelStops(int t, int c, vector<vector<int>>& s) {
-    s.emplace_back(vector<int>{t,0});
-    int n = s.size();
-    unordered_map<long long,int> mp[n+2];
-    if (c < s[0][0]) {
-        return -1;
-    } else {
-        mp[0][c-s[0][0]] = 0;
-        if (s[0][1] != 0) {
-            mp[0][c-s[0][0]+s[0][1]] =1;
-        }
-    }
 
-    for (int i = 1; i < n; ++i) {
-        for (auto& p : mp[i-1]){
-            auto a = p.first;
-            auto b = p.second;
-            if (a >= s[i][0]-s[i-1][0]) {
-                mp[i][a-(long long)(s[i][0]-s[i-1][0])] = b;
-            }
-        }
-
-        for (auto& p : mp[i-1]){
-            auto a = p.first;
-            auto b = p.second;
-            if (a >= s[i][0]-s[i-1][0]) {
-                long long d = a-(long long)(s[i][0]-s[i-1][0])+(long long)s[i][1];
-                if (mp[i].count(d)) {
-                    mp[i][d] = min(mp[i][d],b+1);
-                } else {
-                    mp[i][d] = b+1;
-                }
-            }
-        }
-
-    }
-    if (mp[n-1].size() == 0) {
-        return -1;
-    } else {
-        int ans = n;
-        for (auto& p : mp[n-1]){
-            auto a = p.first;
-            auto b = p.second;
-            ans = min(ans,b);
-        }
-        return ans;
-    }
-}
 
 int main(){
-    vector<vector<int>> s{{98,5},{243,71},{320,137},{353,88},{427,153},{574,194},{686,134},{732,134},{818,29},{949,118}};
-    auto ans = minRefuelStops(1000,299,s);
     return 0;
 }
 
