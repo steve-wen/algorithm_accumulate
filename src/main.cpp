@@ -1080,29 +1080,6 @@ int shortestSubarray(vector<int>& a, int k) {
     return ans == n+1 ? -1 : ans;
 }
 
-// 单调队列，参照单调栈，但动态更新
-vector<int> maxSlidingWindow(vector<int>& a, int k) {
-    int n = a.size();
-    vector<int> b;
-    deque<int> q;
-    for (int i = 0; i < n; ++i) {
-        // pop 左边无用的点
-        while(!q.empty() && (a[q.front()] <= a[i] || q.front() <= i-k)) {
-            q.pop_front();
-        }
-        // pop 右边无用的点
-        while (!q.empty() && a[q.back()] <= a[i]) {
-            q.pop_back();
-        }
-        // 更新当前点
-        q.emplace_back(i);
-        if (i >= k-1) {
-            b.emplace_back(a[q.front()]);
-        }
-    }
-    return b;
-}
-
 
 
 int main(){
