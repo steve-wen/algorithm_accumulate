@@ -145,3 +145,47 @@ long long distributeCandies(int n, int l) {
     }
     return tmp1 - tmp2;
 }
+
+/**
+ * __int128 的合理运用
+ * https://leetcode.cn/problems/kth-smallest-instructions/description/
+ * @param n
+ * @param k
+ * @return
+ */
+// 组合
+__int128 comb_1(__int128 n, __int128 k) {
+    __int128 tmp1 = 1, tmp2 = 1;
+    for (int i = 0; i < k; ++i){
+        tmp1 *= (__int128)(n-i);
+        tmp2 *= (__int128)(i+1);
+    }
+    return tmp1/tmp2;
+}
+
+string kthSmallestPath(vector<int>& d, int k) {
+    int m = d[0], n = d[1];
+    int l = m+n;
+    string s(l,'H');
+    // cnt1:v  cnt2:h
+    int cnt1 = 0, cnt2 = 0;
+    // 枚举最大
+    while (1){
+        long long tmp = 0;
+        for (int i = m-1-cnt1; i < l; ++i) {
+            tmp += comb_1(i,i-m+1+cnt1);
+            if (tmp > k) {
+                s[l-1-i] = 'V';
+                k -= (tmp-comb_1(i,i-m+1+cnt1));
+                ++cnt1;
+                break;
+            } else if (tmp == k){
+                for (int j = l-1-i; j < l-1-i+m-cnt1; ++j){
+                    s[j] = 'V';
+                }
+                return s;
+            }
+        }
+    }
+    return s;
+}

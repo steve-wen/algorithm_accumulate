@@ -94,6 +94,8 @@ vector<vector<int>> func2(int n, int k) {
     return ans;
 }
 
+
+
 /**
  * 排列 :  用 顺序循环遍历 做，以数组下标 ind 为例 ： 0，1，2 ... n-1
  * 第 k 个排列 ( 按数字从小到大顺序 ）
@@ -144,3 +146,49 @@ vector<int> func4(int n, int k) {
     }
     return ans[k];
 }
+
+/**
+ * 符合题目条件的字典序最大的排列
+ * 用返回的 bool 类型代替 void ； 可以剪枝，时间更快；一路返回注意；
+ * 字典序注意从大到小
+ * https://leetcode.cn/problems/construct-the-lexicographically-largest-valid-sequence/description/
+ * @param n
+ * @return
+ */
+vector<int> constructDistancedSequence(int n) {
+    int m = n*2-1;
+    vector<int> path(m);
+    vector<int> mark(n+1);
+    function<bool(int)> dfs = [&](int i) {
+        if (i == m) {
+            return true;
+        }
+        if (path[i] != 0) return dfs(i+1);
+        for (int j = n; j >= 1; --j) {
+            if (!mark[j]) {
+                if (j == 1) {
+                    path[i] = j;
+                    mark[j] += 1;
+                    if(dfs(i+1)) return true;
+                    path[i] = 0;
+                    mark[j] -= 1;
+                    return false;
+                } else {
+                    if(i+j >= m) continue;
+                    if (path[i+j] != 0) continue;
+                    path[i] = j;
+                    path[i+j] = j;
+                    mark[j] = 1;
+                    if(dfs(i+1)) return true;
+                    mark[j] = 0;
+                    path[i] = 0;
+                    path[i+j] = 0;
+                }
+            }
+        }
+        return false;
+    };
+    dfs(0);
+    return path;
+}
+

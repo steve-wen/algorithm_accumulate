@@ -932,45 +932,7 @@ int shortestSubarray(vector<int>& a, int k) {
     return ans == n+1 ? -1 : ans;
 }
 
-long long fac1[31];
-auto init_fac = [] {
-    fac1[0] = 1;
-    for (int i = 1; i < 31; i++) {
-        fac1[i] = fac1[i - 1] * i ; // for (int i = 1; i <= n; ++i) s[i] = s[i - 1] * a[i] % p;
-    }
-    return 0;
-}();
 
-// 组合
-long long comb_1(int n, int k) {
-    return fac1[n] / fac1[k] / fac1[n - k] ;
-}
-
-string kthSmallestPath(vector<int>& d, int k) {
-    int m = d[0], n = d[1];
-    int l = m+n;
-    string s(l,'H');
-    // cnt1:v  cnt2:h
-    int cnt1 = 0, cnt2 = 0;
-    // 枚举最大
-    while (1){
-        long long tmp = 0;
-        for (int i = m-1-cnt1; i < l; ++i) {
-            tmp += comb_1(i,i-m+1+cnt1);
-            if (tmp > k) {
-                s[i] = 'V';
-                ++cnt1;
-                k -= (tmp-comb_1(i,i-m+1));
-            } else if (tmp == k){
-                for (int j = i; j < i+m-cnt1; ++j){
-                    s[j] = 'V';
-                }
-                return s;
-            }
-        }
-    }
-    return s;
-}
 
 int main(){
     return 0;
