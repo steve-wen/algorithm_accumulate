@@ -1081,7 +1081,6 @@ int shortestSubarray(vector<int>& a, int k) {
 }
 
 
-
 int main(){
     return 0;
 }

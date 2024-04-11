@@ -85,3 +85,33 @@ long long countExcellentPairs(vector<int>& a2, int k) {
     }
     return ans;
 }
+
+/**
+ * rb_tree 的灵活运用
+ * https://leetcode.cn/problems/ways-to-split-array-into-three-subarrays/description/
+ * @param a
+ * @return
+ */
+int waysToSplit(vector<int>& a) {
+    int mod = 1e9+7, n = a.size();
+    vector<int> s(n+1);
+    for (int i = 0; i < n; ++i) {
+        s[i+1] = s[i]+a[i];
+    }
+    int ans = 0;
+    __gnu_pbds::tree<pair<int, int>, __gnu_pbds::null_type, less<pair<int, int> >,
+        __gnu_pbds::rb_tree_tag,
+        __gnu_pbds::tree_order_statistics_node_update> t;
+    for (int i = 1; i <= n; ++i){
+        t.insert({s[i],i});
+    }
+    for (int i = 0; i < n-2; ++i) {
+        int s1 = s[i+1];
+        int cnt1 = t.order_of_key({s1*2,0});
+        cnt1 = max(cnt1,i+1);
+        int cnt2 = t.order_of_key({(s[n]-s1)/2+s1+1,0});
+        cnt2 = min(cnt2,n-1);
+        ans = (ans +max(cnt2-cnt1,0)) % mod;
+    }
+    return ans;
+}
