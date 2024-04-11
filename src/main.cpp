@@ -90,154 +90,6 @@ private:
 };
 
 /**
- * 旋转图像
- * @param g
- */
-void rotate(vector<vector<int>>& g) {
-    int n = g.size();
-    for (int i = 0; i < n/2; ++i) {
-        for (int j = i; j < n-1-i; ++j) {
-            int tmp = g[i][j];
-            g[i][j] = g[n-1-j][i];
-            g[n-1-j][i]  = g[n-1-i][n-1-j];
-            g[n-1-i][n-1-j] = g[j][n-1-i];
-            g[j][n-1-i] = tmp;
-        }
-    }
-    return;
-}
-
-/**
- * 子集 ： 选/不选 以数组下标 ind 为例 ： 0，1，2 ... n-1
- * @param n
- * @return
- */
-vector<vector<int>> func0(int n) {
-    vector<int> ind(n);
-    iota(ind.begin(), ind.end(), 0);
-    vector<int> path;
-    vector<vector<int>> ans;
-    function<void(int)> dfs = [&](int i) {
-        if (i == n) {
-            ans.emplace_back(path);
-            return;
-        }
-        dfs(i + 1);
-        path.emplace_back(ind[i]);
-        dfs(i + 1);
-        path.pop_back();
-    };
-    dfs(0);
-    return ans;
-}
-
-/**
- * 组合 : 1. 用 选/不选 做，以数组下标 ind 为例 ： 0，1，2 ... n-1
- * 组合长度为 k
- * @param n
- * @param k
- * @return
- */
-vector<vector<int>> func1(int n, int k) {
-    vector<int> ind(n);
-    iota(ind.begin(), ind.end(), 0);
-    vector<int> path;
-    vector<vector<int>> ans;
-    function<void(int)> dfs = [&](int i) {
-        if (i == n) {
-            if (path.size() == k) {
-                ans.emplace_back(path);
-            }
-            return;
-        }
-        dfs(i + 1);
-        path.emplace_back(ind[i]);
-        dfs(i + 1);
-        path.pop_back();
-    };
-    dfs(0);
-    return ans;
-}
-
-/**
- * 组合 : 2. 用 顺序循环遍历 做，以数组下标 ind 为例 ： 0，1，2 ... n-1
- * 组合长度为 k
- * @param n
- * @param k
- * @return
- */
-vector<vector<int>> func2(int n, int k) {
-    vector<int> ind(n);
-    iota(ind.begin(), ind.end(), 0);
-    vector<int> path;
-    vector<vector<int>> ans;
-    function<void(int)> dfs = [&](int i) {
-        if (path.size() == k) {
-            ans.emplace_back(path);
-            return;
-        }
-        for (int j = i; j < n; ++j) {
-            path.emplace_back(ind[j]);
-            dfs(j + 1);
-            path.pop_back();
-        }
-    };
-    dfs(0);
-    return ans;
-}
-
-/**
- * 排列 :  用 顺序循环遍历 做，以数组下标 ind 为例 ： 0，1，2 ... n-1
- * 第 k 个排列 ( 按数字从小到大顺序 ）
- * @param n
- * @param k
- * @return
- */
-vector<int> func3(int n, int k) {
-    vector<int> ind(n);
-    iota(ind.begin(), ind.end(), 0);
-    vector<int> mark(n);
-    vector<int> path;
-    vector<vector<int>> ans;
-    function<void(int)> dfs = [&](int i) {
-        if (i == n) {
-            ans.emplace_back(path);
-            return;
-        }
-        for (int j = 0; j < n; ++j) {
-            if (!mark[j]) {
-                path.emplace_back(ind[j]);
-                mark[j] = 1;
-                dfs(i + 1);
-                mark[j] = 0;
-                path.pop_back();
-            }
-        }
-    };
-    dfs(0);
-    return ans[k];
-}
-
-/**
- * 全排列 :  用 顺序循环遍历 做，以数组下标 ind 为例 ： 0，1，2 ... n-1
- * 第 k 个排列 ( 按数字从小到大顺序 )  (调 next_permutation 公式)
- * @param n
- * @param k
- * @return
- */
-vector<int> func4(int n, int k) {
-    vector<int> ind(n);
-    iota(ind.begin(), ind.end(), 0);
-    vector<vector<int>> ans;
-    ans.emplace_back(ind);
-    for (int i = 0; i < k; ++i) {
-        next_permutation(ind.begin(), ind.end());
-        ans.emplace_back(ind);
-    }
-    return ans[k];
-}
-
-/**
  * map lower_bound 用法， map 升序， lower_bound 大于等于， map 降序， lower_bound 小于等于
  * 1、改 map 顺序
  * 2、用 upper_bound (--it), 考虑 it 为 begin() 的情况
@@ -1080,6 +932,45 @@ int shortestSubarray(vector<int>& a, int k) {
     return ans == n+1 ? -1 : ans;
 }
 
+long long fac1[31];
+auto init_fac = [] {
+    fac1[0] = 1;
+    for (int i = 1; i < 31; i++) {
+        fac1[i] = fac1[i - 1] * i ; // for (int i = 1; i <= n; ++i) s[i] = s[i - 1] * a[i] % p;
+    }
+    return 0;
+}();
+
+// 组合
+long long comb_1(int n, int k) {
+    return fac1[n] / fac1[k] / fac1[n - k] ;
+}
+
+string kthSmallestPath(vector<int>& d, int k) {
+    int m = d[0], n = d[1];
+    int l = m+n;
+    string s(l,'H');
+    // cnt1:v  cnt2:h
+    int cnt1 = 0, cnt2 = 0;
+    // 枚举最大
+    while (1){
+        long long tmp = 0;
+        for (int i = m-1-cnt1; i < l; ++i) {
+            tmp += comb_1(i,i-m+1+cnt1);
+            if (tmp > k) {
+                s[i] = 'V';
+                ++cnt1;
+                k -= (tmp-comb_1(i,i-m+1));
+            } else if (tmp == k){
+                for (int j = i; j < i+m-cnt1; ++j){
+                    s[j] = 'V';
+                }
+                return s;
+            }
+        }
+    }
+    return s;
+}
 
 int main(){
     return 0;
