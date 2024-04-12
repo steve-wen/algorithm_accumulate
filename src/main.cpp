@@ -956,7 +956,9 @@ int minNumberOfSemesters(int n, vector<vector<int>>& r, int k1) {
                         q.emplace(l);
                     }
                 }
-                v.emplace_back(cnt);
+                if (cnt != 0) {
+                    v.emplace_back(cnt);
+                }
             }
             vec.emplace_back(v);
         }
@@ -987,6 +989,8 @@ int minNumberOfSemesters(int n, vector<vector<int>>& r, int k1) {
 }
 
 int main(){
+    vector<vector<int>> r{{2,1},{3,1},{1,4}};
+    auto ans = minNumberOfSemesters(4,r,2);
     return 0;
 }
 
