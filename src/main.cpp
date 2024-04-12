@@ -932,7 +932,59 @@ int shortestSubarray(vector<int>& a, int k) {
     return ans == n+1 ? -1 : ans;
 }
 
-
+int minNumberOfSemesters(int n, vector<vector<int>>& r, int k1) {
+    vector<int> fa(n+1,-1);
+    vector<vector<int>> ch(n+1);
+    for(auto& r1 : r){
+        fa[r1[0]] = r1[1];
+        ch[r1[1]].emplace_back(r1[0]);
+    }
+    vector<vector<int>> vec;
+    for (int i = 1; i <= n;++i) {
+        if (fa[i] == -1){
+            vector<int> v;
+            queue<int> q;
+            v.emplace_back(1);
+            q.emplace(i);
+            while(!q.empty()) {
+                int cnt  = 0;
+                for (int j = q.size(); j; --j){
+                    auto k = q.front();
+                    q.pop();
+                    cnt += ch[k].size();
+                    for(auto l : ch[k]) {
+                        q.emplace(l);
+                    }
+                }
+                v.emplace_back(cnt);
+            }
+            vec.emplace_back(v);
+        }
+    }
+    sort(vec.begin(),vec.end(),[&](vector<int> i,vector<int>j){return i.size()>j.size();});
+    int ind = vec[0].size()-1,ans = 0;
+    for (int i = ind; i >=0;){
+        int tmp = k1;
+        for (int j = 0; j <= n; ++j) {
+            if (vec[j].empty() || tmp == 0) {
+                break;
+            }
+            if (vec[j].back() <= tmp) {
+                tmp -= vec[j][i];
+                vec[j].pop_back();
+            } else {
+                vec[j][i] -= tmp;
+                tmp = 0;
+            }
+        }
+        ++ans;
+        sort(vec.begin(),vec.end(),[&](vector<int> i,vector<int>j){return i.size()>j.size();});
+        if(vec[0].empty()) {
+            return ans;
+        }
+    }
+    return ans;
+}
 
 int main(){
     return 0;

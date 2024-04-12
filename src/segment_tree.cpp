@@ -294,9 +294,9 @@ class Solution_segment {
 public:
     vector<int> mx;
 
-    // 维护
+    // 维护; 注意是取 max 还是 min
     void maintain(int o) {
-        mx[o] = min(mx[o * 2],mx[o * 2 + 1]);
+        mx[o] = max(mx[o * 2],mx[o * 2 + 1]);
     }
     // 初始化 o 从 1 开始
     void build(vector<int> &a, int o, int l, int r) {
@@ -314,14 +314,15 @@ public:
     }
 
     // 线段树上二分 获取下标 ind, L是左边界
-    // 线段树二分获取最近下标的方法(val 的右边离 val 最近的下标)
+    // 线段树二分获取最近下标的方法(val 的右边离 val 最近的下标
+    // 注意是 max 还是 min
     int index1(int o, int l, int r, int L, int R, int val) {
-        if (mx[o] >= val) return 1e5+2;
+        if (mx[o] < val) return 2e5+2;
         if (l == r) return l;
         int mid = (l+r)/2;
-        if (L <= mid && mx[o*2] < val && R >= mid) {
+        if (L <= mid && mx[o*2] >= val && R >= mid) {
             auto ind = index1(o*2, l, mid,L,R, val);
-            if (ind != (int)1e5+2) return ind;
+            if (ind != (int)2e5+2) return ind;
         }
         return index1(o*2+1, mid+1, r, L,R,val);
     }
@@ -329,12 +330,12 @@ public:
     // 线段树上二分 获取下标 ind, L是左边界
     // 线段树二分获取最近下标的方法(val 的左边离 val 最近的下标)
     int index2(int o, int l, int r, int L, int R, int val) {
-        if (mx[o] >= val) return 1e5+2;
+        if (mx[o] < val) return 2e5+2;
         if (l == r) return l;
         int mid = (l+r)/2;
-        if (L <= mid && mx[o*2+1] < val && R >= mid) {
+        if (L <= mid && mx[o*2+1] >= val && R > mid) {
             auto ind = index2(o*2+1, mid+1, r, L,R,val);
-            if (ind != (int)1e5+2) return ind;
+            if (ind != (int)2e5+2) return ind;
         }
         return index2(o*2, l, mid,L,R, val);
     }
@@ -354,6 +355,38 @@ public:
             if (n - ind[i] < k-ans.size() || ind[i] == -1) {
                 ans.emplace_back(a[i]);
             }
+        }
+        return ans;
+    }
+
+    vector<int> closestRoom(vector<vector<int>>& r, vector<vector<int>>& q) {
+        sort(r.begin(),r.end());
+        int n = r.size();
+        vector<int> a,b;
+        for (auto& r1 : r) {
+            a.emplace_back(r1[1]);
+            b.emplace_back(r1[0]);
+        }
+        mx.resize(n*4);
+        build(a,1,1,n);
+        vector<int> ans;
+        for(auto& q1 : q){
+            auto i = lower_bound(b.begin(),b.end(),q1[0])-b.begin();
+            auto ind1 = index1(1,1,n,i+1,n,q1[1]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+            auto ind2 = index2(1,1,n,1,i,q1[1]);
+            if (ind1 == 2e5+2 && ind2 == 2e5+2) {
+                ans.emplace_back(-1);
+            } else {
+                if (ind1 == 2e5+2) {
+                    ans.emplace_back(b[ind2-1]);
+                } else if (ind2 == 2e5+2) {
+                    ans.emplace_back(b[ind1-1]);
+                } else {
+                    auto ind = abs(q1[0]-b[ind2-1]) <= abs(q1[0]-b[ind1-1]) ? b[ind2-1] : b[ind1-1];
+                    ans.emplace_back(ind);
+                }
+            }
+
         }
         return ans;
     }

@@ -401,3 +401,26 @@ long long beautifulSubstrings(string s, int k) {
     return ans;
 }
 
+/**
+ * 哈希表+枚举
+ * 注意 pair<int,int> 转 long long
+ * https://leetcode.cn/problems/count-pairs-of-points-with-distance-k/description/
+ * @param c
+ * @param k
+ * @return
+ */
+int countPairs(vector<vector<int>>& c, int k) {
+    int n = c.size();
+    unordered_map<long long,int> mp;
+    int ans = 0;
+    for (auto& c1 : c){
+        for (int i = 0; i <= k; ++i){
+            // 直接 ans += mp[...] 会插入不存在的点 (注意习惯)
+            if (mp.count((c1[0]^i)*(long long)2e6+c1[1]^(k-i))) {
+                ans += mp[(c1[0]^i)*(long long)2e6+c1[1]^(k-i)];
+            }
+        }
+        ++mp[c1[0]*(long long)2e6+c1[1]];
+    }
+    return ans;
+}
