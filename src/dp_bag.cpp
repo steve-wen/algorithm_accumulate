@@ -141,6 +141,8 @@ int sumOfPowers(vector<int>& a, int k) {
     return ans;
 }
 
+
+
 /**
  * 完全 背包 模板代码
  * c : 背包容量

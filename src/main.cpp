@@ -983,9 +983,41 @@ long long findKthSmallest(vector<int>& c, int k) {
     return lo + q * labc;
 }
 
+int minimumValueSum(vector<int>& a, vector<int>& b) {
+    int n = a.size(), m = b.size();
+    // map 数组记忆化
+    unordered_map<int,int> mp[(int)10][11];
 
+    function<int(int,int,int)> dfs = [&](int i,int j, int v) {
+        if (i == n) {
+            if (j == m) {
+                return 0;
+            } else {
+                return (int)1e9+1;
+            }
+        }
+        if (j == m) return (int)1e9+1;
+        if (mp[i][j].count(v)) {
+            return mp[i][j][v];
+        }
+        int& res = mp[i][j][v];
+        if (v < b[j]) {
+            return (int)1e9+1;
+        }
+        if (v == b[j]) {
+            res = min(dfs(i+1,j+1,(i == n-1 ? 0 : a[i+1]))+a[i],dfs(i+1,j,v& ((i == n-1) ? 0 : a[i+1])));
+        } else {
+            res = dfs(i+1,j,v& (i == n-1 ? 0 : a[i+1]));
+        }
+        return res;
+    };
+    auto ans = dfs(0,0,a[0]);
+    return  ans >= 1e9+1 ?  -1 :  dfs(0,0,a[0]);
+}
 
 int main(){
+    vector<int> a{1,4,3,3,2},b{0,3,3,2};
+    auto ans = minimumValueSum(a,b);
     return 0;
 }
 
