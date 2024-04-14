@@ -1,8 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-using ll = long long;
-
+#define ll long long
 #define rep(i, from, to) for(ll i = from;i<to;i++)
 #define rrep(i, from, to) for(ll i = from;i>=to;i--)
 #define se second
@@ -932,65 +931,61 @@ int shortestSubarray(vector<int>& a, int k) {
     return ans == n+1 ? -1 : ans;
 }
 
-int minNumberOfSemesters(int n, vector<vector<int>>& r, int k1) {
-    vector<int> fa(n+1,-1);
-    vector<vector<int>> ch(n+1);
-    for(auto& r1 : r){
-        fa[r1[0]] = r1[1];
-        ch[r1[1]].emplace_back(r1[0]);
-    }
-    vector<vector<int>> vec;
-    for (int i = 1; i <= n;++i) {
-        if (fa[i] == -1){
-            vector<int> v;
-            queue<int> q;
-            v.emplace_back(1);
-            q.emplace(i);
-            while(!q.empty()) {
-                int cnt  = 0;
-                for (int j = q.size(); j; --j){
-                    auto k = q.front();
-                    q.pop();
-                    cnt += ch[k].size();
-                    for(auto l : ch[k]) {
-                        q.emplace(l);
-                    }
-                }
-                if (cnt != 0) {
-                    v.emplace_back(cnt);
-                }
+
+long long findKthSmallest(vector<int>& c, int k) {
+    int n = c.size();
+    vector<int> path;
+    vector<vector<vector<int>>> a(n+1);
+    function<void(int)> dfs = [&](int i) {
+        if (i == n) {
+            a[path.size()].emplace_back(path);
+            return;
+        }
+        dfs(i + 1);
+        path.emplace_back(c[i]);
+        dfs(i + 1);
+        path.pop_back();
+    };
+    dfs(0);
+    vector<vector<ll>> f(n+1);
+    for (int i = 1; i <=n; ++i) {
+        for(auto& b : a[i]) {
+            ll d = 1;
+            for (auto& b1 : b) {
+                d = lcm(d,(ll)b1);
             }
-            vec.emplace_back(v);
+            f[i].emplace_back(d);
         }
     }
-    sort(vec.begin(),vec.end(),[&](vector<int> i,vector<int>j){return i.size()>j.size();});
-    int ind = vec[0].size()-1,ans = 0;
-    for (int i = ind; i >=0;){
-        int tmp = k1;
-        for (int j = 0; j <= n; ++j) {
-            if (vec[j].empty() || tmp == 0) {
-                break;
-            }
-            if (vec[j].back() <= tmp) {
-                tmp -= vec[j][i];
-                vec[j].pop_back();
-            } else {
-                vec[j][i] -= tmp;
-                tmp = 0;
+
+    ll labc = f[n][0];
+    ll mx = *max_element(c.begin(),c.end());
+    // 这里用 lambda 捕获计算好的最小公倍数，避免重复计算
+    const auto countLessEqual = [&] (long long x) -> long long {
+        ll sum = 0;
+        for (int i = 1; i <= n; ++i) {
+            for (auto & f1 : f[i]) {
+                sum += (i%2 ? 1 : (-1)) * (x/f1);
             }
         }
-        ++ans;
-        sort(vec.begin(),vec.end(),[&](vector<int> i,vector<int>j){return i.size()>j.size();});
-        if(vec[0].empty()) {
-            return ans;
-        }
+        return sum;
+    };
+    const long long m = countLessEqual(labc);
+    const long long q = k / m, r = k % m;
+    long long hi = min(labc, r * mx);
+    long long lo = 0;
+    while (lo < hi) {
+        const long long mi = (lo + hi) / 2;
+        if (countLessEqual(mi) < r)
+            lo = mi + 1;
+        else hi = mi;
     }
-    return ans;
+    return lo + q * labc;
 }
 
+
+
 int main(){
-    vector<vector<int>> r{{2,1},{3,1},{1,4}};
-    auto ans = minNumberOfSemesters(4,r,2);
     return 0;
 }
 

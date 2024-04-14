@@ -299,6 +299,10 @@ int findCheapestPrice(int n, vector<vector<int>>& f, int s, int des, int k) {
             return d;
         }
 
+        // 此时的 d 不是最小值， 说明之前已更新过， continue
+        // queue 中有的 d 是之前 push 进去的，在有更小的 d push 进去之后，该 d 可以 continue 跳过了
+        // if (d > dis[i]) continue; 此处不用这个判断语句 因为要结合 限定经过边数；其他地方要加上这个 continue 剪枝
+
         // 遍历邻居
         for (auto& p : mp[i]) {
             int i1 = p.first, j1 = j + 1;
@@ -316,6 +320,70 @@ int findCheapestPrice(int n, vector<vector<int>>& f, int s, int des, int k) {
         }
     }
     return -1;
+}
+
+/**
+ * 朴素 dijkstra， 记住用 continue 剪枝
+ * https://leetcode.cn/problems/minimum-time-to-visit-disappearing-nodes/description/
+ * @param n
+ * @param e
+ * @param a
+ * @return
+ */
+vector<int> minimumTime(int n, vector<vector<int>>& e, vector<int>& a) {
+    vector<int> ans(n,-1);
+    ans[0] = 0;
+    for (auto& e1 : e) {
+        if (e1[0] > e1[1]) {
+            swap(e1[0],e1[1]);
+        }
+    }
+    sort(e.begin(),e.end());
+    int m = e.size();
+    // 建图
+    vector<vector<pair<int,int>>> mp(n);
+    if (m > 0){
+        mp[e[0][0]].emplace_back(e[0][1],e[0][2]);
+        mp[e[0][1]].emplace_back(e[0][0],e[0][2]);
+    }
+    for (int i = 1; i < m; ++i) {
+        if (e[i][0] == e[i-1][0] && e[i][1] == e[i-1][1]) continue;
+        auto e1 = e[i];
+        if (e1[2] < a[e1[1]]) {
+            mp[e1[0]].emplace_back(e1[1],e1[2]);
+        }
+        if (e1[2] < a[e1[0]]) {
+            mp[e1[1]].emplace_back(e1[0],e1[2]);
+        }
+    }
+
+    // 初始化 dis 数组, cnt 记录 cnt[i], 即 到达 i 时已经过边数； 便于后续剪枝
+    vector<int> dis(n, 1e9);
+    dis[0] = 0;
+    // 小顶堆， 起点（0，0，0） 入堆
+    priority_queue<pair<int,int>,vector<pair<int,int>>,greater<>> q;
+    q.emplace(0,0);
+
+    while(!q.empty()) {
+        auto[d,i] = q.top();
+        q.pop();
+        // 此时的 d 不是最小值， 说明之前已更新过， continue
+        // queue 中有的 d 是之前 push 进去的，在有更小的 d push 进去之后，该 d 可以 continue 跳过了
+        if (d > dis[i]) continue;
+        // 遍历邻居
+        for (auto& p : mp[i]) {
+            int i1 = p.first;
+            // 根据题目处理
+            int nd = d + p.second;
+            // 更新点
+            if (nd < dis[i1] && nd < a[i1]) {
+                q.emplace(nd,i1);
+                dis[i1] = nd;
+                ans[i1] = nd;
+            }
+        }
+    }
+    return ans;
 }
 
 struct TreeNode {
@@ -730,3 +798,41 @@ int minTrioDegree(int n, vector<vector<int>>& e) {
     }
     return ans == 1e4 ? -1 : ans;
 }
+
+/**
+ * 有向无环图->存在拓扑序-> bfs
+ * bfs + dp
+ * https://leetcode.cn/problems/parallel-courses-iii/description/
+ * @param n
+ * @param relations
+ * @param time
+ * @return
+ */
+int minimumTime_1(int n, vector<vector<int>> &relations, vector<int> &time) {
+    vector<vector<int>> g(n);
+    vector<int> deg(n);
+    for (auto &r: relations) {
+        int x = r[0] - 1, y = r[1] - 1;
+        g[x].push_back(y); // 建图
+        deg[y]++; // 可以理解为 y 的先修课的个数
+    }
+
+    queue<int> q;
+    for (int i = 0; i < n; i++)
+        if (deg[i] == 0) // 没有先修课
+            q.push(i);
+    vector<int> f(n);
+    while (!q.empty()) {
+        int x = q.front();
+        q.pop();
+        // x 出队，意味着 x 的所有先修课都上完了
+        f[x] += time[x]; // 加上当前课程的时间，就得到了最终的 f[x]
+        for (int y: g[x]) { // 遍历 x 的邻居 y
+            f[y] = max(f[y], f[x]); // 更新 f[y] 的所有先修课程耗时的最大值
+            if (--deg[y] == 0) // y 的先修课已上完
+                q.push(y);
+        }
+    }
+    return *max_element(f.begin(), f.end());
+}
+

@@ -317,10 +317,10 @@ public:
     // 线段树二分获取最近下标的方法(val 的右边离 val 最近的下标
     // 注意是 max 还是 min
     int index1(int o, int l, int r, int L, int R, int val) {
-        if (mx[o] < val) return 2e5+2;
+        if (mx[o] <= val) return 2e5+2;
         if (l == r) return l;
         int mid = (l+r)/2;
-        if (L <= mid && mx[o*2] >= val && R >= mid) {
+        if (L <= mid && mx[o*2] > val && R >= mid) {
             auto ind = index1(o*2, l, mid,L,R, val);
             if (ind != (int)2e5+2) return ind;
         }
@@ -355,6 +355,32 @@ public:
             if (n - ind[i] < k-ans.size() || ind[i] == -1) {
                 ans.emplace_back(a[i]);
             }
+        }
+        return ans;
+    }
+
+    long long numberOfSubarrays(vector<int>& a) {
+        long long ans = 0;
+        int n = a.size();
+        unordered_map<int,vector<int>> mp;
+        for (int i = 0; i < n; ++i){
+            mp[a[i]].emplace_back(i);
+        }
+        unordered_map<int,int> cnt;
+        mx.resize(n*4);
+        build(a,1,1,n);
+        for (int i = 0; i < n; ++i) {
+            auto ind1 = index1(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+            if (ind1 != 2e5+2) {
+                --ind1;
+                auto ind2 = lower_bound(mp[a[i]].begin(),mp[a[i]].end(),ind1)-mp[a[i]].begin();
+                --ind2;
+                ans += (long long)(ind2-cnt[a[i]]);
+            } else {
+                int m = mp[a[i]].size();
+                ans += (long long)(m-1-cnt[a[i]]);
+            }
+            ++cnt[a[i]];
         }
         return ans;
     }
