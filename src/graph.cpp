@@ -836,3 +836,49 @@ int minimumTime_1(int n, vector<vector<int>> &relations, vector<int> &time) {
     return *max_element(f.begin(), f.end());
 }
 
+/**
+ * 记忆化 + 分析时间复杂度 O(m*n*k)
+ * 网格图里的记忆化
+ * https://leetcode.cn/problems/check-if-there-is-a-valid-parentheses-string-path/description/
+ * @param g
+ * @return
+ */
+bool hasValidPath(vector<vector<char>>& g) {
+    // 准备方向数组 vec
+    vector<vector<int>> vec{{1,0},{0,1}};
+    int m = g.size(), n = g[0].size();
+    if ((m+n-1) %2 || g[0][0] == ')') return false;
+
+    int memo[101][101][205];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int,int)> dfs = [&](int i, int j, int k){
+        if (i == m-1 && j == n-1) {
+            if (k*2 == m+n-1) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        if (memo[i][j][k] != -1) return memo[i][j][k];
+        int& res = memo[i][j][k];
+        for(auto& v : vec){
+            auto i1 = i+v[0], j1 = j+v[1];
+            if (i1<m && j1<n){
+                if (k > i+j+1-k) {
+                    if (g[i1][j1] == '(') {
+                        res = max(res,dfs(i1,j1,k+1));
+                    } else {
+                        res = max(res,dfs(i1,j1,k));
+                    }
+                } else if(k == i+j+1-k){
+                    if (g[i1][j1] == '(') {
+                        res = max(res,dfs(i1,j1,k+1));
+                    }
+                }
+            }
+        }
+        return res;
+    };
+    return dfs(0,0,1) >= 1;
+}
+
