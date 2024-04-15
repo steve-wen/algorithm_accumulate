@@ -269,3 +269,80 @@ int minHeightShelves(vector<vector<int>>& b, int d) {
     return f[n];
 }
 
+/**
+ * 划分型 dp + map 记忆化
+ * dfs(i,j,v): 在 i 至 n-1 之间，还需划分 m-j 段，且目前的 and 值是 v 的状态下的最小结果数值
+ * 注意 mp[i][j][v] 的作用：v 表示 and 值， mp[i][j][v]表示结果数值 res
+ * 注意分析状态个数： 此题一共 n*m*log(U) 个状态(log(U) 因为 and 的性质)
+ * https://leetcode.cn/problems/minimum-sum-of-values-by-dividing-array/description/
+ * @param a
+ * @param b
+ * @return
+ */
+
+int minimumValueSum(vector<int>& a, vector<int>& b) {
+    int n = a.size(), m = b.size();
+    // map 数组记忆化
+    unordered_map<int,int> mp[10001][10];
+
+    function<int(int,int,int)> dfs = [&](int i,int j, int v) {
+        if (i == n) {
+            if (j == m) {
+                return 0;
+            } else {
+                return (int)1e9+1;
+            }
+        }
+        if (j == m) return (int)1e9+1;
+        if (mp[i][j].count(v)) {
+            return mp[i][j][v];
+        }
+        if (v < b[j]) {
+            return (int)1e9+1;
+        }
+        // 如果是 map 的话，注意引用位置；mp[i][j][v] 生成时就默认插入了 mp[i][j][v] = 0;
+        // 特别是有剪枝得地方更要注意合理引用，或者可用赋值操作代替
+        int& res = mp[i][j][v];
+        res = dfs(i+1,j,v& ((i == n-1) ? 0 : a[i+1]));
+        if (v == b[j]) {
+            res = min(dfs(i+1,j+1,(i == n-1 ? 0 : a[i+1]))+a[i],res);
+        }
+        return res;
+    };
+    auto ans = dfs(0,0,a[0]);
+    return  ans >= 1e9+1 ?  -1 :  ans;
+}
+
+//map<tuple<int,int,int>> 会超时
+//int minimumValueSum(vector<int>& a, vector<int>& b) {
+//    int n = a.size(), m = b.size();
+//    // map 数组记忆化
+//    map<tuple<int,int,int>,int> mp;
+//
+//    function<int(int,int,int)> dfs = [&](int i,int j, int v) {
+//        if (i == n) {
+//            if (j == m) {
+//                return 0;
+//            } else {
+//                return (int)1e9+1;
+//            }
+//        }
+//        if (j == m) return (int)1e9+1;
+//        if (mp.count(tuple<int,int,int>(i,j,v))) {
+//            return mp[tuple<int,int,int>(i,j,v)];
+//        }
+//        if (v < b[j]) {
+//            return (int)1e9+1;
+//        }
+//        // 如果是 map 的话，注意引用位置；mp[i][j][v] 生成时就默认插入了 mp[i][j][v] = 0;
+//        // 特别是有剪枝得地方更要注意合理引用，或者可用赋值操作代替
+//        int& res = mp[tuple<int,int,int>(i,j,v)];
+//        res = dfs(i+1,j,v& ((i == n-1) ? 0 : a[i+1]));
+//        if (v == b[j]) {
+//            res = min(dfs(i+1,j+1,(i == n-1 ? 0 : a[i+1]))+a[i],res);
+//        }
+//        return res;
+//    };
+//    auto ans = dfs(0,0,a[0]);
+//    return  ans >= 1e9+1 ?  -1 :  ans;
+//}

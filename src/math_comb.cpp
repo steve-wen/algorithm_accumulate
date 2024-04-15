@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 
 using namespace std;
+#define ll long long
 
 /**
 * 组合数学
@@ -113,7 +114,8 @@ public:
  *
  * 集合 A∩B∩C:
  *
- * |A| + |B| + |C| -(|A∩B|+|A∩C|+|B∩C|) + |A∩B∩C|
+ * ∣A∪B∪C∣= |A| + |B| + |C| -(|A∩B|+|A∩C|+|B∩C|) + |A∩B∩C|
+ * 数量更多的集合有类似规律；具有一般性
  */
 
 /**
@@ -188,4 +190,68 @@ string kthSmallestPath(vector<int>& d, int k) {
         }
     }
     return s;
+}
+
+/**
+ * 容斥原理 + 二分； 通用模板
+ * https://leetcode.cn/problems/ugly-number-iii/solutions/586670/cer-fen-jie-fa-zhe-dao-ti-shi-zen-yao-be-b7r9/
+ * @param c
+ * @param k
+ * @return
+ */
+long long findKthSmallest(vector<int>& c, int k) {
+    int n = c.size();
+    vector<int> path;
+    vector<vector<vector<int>>> a(n+1);
+    function<void(int)> dfs = [&](int i) {
+        if (i == n) {
+            a[path.size()].emplace_back(path);
+            return;
+        }
+        dfs(i + 1);
+        path.emplace_back(c[i]);
+        dfs(i + 1);
+        path.pop_back();
+    };
+    dfs(0);
+    vector<vector<ll>> f(n+1);
+    for (int i = 1; i <=n; ++i) {
+        for(auto& b : a[i]) {
+            ll d = 1;
+            for (auto& b1 : b) {
+                d = lcm(d,(ll)b1);
+            }
+            f[i].emplace_back(d);
+        }
+    }
+
+    ll labc = f[n][0];
+    ll mn = *min_element(c.begin(),c.end());
+    // 这里用 lambda 捕获计算好的最小公倍数，避免重复计算
+    const auto countLessEqual = [&] (long long x) -> long long {
+        ll sum = 0;
+        for (int i = 1; i <= n; ++i) {
+            for (auto & f1 : f[i]) {
+                sum += (i%2 ? 1 : (-1)) * (x/f1);
+            }
+        }
+        return sum;
+    };
+    // 和 878 题一样，这里可以对 a、b、c 的最小公倍数做除法并取余数来优化算法的效率，
+    // 简单来说就是每 lcm(a,b,c) 个连续整数中，
+    // 就有 f(lcm(a,b,c)) 个丑数，具有周期性
+    const long long m = countLessEqual(labc);
+    const long long q = k / m, r = k % m;
+    long long hi = min(labc, r * mn);
+    long long lo = 0,ans = hi;
+    while (lo <= hi) {
+        const long long mi = (lo + hi) / 2;
+        if (countLessEqual(mi) < r) {
+            lo = mi + 1;
+        } else {
+            ans = min(ans,mi);
+            hi = mi-1;
+        }
+    }
+    return lo + q * labc;
 }

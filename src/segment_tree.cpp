@@ -340,51 +340,6 @@ public:
         return index2(o*2, l, mid,L,R, val);
     }
 
-    vector<int> mostCompetitive(vector<int>& a, int k) {
-        int n = a.size();
-        mx.resize(n*4);
-        vector<int> ind(n,-1);
-        build(a,1,1,n);
-        for (int i = 0; i < n; ++i) {
-            auto ind1 = index1(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
-            if (ind1 != 1e5+2) ind[i] = ind1-1;
-        }
-        vector<int> ans;
-        for (int i =0; i < n; ++i) {
-            if (ans.size() == k) return ans;
-            if (n - ind[i] < k-ans.size() || ind[i] == -1) {
-                ans.emplace_back(a[i]);
-            }
-        }
-        return ans;
-    }
-
-    long long numberOfSubarrays(vector<int>& a) {
-        long long ans = 0;
-        int n = a.size();
-        unordered_map<int,vector<int>> mp;
-        for (int i = 0; i < n; ++i){
-            mp[a[i]].emplace_back(i);
-        }
-        unordered_map<int,int> cnt;
-        mx.resize(n*4);
-        build(a,1,1,n);
-        for (int i = 0; i < n; ++i) {
-            auto ind1 = index1(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
-            if (ind1 != 2e5+2) {
-                --ind1;
-                auto ind2 = lower_bound(mp[a[i]].begin(),mp[a[i]].end(),ind1)-mp[a[i]].begin();
-                --ind2;
-                ans += (long long)(ind2-cnt[a[i]]);
-            } else {
-                int m = mp[a[i]].size();
-                ans += (long long)(m-1-cnt[a[i]]);
-            }
-            ++cnt[a[i]];
-        }
-        return ans;
-    }
-
     vector<int> closestRoom(vector<vector<int>>& r, vector<vector<int>>& q) {
         sort(r.begin(),r.end());
         int n = r.size();
@@ -435,22 +390,6 @@ public:
         }
         return ans%mod;
     }
-
-//    vector<int> leftmostBuildingQueries(vector<int>& h, vector<vector<int>>& q) {
-//        int n = h.size(), m = q.size();
-//        mx.resize(n*4);
-//        vector<int> ans(m,-1);
-//        build(h,1,1,n);
-//        for (int i = 0; i < m; ++i) {
-//            int j = min(q[i][0],q[i][1]), k =  max(q[i][0],q[i][1]);
-//            if (j == k || h[j] < h[k]) ans[i] = k;
-//            else {
-//                auto ind = index(1,1,n,k+2,n,h[j]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
-//                if (ind != 5e4+2) ans[i] = ind-1;
-//            }
-//        }
-//        return ans;
-//    }
 };
 
 // segment tree + dp : 线段树 + 动态规划  lc.no.2407
