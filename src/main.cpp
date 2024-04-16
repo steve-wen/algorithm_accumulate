@@ -895,10 +895,41 @@ int minCameraCover(TreeNode* root) {
     return min(dfs(root,0),dfs(root,2));
 }
 
+/**
+ * 有错，注意
+ * @param n
+ * @param c
+ * @return
+ */
 vector<vector<int>> criticalConnections(int n, vector<vector<int>>& c) {
-
-
-
+    set<vector<int>> st;
+    int memo[(int)1e5+1];
+    memset(memo,-1,sizeof(memo));
+    vector<vector<int>> g(n);
+    for (auto& c1 : c){
+        g[c1[0]].emplace_back(c1[1]);
+        g[c1[1]].emplace_back(c1[0]);
+    }
+    function<int(int,int)> dfs = [&](int i,int j){
+        for (auto& i1 : g[i]) {
+            if (i1 == j) continue;
+            if (memo[i1] == -1) {
+                memo[i1] = memo[i]+1;
+            } else {
+                auto mn = min(memo[i1],memo[i]);
+                memo[i] = mn;
+                memo[i1] = mn;
+                return mn;
+            }
+            if (dfs(i1,i) != dfs(i,j)) {
+                st.emplace(vector<int>{i1,i});
+            }
+        }
+        return memo[i];
+    };
+    dfs(0,-1);
+    vector<vector<int>> ans(st.begin(),st.end());
+    return ans;
 }
 
 int main(){
