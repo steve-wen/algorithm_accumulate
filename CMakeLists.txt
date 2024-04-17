@@ -12,7 +12,8 @@ set(SOURCE ${CXX_SOURCE}
         src/bit.cpp
         src/dp_pre.cpp
         src/enum.cpp
-        src/tarjan.cpp)
+        src/tarjan.cpp
+        src/greedy.cpp)
 
 #获取所有资源文件
 #file(GLOB_RECURSE RESOURCE_FILE ${PROJECT_SOURCE_DIR}/resource/*.*)
