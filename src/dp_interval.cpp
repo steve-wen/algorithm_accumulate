@@ -45,3 +45,39 @@ int maxOperations(vector<int>& a) {
     ans = max(1+check(2,n-1,b1), max(1+check(1,n-2,b2),1+check(0,n-3,b3)));
     return ans;
 }
+
+/**
+ * 朴素区间 dp + 记忆化 (O(n^2) 的写法需要转换为 dp 在遍历的时候更新状态？
+ * 时间复杂度 O(n^3)
+ * https://leetcode.cn/problems/stone-game-v/solutions/386111/di-gui-ji-yi-hua-by-time-limit/
+ * @param a
+ * @return
+ */
+int stoneGameV(vector<int>& a) {
+    int n = a.size();
+    vector<int> s(n+1);
+    for (int i = 0; i < n; ++i) {
+        s[i+1] += s[i]+a[i];
+    }
+    int memo[501][501];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int)> dfs = [&](int i,int j){
+        if (j-i <= 0) {
+            return 0;
+        }
+        if (memo[i][j] != -1) {
+            return memo[i][j];
+        }
+        int& res = memo[i][j];
+        for (int k = i; k <= j; ++k) {
+            if (s[k+1]-s[i] <= s[j+1]-s[k+1]) {
+                res = max(res, dfs(i,k)+s[k+1]-s[i]);
+            }
+            if (s[k+1]-s[i] >= s[j+1]-s[k+1]) {
+                res = max(res, dfs(k+1,j)+s[j+1]-s[k+1]);
+            }
+        }
+        return res;
+    };
+    return dfs(0,n-1);
+}

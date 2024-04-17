@@ -424,3 +424,28 @@ int countPairs(vector<vector<int>>& c, int k) {
     }
     return ans;
 }
+
+/**
+ * 哈希表 + 预处理 + 枚举
+ * 时间复杂度 O(n(n+U)); U 是 max(nums)
+ * https://leetcode.cn/problems/triples-with-bitwise-and-equal-to-zero/solutions/2145654/you-ji-qiao-de-mei-ju-chang-shu-you-hua-daxit/
+ * @param a
+ * @return
+ */
+int countTriplets(vector<int>& a) {
+    unordered_map<int,int> mp;
+    int n = a.size(), ans = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            mp[a[i]&a[j]]++;
+        }
+    }
+    for (int i = 0; i < n; ++i) {
+        for (auto& p : mp) {
+            if ((p.first&a[i]) == 0) {
+                ans += p.second;
+            }
+        }
+    }
+    return ans;
+}
