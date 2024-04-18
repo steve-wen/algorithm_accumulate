@@ -52,6 +52,51 @@ long long arra(int n, int k) {
     return fac[n] * inv_fac[n - k] % MOD;
 }
 
+/**
+ * 组合数学，注意随时取 mod; 防溢出
+ * https://leetcode.cn/problems/count-k-subsequences-of-a-string-with-maximum-beauty/solutions/2424876/zu-he-shu-xue-pythonjavacgo-by-endlessch-whff/
+ * @param s
+ * @param k
+ * @return
+ */
+int countKSubsequencesWithMaxBeauty(string s, int k) {
+    vector<ll> f;
+    for (int i = 0; i < 26; ++i) {
+        auto a = count(s.begin(), s.end(),'a'+i);
+        if (a != 0) {
+            f.emplace_back(a);
+        }
+    }
+    sort(f.rbegin(),f.rend());
+    if (f.size() < k) return 0;
+    int n = f.size();
+    ll ans = 1, mod = 1e9+7, cnt = 1, l = k-1;
+    for (int i = k-1; i >= 1; --i) {
+        if (f[i-1] == f[i]) {
+            ++cnt;
+            if (i == 1) {
+                l = 0;
+            }
+        } else {
+            l = i;
+            break;
+        }
+    }
+    for (int i = k-1; i < n-1; ++i) {
+        if (f[i+1] == f[i]) {
+            ++cnt;
+        } else {
+            break;
+        }
+    }
+
+    for (int i = 0; i < l; ++i) {
+        ans = ans * f[i] %mod;
+    }
+    ans = (ans%mod * q_pow(f[k-1],k-l)%mod * comb(cnt,k-l)%mod)%mod;
+    return ans;
+}
+
 class Solution_inv {
 public:
     int numberOfSequence(int n, vector<int> &a) {
