@@ -192,3 +192,26 @@ vector<int> constructDistancedSequence(int n) {
     return path;
 }
 
+/**
+ * 分析+遍历枚举
+ * https://leetcode.cn/problems/minimum-money-required-before-transactions/description/
+ * @param t
+ * @return
+ */
+long long minimumMoney(vector<vector<int>>& t) {
+    ll ans = 0, sum = 0;
+    for (auto& t1 : t){
+        if (t1[0]-t1[1] > 0) {
+            sum += (ll)(t1[0]-t1[1]);
+        }
+    }
+    for (auto& t1 : t){
+        if (t1[0]-t1[1] > 0) {
+            ans = max(ans,sum-(ll)(t1[0]-t1[1])+(ll)t1[0]);
+        } else {
+            ans = max(ans,sum+(ll)t1[0]);
+        }
+    }
+    return ans;
+}
+
