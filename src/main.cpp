@@ -214,7 +214,29 @@ int minCameraCover(TreeNode* root) {
     return min(dfs(root,0),dfs(root,2));
 }
 
-int mostBooked(int n, vector<vector<int>>& meetings) {
+int mostBooked(int n, vector<vector<int>>& a) {
+    vector<int> cnt(n);
+    vector<ll> t(n); // 结束时间，开区间
+    sort(a.begin(),a.end());
+    for (auto& a1 : a) {
+        auto b = a1[0], c = a1[1];
+        ll mn = 6e10, ind = -1;
+        for (int i = 0; i < n; ++i) {
+            if (t[i] <= b) {
+                t[i] = c;
+                ++cnt[i];
+                break;
+            } else {
+                if (t[i] < mn) {
+                    mn = t[i];
+                    ind = i;
+                }
+            }
+        }
+        if (ind != -1) {
+            
+        }
+    }
 
 }
 
