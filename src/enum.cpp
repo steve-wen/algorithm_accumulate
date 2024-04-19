@@ -6,6 +6,7 @@ using namespace std;
  *  暴力枚举 (可适当剪枝)
  *  子集，组合，排列问题
 */
+#define ll long long
 
 /**
  * 子集 ： 选/不选 以数组下标 ind 为例 ： 0，1，2 ... n-1
