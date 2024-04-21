@@ -214,34 +214,53 @@ int minCameraCover(TreeNode* root) {
     return min(dfs(root,0),dfs(root,2));
 }
 
-int mostBooked(int n, vector<vector<int>>& a) {
-    vector<int> cnt(n);
-    vector<ll> t(n); // 结束时间，开区间
-    sort(a.begin(),a.end());
-    for (auto& a1 : a) {
-        auto b = a1[0], c = a1[1];
-        ll mn = 6e10, ind = -1;
-        for (int i = 0; i < n; ++i) {
-            if (t[i] <= b) {
-                t[i] = c;
-                ++cnt[i];
-                break;
-            } else {
-                if (t[i] < mn) {
-                    mn = t[i];
-                    ind = i;
-                }
-            }
-        }
-        if (ind != -1) {
-            
+int minimumOperations(vector<vector<int>>& g) {
+    int m = g.size(), n = g[0].size();
+    int f[m+1][n+1][10];
+
+    for (int k = 0; k <= 9; ++k) {
+        if (k != g[0][0]) {
+            f[0][0][k] = 1;
+        } else {
+            f[0][0][k] = 0;
         }
     }
 
+    for (int j = 0; j < n; ++j) {
+        if (j > 0) {
+            int res = 1e7;
+            for (int k = 0; k <= 9; ++k) {
+                f[0][j][k] = res;
+                for (int l = 0; l <= 9; ++l) {
+                    if (l != k) {
+                        if (k!=g[0][j]) {
+                            f[0][j][k] = min(f[0][j][k],f[m-1][j-1][l]+1);
+                        } else {
+                            f[0][j][k] = min(f[0][j][k],f[m-1][j-1][l]);
+                        }
+                    }
+                }
+            }
+        }
+        for (int i = 1; i < m; ++i) {
+            for (int k = 0; k <= 9; ++k) {
+                if (k != g[i][j]) {
+                    f[i][j][k] = f[i-1][j][k]+1;
+                } else {
+                    f[i][j][k] = f[i-1][j][k];
+                }
+            }
+        }
+    }
+    int ans = 1e7;
+    for (int k = 0; k <= 9; ++k) {
+        ans = min(ans,f[m-1][n-1][k]);
+    }
+    return ans;
 }
 
-int main(){
 
+int main(){
     return 0;
 }
 
@@ -339,6 +358,7 @@ int main(){
 /**
  * impl list :
  * CF 的经典题, 注意练习
+ * 0.9 积累 dp 输出路径的题
  * 1.0 tarjan 算法的理解和积累
  * 1.1 每日灵茶; 可根据灵神的视频总结模板等; 手机上看题目，然后口胡/看题解思路
  * 1. 1.2 练习对应分数的题目，包括速度 (注意速度) (注意对应分数)
