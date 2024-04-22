@@ -277,3 +277,52 @@ int jobScheduling(vector<int>& s, vector<int>& e, vector<int>& p) {
     return ans;
 }
 
+/**
+ * 线性 dp + 记录转移路径/下标/方案 (from 数组)
+ * 注意： 记录目标路径
+ * https://leetcode.cn/problems/longest-unequal-adjacent-groups-subsequence-ii/solutions/2482844/zi-xu-lie-dp-de-si-kao-tao-lu-pythonjava-kmaf/
+ * @param w
+ * @param a
+ * @return
+ */
+vector<string> getWordsInLongestSubsequence(vector<string>& w, vector<int>& a) {
+    int n = w.size();
+    auto check = [&](string s1, string s2){
+        if (s1.size() == s2.size()) {
+            int cnt = 0, m = s1.size();
+            for (int i = 0; i < m; ++i) {
+                if (s1[i] != s2[i]) {
+                    ++cnt;
+                }
+            }
+            if(cnt == 1) return true;
+        }
+        return false;
+    };
+    // from 数组用于记录可能的目标转移路径
+    vector<int> from(n);
+    vector<int> f(n,1);
+    for (int i = 1; i < n; ++i) {
+        for (int j = 0; j < i; ++j) {
+            if (check(w[i],w[j]) && a[i] != a[j] && f[j]+1 > f[i]) {
+                from[i] = j;
+                f[i] = f[j]+1;
+            }
+        }
+    }
+    int mx = *max_element(f.begin(),f.end());
+    int ind = 0;
+    for (int i = 0; i < n; ++i) {
+        if (f[i] == mx) {
+            ind = i;
+            break;
+        }
+    }
+    vector<string> ans;
+    while (ans.size() < mx) {
+        ans.emplace_back(w[ind]);
+        ind = from[ind];
+    }
+    reverse(ans.begin(),ans.end());
+    return ans;
+}

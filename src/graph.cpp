@@ -464,6 +464,72 @@ vector<bool> findAnswer(int n, vector<vector<int>>& e) {
     return ans;
 }
 
+int countPaths(int n, vector<vector<int>>& e) {
+    int m = e.size();
+    ll mod = 1e9+7, ans = 1;
+    // 建图
+    vector<vector<pair<ll,ll>>> mp(n);
+    for (int i = 0; i < m; ++i) {
+        mp[e[i][0]].emplace_back(e[i][1],e[i][2]);
+        mp[e[i][1]].emplace_back(e[i][0],e[i][2]);
+    }
+    // 初始化 dis 数组, cnt 记录 cnt[i], 即 到达 i 时已经过边数； 便于后续剪枝
+    vector<ll> dis(n, 6e13);
+    dis[0] = 0;
+    // 小顶堆， 起点（0，0，0） 入堆
+    priority_queue<pair<ll,ll>,vector<pair<ll,ll>>,greater<>> q;
+    q.emplace(0,0);
+
+    while(!q.empty()) {
+        auto[d,i] = q.top();
+        q.pop();
+        // 此时的 d 不是最小值， 说明之前已更新过， continue
+        // queue 中有的 d 是之前 push 进去的，在有更小的 d push 进去之后，该 d 可以 continue 跳过了
+//        if (i == n-1) {
+//            break;
+//        }
+        if (d > dis[i]) {
+            continue;
+        }
+        // 遍历邻居
+        for (auto& p : mp[i]) {
+            ll i1 = p.first;
+            // 根据题目处理
+            ll nd = d + p.second;
+            // 更新点
+            if (nd < dis[i1] ) {
+                q.emplace(nd,i1);
+                dis[i1] = nd;
+            }
+        }
+    }
+
+    // 图不连通
+    if (dis[n - 1] == 6e13) {
+        return 0;
+    }
+
+    // dfs(n-1) 从终点倒着找可能经过的边
+    vector<int> vis(n);
+    function<void(int)> dfs = [&](int i){
+        vis[i] = true;
+        for (auto& p : mp[i]) {
+            ll i1 = p.first;
+            // 根据题目处理
+            ll w = p.second;
+            if (dis[i1]+w == dis[i]) {
+                ++ans;
+                if (!vis[i1]) {
+                    dfs(i1);
+                }
+            }
+        }
+        --ans;
+    };
+    dfs(n-1);
+    return ans;
+}
+
 struct TreeNode {
          int val;
          TreeNode *left;
