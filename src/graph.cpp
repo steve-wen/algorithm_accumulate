@@ -222,6 +222,50 @@ int minimumTime(vector<vector<int>>& g) {
 }
 
 /**
+ * dijkstra : 解决没有负边权的单源最短路， 时间复杂度（ElogN) + 网格图
+ * https://leetcode.cn/problems/swim-in-rising-water/description/
+ * @param g
+ * @return
+ */
+int swimInWater(vector<vector<int>>& g) {
+    int n = g.size();
+
+    // 准备方向数组 vec
+    vector<vector<int>> vec{{-1,0},{1,0},{0,-1},{0,1}};
+
+    // 初始化 dis 数组
+    vector<vector<int>> dis(n,vector<int>(n, 1e6));
+    dis[0][0] = g[0][0];
+
+    // 小顶堆， 起点（0，0，0） 入堆
+    priority_queue<tuple<int,int,int>,vector<tuple<int,int,int>>,greater<>> q;
+    q.emplace(g[0][0],0,0);
+
+    while(true) {
+        auto[d,i,j] = q.top();
+        q.pop();
+        if (i == n-1 && j == n-1) {
+            return d;
+        }
+        // 此时的 d 不是最小值， 说明之前已更新过， continue
+        if (d > dis[i][j]) continue;
+        // 遍历上下左右
+        for (auto& vec1 : vec) {
+            int i1 = i + vec1[0], j1 = j + vec1[1];
+            if (i1 >= 0 && i1 < n && j1 >= 0 && j1 < n) {
+                // 根据题目处理
+                int nd = max(d, g[i1][j1]);
+                // 更新点
+                if (nd < dis[i1][j1]) {
+                    dis[i1][j1] = nd;
+                    q.emplace(nd,i1,j1);
+                }
+            }
+        }
+    }
+}
+
+/**
  * dijkstra : 解决没有负边权的单源最短路， 时间复杂度（ElogN)
  * 本质上是 dijkstra, 到一个点的转向次数最少(记为 d)，单源最短路
  * https://leetcode.cn/problems/minimum-cost-to-make-at-least-one-valid-path-in-a-grid/description/
@@ -464,6 +508,14 @@ vector<bool> findAnswer(int n, vector<vector<int>>& e) {
     return ans;
 }
 
+/**
+ * 两次 dijkstra + vis 数组
+ * 注意第二次 dijkstra 的目的：正序/倒序 + vis 数组作用
+ * https://leetcode.cn/problems/number-of-ways-to-arrive-at-destination/description/
+ * @param n
+ * @param e
+ * @return
+ */
 int countPaths(int n, vector<vector<int>>& e) {
     int m = e.size();
     ll mod = 1e9+7, ans = 1;
@@ -483,11 +535,6 @@ int countPaths(int n, vector<vector<int>>& e) {
     while(!q.empty()) {
         auto[d,i] = q.top();
         q.pop();
-        // 此时的 d 不是最小值， 说明之前已更新过， continue
-        // queue 中有的 d 是之前 push 进去的，在有更小的 d push 进去之后，该 d 可以 continue 跳过了
-//        if (i == n-1) {
-//            break;
-//        }
         if (d > dis[i]) {
             continue;
         }
@@ -504,30 +551,35 @@ int countPaths(int n, vector<vector<int>>& e) {
         }
     }
 
-    // 图不连通
-    if (dis[n - 1] == 6e13) {
-        return 0;
-    }
-
-    // dfs(n-1) 从终点倒着找可能经过的边
+    // 小顶堆， 起点（0，0，0） 入堆
     vector<int> vis(n);
-    function<void(int)> dfs = [&](int i){
-        vis[i] = true;
+    vector<ll> cnt(n);
+    cnt[0] = 1;
+    priority_queue<pair<ll,ll>,vector<pair<ll,ll>>,greater<>> q1;
+    q1.emplace(0,0);
+
+    while(!q1.empty()) {
+        auto[d,i] = q1.top();
+        q1.pop();
+        if (d > dis[i]) {
+            continue;
+        }
+        // 遍历邻居
         for (auto& p : mp[i]) {
             ll i1 = p.first;
             // 根据题目处理
-            ll w = p.second;
-            if (dis[i1]+w == dis[i]) {
-                ++ans;
+            ll nd = d + p.second;
+            // 更新点
+            if (nd == dis[i1] ) {
+                cnt[i1] = (cnt[i1]+cnt[i])%mod;
                 if (!vis[i1]) {
-                    dfs(i1);
+                    q1.emplace(nd,i1);
+                    vis[i1] = 1;
                 }
             }
         }
-        --ans;
-    };
-    dfs(n-1);
-    return ans;
+    }
+    return cnt[n-1];
 }
 
 struct TreeNode {
