@@ -317,10 +317,10 @@ public:
     // 线段树二分获取最近下标的方法(val 的右边离 val 最近的下标
     // 注意是 max 还是 min
     int index1(int o, int l, int r, int L, int R, int val) {
-        if (mx[o] <= val) return 2e5+2;
+        if (mx[o] < val || L > R) return 2e5+2; // 此处对 L，R 进行判断，处理一些边界情况
         if (l == r) return l;
         int mid = (l+r)/2;
-        if (L <= mid && mx[o*2] > val && R >= mid) {
+        if (L <= mid && mx[o*2] >= val && R >= mid) {
             auto ind = index1(o*2, l, mid,L,R, val);
             if (ind != (int)2e5+2) return ind;
         }
@@ -330,7 +330,7 @@ public:
     // 线段树上二分 获取下标 ind, L是左边界
     // 线段树二分获取最近下标的方法(val 的左边离 val 最近的下标)
     int index2(int o, int l, int r, int L, int R, int val) {
-        if (mx[o] < val) return 2e5+2;
+        if (mx[o] < val || L > R) return 2e5+2;
         if (l == r) return l;
         int mid = (l+r)/2;
         if (L <= mid && mx[o*2+1] >= val && R > mid) {
@@ -340,57 +340,80 @@ public:
         return index2(o*2, l, mid,L,R, val);
     }
 
-    vector<int> closestRoom(vector<vector<int>>& r, vector<vector<int>>& q) {
-        sort(r.begin(),r.end());
-        int n = r.size();
-        vector<int> a,b;
-        for (auto& r1 : r) {
-            a.emplace_back(r1[1]);
-            b.emplace_back(r1[0]);
-        }
+    vector<int> canSeePersonsCount(vector<int>& a) {
+        int n = a.size();
         mx.resize(n*4);
         build(a,1,1,n);
-        vector<int> ans;
-        for(auto& q1 : q){
-            auto i = lower_bound(b.begin(),b.end(),q1[0])-b.begin();
-            auto ind1 = index1(1,1,n,i+1,n,q1[1]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
-            auto ind2 = index2(1,1,n,1,i,q1[1]);
-            if (ind1 == 2e5+2 && ind2 == 2e5+2) {
-                ans.emplace_back(-1);
-            } else {
-                if (ind1 == 2e5+2) {
-                    ans.emplace_back(b[ind2-1]);
-                } else if (ind2 == 2e5+2) {
-                    ans.emplace_back(b[ind1-1]);
-                } else {
-                    auto ind = abs(q1[0]-b[ind2-1]) <= abs(q1[0]-b[ind1-1]) ? b[ind2-1] : b[ind1-1];
-                    ans.emplace_back(ind);
-                }
+        vector<int> ans(n);
+        vector<int> d(n),s(n+1);
+        for (int i = n-1; i >= 0; --i) {
+            auto ind2 = index2(1,1,n,1,i,a[i]);
+            if (ind2 != 2e5+2) {
+                d[ind2-1]++;
             }
-
+        }
+        for (int i = 0; i < n; ++i) {
+            s[i+1] = s[i]+d[i];
+        }
+        for (int i = 0; i < n; ++i) {
+            auto ind1 = index1(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+            if (ind1 == 2e5+2) ind1 = n;
+            ans[i] = ind1-1-i-(s[ind1-1]-s[i+1]);
         }
         return ans;
     }
-
-    int maxSumMinProduct(vector<int>& a) {
-        int n = a.size(), mod = 1e9+7;
-        vector<long long> s(n+1);
-        for (int i = 0; i < n; ++i) {
-            s[i+1] = s[i]+a[i];
-        }
-        mx.resize(n*4);
-        long long ans = 1;
-        build(a,1,1,n);
-        for (int i = 0; i < n; ++i) {
-            auto ind1 = index1(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
-            auto ind2 = index2(1,1,n,1,i,a[i]);
-            if (ind1 == 1e5+2) ind1 = n+1;
-            if (ind2 == 1e5+2) ind2 = 0;
-            ans = max(ans,(s[ind1-1]-s[ind2])*(long long)a[i]);
-        }
-        return ans%mod;
-    }
 };
+
+//vector<int> closestRoom(vector<vector<int>>& r, vector<vector<int>>& q) {
+//    sort(r.begin(),r.end());
+//    int n = r.size();
+//    vector<int> a,b;
+//    for (auto& r1 : r) {
+//        a.emplace_back(r1[1]);
+//        b.emplace_back(r1[0]);
+//    }
+//    mx.resize(n*4);
+//    build(a,1,1,n);
+//    vector<int> ans;
+//    for(auto& q1 : q){
+//        auto i = lower_bound(b.begin(),b.end(),q1[0])-b.begin();
+//        auto ind1 = index1(1,1,n,i+1,n,q1[1]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+//        auto ind2 = index2(1,1,n,1,i,q1[1]);
+//        if (ind1 == 2e5+2 && ind2 == 2e5+2) {
+//            ans.emplace_back(-1);
+//        } else {
+//            if (ind1 == 2e5+2) {
+//                ans.emplace_back(b[ind2-1]);
+//            } else if (ind2 == 2e5+2) {
+//                ans.emplace_back(b[ind1-1]);
+//            } else {
+//                auto ind = abs(q1[0]-b[ind2-1]) <= abs(q1[0]-b[ind1-1]) ? b[ind2-1] : b[ind1-1];
+//                ans.emplace_back(ind);
+//            }
+//        }
+//
+//    }
+//    return ans;
+//}
+//
+//int maxSumMinProduct(vector<int>& a) {
+//    int n = a.size(), mod = 1e9+7;
+//    vector<long long> s(n+1);
+//    for (int i = 0; i < n; ++i) {
+//        s[i+1] = s[i]+a[i];
+//    }
+//    mx.resize(n*4);
+//    long long ans = 1;
+//    build(a,1,1,n);
+//    for (int i = 0; i < n; ++i) {
+//        auto ind1 = index1(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+//        auto ind2 = index2(1,1,n,1,i,a[i]);
+//        if (ind1 == 2e5+2) ind1 = n+1;
+//        if (ind2 == 2e5+2) ind2 = 0;
+//        ans = max(ans,(s[ind1-1]-s[ind2])*(long long)a[i]);
+//    }
+//    return ans%mod;
+//}
 
 // segment tree + dp : 线段树 + 动态规划  lc.no.2407
 class Solution4 {
