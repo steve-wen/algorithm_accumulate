@@ -213,7 +213,14 @@ int minCameraCover(TreeNode* root) {
     };
     return min(dfs(root,0),dfs(root,2));
 }
+/**
+ * 中位数贪心 + 找中位数
+ * @param nums
+ * @return
+ */
+long long minimumCost(vector<int>& nums) {
 
+}
 
 int main(){
     return 0;
