@@ -312,7 +312,26 @@ public:
         // 维护
         maintain(o);
     }
-
+    // 更新元素
+    void update(int o, int l, int r, int i, int val) {
+        if (l == r) {
+            mx[o] = val;
+            return;
+        }
+        int m = (l + r) / 2;
+        if (i <= m) update(o * 2, l, m, i, val);
+        else update(o * 2 + 1, m + 1, r, i, val);
+        maintain(o);
+    }
+    // 返回区间 [L,R] 内的最大值（根据题目要求 max/min）
+    int query(int o, int l, int r, int L, int R) { // L 和 R 在整个递归过程中均不变，将其大写，视作常量
+        if (L <= l && r <= R) return mx[o];
+        int res = 0;
+        int m = (l + r) / 2;
+        if (L <= m) res = query(o * 2, l, m, L, R);
+        if (R > m) res = max(res, query(o * 2 + 1, m + 1, r, L, R)); // 右边与左边取 max
+        return res;
+    }
     // 线段树上二分 获取下标 ind, L是左边界
     // 线段树二分获取最近下标的方法(val 的右边离 val 最近的下标
     // 注意是 max 还是 min
