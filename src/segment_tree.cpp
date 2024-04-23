@@ -339,30 +339,29 @@ public:
         }
         return index2(o*2, l, mid,L,R, val);
     }
-
-    vector<int> canSeePersonsCount(vector<int>& a) {
-        int n = a.size();
-        mx.resize(n*4);
-        build(a,1,1,n);
-        vector<int> ans(n);
-        vector<int> d(n),s(n+1);
-        for (int i = n-1; i >= 0; --i) {
-            auto ind2 = index2(1,1,n,1,i,a[i]);
-            if (ind2 != 2e5+2) {
-                d[ind2-1]++;
-            }
-        }
-        for (int i = 0; i < n; ++i) {
-            s[i+1] = s[i]+d[i];
-        }
-        for (int i = 0; i < n; ++i) {
-            auto ind1 = index1(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
-            if (ind1 == 2e5+2) ind1 = n;
-            ans[i] = ind1-1-i-(s[ind1-1]-s[i+1]);
-        }
-        return ans;
-    }
 };
+//vector<int> canSeePersonsCount(vector<int>& a) {
+//    int n = a.size();
+//    mx.resize(n*4);
+//    build(a,1,1,n);
+//    vector<int> ans(n);
+//    vector<int> d(n),s(n+1);
+//    for (int i = n-1; i >= 0; --i) {
+//        auto ind2 = index2(1,1,n,1,i,a[i]);
+//        if (ind2 != 2e5+2) {
+//            d[ind2-1]++;
+//        }
+//    }
+//    for (int i = 0; i < n; ++i) {
+//        s[i+1] = s[i]+d[i];
+//    }
+//    for (int i = 0; i < n; ++i) {
+//        auto ind1 = index1(1,1,n,i+2,n,a[i]); // k+2 代指实际下标 k+1 因为 o 从 1 开始
+//        if (ind1 == 2e5+2) ind1 = n;
+//        ans[i] = ind1-1-i-(s[ind1-1]-s[i+1]);
+//    }
+//    return ans;
+//}
 
 //vector<int> closestRoom(vector<vector<int>>& r, vector<vector<int>>& q) {
 //    sort(r.begin(),r.end());
