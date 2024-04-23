@@ -326,10 +326,9 @@ public:
     Solution_segment_2 s2;
     int n = 2e5+1;
     vector<int> a;
-    stack<int> st;
+    stack<int> st[(int)2e5+1];
     int d = 0;
     DinnerPlates(int c) {
-        st.;
         d= c;
         a.resize(n,0);
         s1.mx.resize(n*4);
