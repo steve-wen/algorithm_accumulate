@@ -81,3 +81,30 @@ int stoneGameV(vector<int>& a) {
     };
     return dfs(0,n-1);
 }
+
+/**
+ * 区间 dp ： 不断 缩小/压缩 区间范围
+ * https://leetcode.cn/problems/minimum-cost-to-cut-a-stick/solutions/367265/dong-tai-gui-hua-di-gui-ji-yi-hua-sou-suo-by-time-/
+ * @param n
+ * @param a
+ * @return
+ */
+int minCost(int n, vector<int>& a) {
+    a.emplace_back(0);
+    a.emplace_back(n);
+    sort(a.begin(),a.end());
+    int m = a.size();
+    int memo[103][103];
+    memset(memo,-1,sizeof(memo));
+    function<int(int,int)> dfs = [&](int i, int j){
+        if (i+1 >= j) return 0;
+        if (memo[i][j] != -1) return memo[i][j];
+        int& res = memo[i][j];
+        res = 1e9;
+        for (int k = i+1; k < j; ++k) {
+            res = min(res,dfs(i,k)+dfs(k,j)+a[j]-a[i]);
+        }
+        return res;
+    };
+    return dfs(0,m-1);
+}

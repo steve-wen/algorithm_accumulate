@@ -213,13 +213,20 @@ int minCameraCover(TreeNode* root) {
     };
     return min(dfs(root,0),dfs(root,2));
 }
-/**
- * 中位数贪心 + 找中位数
- * @param nums
- * @return
- */
-long long minimumCost(vector<int>& nums) {
 
+bool isRationalEqual(string s, string t) {
+    string s1,t1;
+    int m = s.size();
+    vector<int> ind1,ind2;
+    for (int i = 0; i < m; ++i) {
+        if (s[i] == '.' || s[i] == '(' || s[i] == ')') {
+            ind1.emplace_back(i);
+        }
+        if (t[i] == '.' || t[i] == '(' || t[i] == ')') {
+            ind2.emplace_back(i);
+        }
+    }
+    
 }
 
 int main(){
