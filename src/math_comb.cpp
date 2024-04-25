@@ -53,6 +53,24 @@ long long arra(int n, int k) {
 }
 
 /**
+ * 每个乘法后面记得 %MOD
+ * 难以理解 2400
+ * https://leetcode.cn/problems/number-of-music-playlists/solutions/1477607/shi-yong-rong-chi-yuan-li-de-o-by-vclip-zxos/
+ * @param n
+ * @param g
+ * @param k
+ * @return
+ */
+int numMusicPlaylists(int n, int g, int k) {
+    ll ans = 0;
+    for (int i = 0; i <= n-k; ++i) {
+        ans = ((ans + ((i % 2 ? -1LL : 1LL) * comb(n,i)%MOD* arra(n-i,k)%MOD* q_pow(n-i-k,g-k)%MOD)+MOD)%MOD+MOD)%MOD;
+    }
+    ans = (ans+MOD)%MOD;
+    return ans;
+}
+
+/**
  * 组合数学，注意随时取 mod; 防溢出
  * https://leetcode.cn/problems/count-k-subsequences-of-a-string-with-maximum-beauty/solutions/2424876/zu-he-shu-xue-pythonjavacgo-by-endlessch-whff/
  * @param s
