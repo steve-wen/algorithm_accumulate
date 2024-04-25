@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 
 using namespace std;
+#define ll long long
 
 /**
 *  二分算法
@@ -96,5 +97,41 @@ int maxProfit(vector<int>& a, int b) {
     }
     // 注意负数取模
     ans = ((ans-(long long)(cnt-b)*(val+1)%mod)%mod+mod)%mod;
+    return ans;
+}
+
+/**
+ * 二分 + 容斥
+ * https://leetcode.cn/problems/minimize-the-maximum-of-two-arrays/solutions/2031827/er-fen-da-an-by-endlesscheng-y8fp/
+ * @param d1
+ * @param d2
+ * @param a1
+ * @param a2
+ * @return
+ */
+int minimizeSet(int d1, int d2, int a1, int a2) {
+    ll d = (ll)lcm((ll)d1,(ll)d2);
+    auto check = [&](ll x){
+        ll cnt = x;
+        ll tmp = x/d;
+        cnt -= tmp;
+        ll cnt1 = cnt - x/d1 + tmp;
+        if (cnt1 < (ll)a1) return false;
+        ll res = min((ll)a1,x/d2-x/d);
+        ll cnt2 = cnt - a1;
+        cnt2 = cnt2 - x/d2 +tmp+res;
+        if (cnt2 < a2) return false;
+        return true;
+    };
+    ll l = 0, r = 1e10, ans = 1e10;
+    while (l  <= r) {
+        ll mid = (l + r) / 2;
+        if (check(mid)) {
+            r = mid - 1;
+            ans = min(ans, mid);
+        } else {
+            l = mid + 1;
+        }
+    }
     return ans;
 }

@@ -14,7 +14,8 @@ set(SOURCE ${CXX_SOURCE}
         src/enum.cpp
         src/tarjan.cpp
         src/greedy.cpp
-        src/gready_median.cpp)
+        src/gready_median.cpp
+        src/dp_opt.cpp)
 
 #获取所有资源文件
 #file(GLOB_RECURSE RESOURCE_FILE ${PROJECT_SOURCE_DIR}/resource/*.*)

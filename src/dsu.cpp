@@ -29,6 +29,62 @@ struct dsu {
         size[x] += size[y]+1;
     }
 };
+/**
+ * 离线（排序） + 并查集
+ * https://leetcode.cn/problems/checking-existence-of-edge-length-limited-paths/solutions/528309/jian-cha-bian-chang-du-xian-zhi-de-lu-ji-c756/
+ * @param n
+ * @param e
+ * @param q
+ * @return
+ */
+vector<bool> distanceLimitedPathsExist(int n, vector<vector<int>>& e, vector<vector<int>>& q) {
+    sort(e.begin(),e.end(),[&](vector<int> a, vector<int> b){return a[2] < b[2];});
+    dsu ds(n+1);
+    int m = e.size(), k = q.size();
+    vector<int> ind(k); // 离线，使用 ind
+    iota(ind.begin(),ind.end(),0);
+    sort(ind.begin(),ind.end(),[&](int a, int b){return q[a][2] < q[b][2];});
+    vector<bool> ans(k);
+    for (int l = 0,r = 0; r < k; ++r) {
+        while (l < m && e[l][2] < q[ind[r]][2]) {
+            ds.unite(e[l][0],e[l][1]);
+            ++l;
+        }
+        if (ds.find(q[ind[r]][0]) == ds.find(q[ind[r]][1])) ans[ind[r]] = true;
+    }
+    return ans;
+}
+
+/*
+ * dsu + 二维 + 倒序
+ * 二维表格先 上下左右判断 再线性转化一维
+ * https://leetcode.cn/problems/last-day-where-you-can-still-cross/solutions/936629/dao-xu-bing-cha-ji-by-endlesscheng-canj/
+*/
+int latestDayToCross(int r, int c, vector<vector<int>>& a) {
+    vector<vector<int>> vec{{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    int top = r*c, bot = top+1; // 定义虚拟的 top 和 bot
+    dsu ds(bot+1);
+    int n = a.size();
+    vector<vector<int>> b(r,vector<int>(c));
+    for (int i = n-1; i >= 0; --i) {
+        auto x = a[i][0]-1, y = a[i][1]-1;
+        b[x][y] = 1;
+        for (auto& vec1 : vec) {
+            auto x1 = x+vec1[0], y1 = y+vec1[1];
+            if (x1 >= 0 && x1 < r && y1 >= 0 && y1 < c && b[x1][y1]) {
+                ds.unite(x*c+y,x1*c+y1);
+            }
+        }
+        if (x == r-1) {
+            ds.unite(x*c+y,bot);
+        }
+        if (x == 0) {
+            ds.unite(x*c+y,top);
+        }
+        if (ds.find(bot) == ds.find(top)) return i;
+    }
+    return 0;
+}
 
 class Solution {
 public:
