@@ -7,6 +7,11 @@ using namespace std;
 */
 
 #define ll long long
+#define se second
+#define fi first
+#define pii pair<int,int>
+#define pll pair<long,long>
+#define tiii tuple<int,int,int>
 
 /**
  * Floyd
@@ -509,6 +514,51 @@ vector<bool> findAnswer(int n, vector<vector<int>>& e) {
 }
 
 /**
+ * dijkstra + 限制条件，最小花费，距离限制
+ * https://leetcode.cn/problems/minimum-cost-to-reach-destination-in-time/solutions/1980876/c-dai-shi-jian-xian-zhi-de-dijkstra-by-t-ms56/
+ * @param mx
+ * @param e
+ * @param p
+ * @return
+ */
+int minCost(int mx, vector<vector<int>>& e, vector<int>& p) {
+    int n = p.size(), m = e.size();
+    // 建图
+    vector<vector<pair<ll,ll>>> mp(n);
+    for (int i = 0; i < m; ++i) {
+        mp[e[i][0]].emplace_back(e[i][1],e[i][2]);
+        mp[e[i][1]].emplace_back(e[i][0],e[i][2]);
+    }
+    vector<int> dis(n,1e7),cost(n,1e7);
+    dis[0] = 0;
+    cost[0] = p[0];
+    priority_queue<tiii,vector<tiii>,greater<>> q;
+    q.emplace(p[0],0,0);
+    while (!q.empty()) {
+        auto[c,d,i] = q.top();
+        q.pop();
+        if (d > mx) continue; // 超过 mx 距离，剪枝
+        if (i == n-1) return c;
+        // 遍历邻居
+        for (auto& p1 : mp[i]) {
+            int i1 = p1.first;
+            // 根据题目处理
+            int nd = d + p1.second, nc = c+p[i1];
+            if (nd > mx) continue; // 超过 mx 距离，剪枝
+            if (nc < cost[i1]) { // 最小费用 dijkstra
+                cost[i1] = nc;
+                dis[i1] = min(dis[i1],nd);
+                q.emplace(nc,nd,i1);
+            } else if(nd < dis[i1]) { // 限制条件：mx 距离内
+                dis[i1] = nd;
+                q.emplace(nc,nd,i1);
+            }
+        }
+    }
+    return -1;
+}
+
+/**
  * 两次 dijkstra + vis 数组
  * 注意第二次 dijkstra 的目的：正序/倒序 + vis 数组作用
  * https://leetcode.cn/problems/number-of-ways-to-arrive-at-destination/description/
@@ -581,6 +631,8 @@ int countPaths(int n, vector<vector<int>>& e) {
     }
     return cnt[n-1];
 }
+
+
 
 struct TreeNode {
          int val;

@@ -1,12 +1,13 @@
 #include <bits/stdc++.h>
 
 using namespace std;
+#define ll long long
 
 /**
 *  优化 + dp
 *
 */
-#define ll long long
+
 
 /**
  * 最长递增子序列 LIS + 贪心构造 g 数组 + 二分

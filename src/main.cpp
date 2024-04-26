@@ -2,14 +2,11 @@
 using namespace std;
 
 #define ll long long
-#define rep(i, from, to) for(ll i = from;i<to;i++)
-#define rrep(i, from, to) for(ll i = from;i>=to;i--)
 #define se second
 #define fi first
-#define tostring(a) (ostringstream() << a).str()
-
-typedef pair<int,int> pii;
-typedef pair<long,long> pll;
+#define pii pair<int,int>
+#define pll pair<long,long>
+#define tiii tuple<int,int,int>
 
 struct TreeNode {
     int val;
