@@ -317,63 +317,6 @@ int minCost(vector<vector<int>>& g) {
 }
 
 /**
- * dijkstra : dijkstra 结合最多经过 k + 1 条边； 非负边权单源最短路 + 限定经过边数；
- *            用 dis 和 cnt 数组剪枝
- * @param n
- * @param f
- * @param s
- * @param des
- * @param k
- * @return
- */
-int findCheapestPrice(int n, vector<vector<int>>& f, int s, int des, int k) {
-    int ans  = 1e7;
-    // 建图
-    unordered_map<int,vector<pair<int,int>>> mp;
-    for (auto& f1 : f) {
-        mp[f1[0]].emplace_back(f1[1],f1[2]);
-    }
-
-    // 初始化 dis 数组, cnt 记录 cnt[i], 即 到达 i 时已经过边数； 便于后续剪枝
-    vector<int> dis(n, 1e7);
-    vector<int> cnt(n, k+2);
-    dis[s] = 0;
-    cnt[s] = 0;
-    // 小顶堆， 起点（0，0，0） 入堆
-    priority_queue<tuple<int,int,int>,vector<tuple<int,int,int>>,greater<>> q;
-    q.emplace(0,s,0);
-
-    while(!q.empty()) {
-        auto[d,i,j] = q.top();
-        q.pop();
-        if (i == des && j <= k+1) {
-            return d;
-        }
-
-        // 此时的 d 不是最小值， 说明之前已更新过， continue
-        // queue 中有的 d 是之前 push 进去的，在有更小的 d push 进去之后，该 d 可以 continue 跳过了
-        // if (d > dis[i]) continue; 此处不用这个判断语句 因为要结合 限定经过边数；其他地方要加上这个 continue 剪枝
-
-        // 遍历邻居
-        for (auto& p : mp[i]) {
-            int i1 = p.first, j1 = j + 1;
-            // 根据题目处理
-            int nd = d + p.second;
-            // 更新点
-            if (j1 <= k+1 ) {
-                // 剪枝
-                if (j1 < cnt[i1] || nd < dis[i1]) {
-                    q.emplace(nd,i1,j1);
-                    dis[i1] = nd;
-                    cnt[i1] = j1;
-                }
-            }
-        }
-    }
-    return -1;
-}
-
-/**
  * 朴素 dijkstra， 记住用 continue 剪枝
  * https://leetcode.cn/problems/minimum-time-to-visit-disappearing-nodes/description/
  * @param n
@@ -514,7 +457,7 @@ vector<bool> findAnswer(int n, vector<vector<int>>& e) {
 }
 
 /**
- * dijkstra + 限制条件，最小花费，距离限制
+ * dijkstra + 限制条件，最小花费 + 距离限制
  * https://leetcode.cn/problems/minimum-cost-to-reach-destination-in-time/solutions/1980876/c-dai-shi-jian-xian-zhi-de-dijkstra-by-t-ms56/
  * @param mx
  * @param e
@@ -552,6 +495,57 @@ int minCost(int mx, vector<vector<int>>& e, vector<int>& p) {
             } else if(nd < dis[i1]) { // 限制条件：mx 距离内
                 dis[i1] = nd;
                 q.emplace(nc,nd,i1);
+            }
+        }
+    }
+    return -1;
+}
+
+/**
+ * dijkstra : dijkstra 结合最多经过 k + 1 条边； 非负边权单源最短路 + 限定经过边数；
+ *            用 dis 和 cnt 数组剪枝
+ * @param n
+ * @param f
+ * @param s
+ * @param des
+ * @param k
+ * @return
+ */
+int findCheapestPrice(int n, vector<vector<int>>& f, int s, int des, int k) {
+    int ans  = 1e7;
+    // 建图
+    unordered_map<int,vector<pair<int,int>>> mp;
+    for (auto& f1 : f) {
+        mp[f1[0]].emplace_back(f1[1],f1[2]);
+    }
+    // 初始化 dis 数组, cnt 记录 cnt[i], 即 到达 i 时已经过边数； 便于后续剪枝
+    vector<int> dis(n, 1e7);
+    vector<int> cnt(n, k+2);
+    dis[s] = 0;
+    cnt[s] = 0;
+    // 小顶堆， 起点（0，0，0） 入堆
+    priority_queue<tuple<int,int,int>,vector<tuple<int,int,int>>,greater<>> q;
+    q.emplace(0,s,0);
+    while(!q.empty()) {
+        auto[d,i,j] = q.top();
+        q.pop();
+        if (j > k+1) continue;
+        if (i == des) {
+            return d;
+        }
+        for (auto& p : mp[i]) {
+            int i1 = p.first, j1 = j + 1;
+            // 根据题目处理
+            int nd = d + p.second;
+            // 更新点
+            if (j1 > k+1) continue;
+            if (nd < dis[i1]) {
+                q.emplace(nd,i1,j1);
+                dis[i1] = nd;
+                cnt[i1] = min(j1,cnt[i1]);
+            } else if (j1 < cnt[i1]) {
+                cnt[i1] = j1;
+                q.emplace(nd,i1,j1);
             }
         }
     }
