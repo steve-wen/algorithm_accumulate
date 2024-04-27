@@ -259,10 +259,11 @@ public:
 
         dsu_2 ds(mn+1);
         // 矩阵元素从小到大排序，方便离线
-        vector<vector<int>> a(mn, vector<int>(3));
+        // 二维转一维
+        vector<vector<int>> a;
         for (int i = 0; i < m; ++i)
             for (int j = 0; j < n; ++j)
-                a[i * n + j] = {grid[i][j], i, j};
+                a.emplace_back(vector<int>{grid[i][j], i, j});
         sort(a.begin(), a.end());
 
         // 查询的下标按照查询值从小到大排序，方便离线
@@ -291,62 +292,3 @@ public:
     }
 };
 
-
-//https://codeforces.com/problemset/problem/28/B
-//#include <bits/stdc++.h>
-//
-//using namespace std;
-//#define endl "\n"
-//
-//struct dsu {
-//    vector<size_t> fa, size;
-//
-//    explicit dsu(size_t size_) : fa(size_), size(size_, 0) {
-//        iota(fa.begin(), fa.end(), 0);
-//    }
-//
-//    size_t find(size_t x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }
-//
-//    void unite(size_t x, size_t y) {
-//        x = find(x), y = find(y);
-//        fa[y] = x;
-//        size[x] += size[y]+1;
-//    }
-//};
-//
-//int main() {
-//    ios::sync_with_stdio(false);
-//    cin.tie(nullptr);
-//    int n;
-//    cin >> n;
-//
-//    vector<int> a(n);
-//    for (int i =0; i < n; ++i) {
-//        cin>> a[i];
-//    }
-//    vector<int> d(n);
-//    for (int i =0; i < n; ++i) {
-//        cin>> d[i];
-//    }
-//    unordered_set<int> st[n+1];
-//    dsu ds(n+1);
-//    for (int i =0; i <n; ++i) {
-//        if (i-d[i] >= 0) {
-//            ds.unite(i,i-d[i]);
-//        }
-//        if (i+d[i] < n){
-//            ds.unite(i,i+d[i]);
-//        }
-//    }
-//    for (int i =0; i <n; ++i) {
-//        st[ds.find(i)].emplace(i+1);
-//    }
-//    for (int i =0; i <n; ++i) {
-//        if(st[ds.find(i)].count(a[i]) == 0){
-//            cout <<"NO";
-//            return 0;
-//        }
-//    }
-//    cout << "YES";
-//    return 0;
-//}

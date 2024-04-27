@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 
 using namespace std;
+#define ll long long
 
 /**
 *  背包 dp
@@ -91,6 +92,39 @@ int sumOfPower(vector<int>& a, int k) {
         long long cnt = dfs(n-1,k,i);
         ans = (ans+ cnt * q_pow_2(2,n-i))%MOD;
     }
+    return ans;
+}
+
+/**
+ * 逆向思维 : +二维 0-1 背包; 考虑第 i 个物品 选/不选
+ * f[i][j] 从 0 - i 为止的 sum 为 j 的方案数
+ * https://leetcode.cn/problems/number-of-great-partitions/solutions/2032009/ni-xiang-si-wei-01-bei-bao-fang-an-shu-p-v47x/
+ * @param a
+ * @param k
+ * @return
+ */
+int countPartitions(vector<int>& a, int k) {
+    ll sum = accumulate(a.begin(),a.end(),0LL);
+    if (sum < k*2) return 0;
+    ll n = a.size();
+    vector<vector<ll>> f(n,vector<ll>(k+1));
+    f[0][0] = 1;
+    if (a[0] < k) {
+        f[0][a[0]] = 1;
+    }
+    for (int i = 1; i < n; ++i) {
+        for (int j = 0; j < k; ++j) {
+            f[i][j] = (f[i][j]+f[i-1][j])%MOD;
+            if (j >= a[i]) {
+                f[i][j] = (f[i][j]+f[i-1][j-a[i]])%MOD;
+            }
+        }
+    }
+    ll tmp = 0;
+    for (int i = 0; i < k; ++i) {
+        tmp = (tmp+f[n-1][i])%MOD;
+    }
+    ll ans = ((q_pow_2(2,n)-tmp*2)%MOD+MOD)%MOD;
     return ans;
 }
 

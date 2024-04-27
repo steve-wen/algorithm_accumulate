@@ -7,8 +7,6 @@ using namespace std;
 */
 
 #define ll long long
-#define se second
-#define fi first
 #define pii pair<int,int>
 #define pll pair<long,long>
 #define tiii tuple<int,int,int>
@@ -379,6 +377,10 @@ vector<int> minimumTime(int n, vector<vector<int>>& e, vector<int>& a) {
     }
     return ans;
 }
+/**
+ * dijkstra + 记录/统计经过的边/路径数；示例如下
+ * 注意 vis 起作用的位置一般在递归之前处
+ */
 
 /**
  * dijkstra + dfs
@@ -410,11 +412,6 @@ vector<bool> findAnswer(int n, vector<vector<int>>& e) {
     while(!q.empty()) {
         auto[d,i] = q.top();
         q.pop();
-        // 此时的 d 不是最小值， 说明之前已更新过， continue
-        // queue 中有的 d 是之前 push 进去的，在有更小的 d push 进去之后，该 d 可以 continue 跳过了
-//        if (i == n-1) {
-//            break;
-//        }
         if (d > dis[i]) {
             continue;
         }
@@ -430,12 +427,10 @@ vector<bool> findAnswer(int n, vector<vector<int>>& e) {
             }
         }
     }
-
     // 图不连通
     if (dis[n - 1] == 6e9) {
         return ans;
     }
-
     // dfs(n-1) 从终点倒着找可能经过的边
     vector<int> vis(n);
     function<void(int)> dfs = [&](int i){
@@ -455,6 +450,82 @@ vector<bool> findAnswer(int n, vector<vector<int>>& e) {
     dfs(n-1);
     return ans;
 }
+
+/**
+ * 两次 dijkstra + vis 数组
+ * 注意第二次 dijkstra 的目的：正序/倒序 + vis 数组作用
+ * https://leetcode.cn/problems/number-of-ways-to-arrive-at-destination/description/
+ * @param n
+ * @param e
+ * @return
+ */
+int countPaths(int n, vector<vector<int>>& e) {
+    int m = e.size();
+    ll mod = 1e9+7, ans = 1;
+    // 建图
+    vector<vector<pair<ll,ll>>> mp(n);
+    for (int i = 0; i < m; ++i) {
+        mp[e[i][0]].emplace_back(e[i][1],e[i][2]);
+        mp[e[i][1]].emplace_back(e[i][0],e[i][2]);
+    }
+    // 初始化 dis 数组, cnt 记录 cnt[i], 即 到达 i 时已经过边数； 便于后续剪枝
+    vector<ll> dis(n, 6e13);
+    dis[0] = 0;
+    // 小顶堆， 起点（0，0，0） 入堆
+    priority_queue<pair<ll,ll>,vector<pair<ll,ll>>,greater<>> q;
+    q.emplace(0,0);
+    while(!q.empty()) {
+        auto[d,i] = q.top();
+        q.pop();
+        if (d > dis[i]) {
+            continue;
+        }
+        // 遍历邻居
+        for (auto& p : mp[i]) {
+            ll i1 = p.first;
+            // 根据题目处理
+            ll nd = d + p.second;
+            // 更新点
+            if (nd < dis[i1] ) {
+                q.emplace(nd,i1);
+                dis[i1] = nd;
+            }
+        }
+    }
+
+    // 小顶堆， 起点（0，0，0） 入堆
+    vector<int> vis(n);
+    vector<ll> cnt(n);
+    cnt[0] = 1;
+    priority_queue<pair<ll,ll>,vector<pair<ll,ll>>,greater<>> q1;
+    q1.emplace(0,0);
+    while(!q1.empty()) {
+        auto[d,i] = q1.top();
+        q1.pop();
+        if (d > dis[i]) {
+            continue;
+        }
+        // 遍历邻居
+        for (auto& p : mp[i]) {
+            ll i1 = p.first;
+            // 根据题目处理
+            ll nd = d + p.second;
+            // 更新点
+            if (nd == dis[i1] ) {
+                cnt[i1] = (cnt[i1]+cnt[i])%mod;
+                if (!vis[i1]) {
+                    q1.emplace(nd,i1);
+                    vis[i1] = 1;
+                }
+            }
+        }
+    }
+    return cnt[n-1];
+}
+
+/**
+ * 带限制条件的 dijkstra 模板；如下
+ */
 
 /**
  * dijkstra + 限制条件，最小花费 + 距离限制
@@ -488,11 +559,8 @@ int minCost(int mx, vector<vector<int>>& e, vector<int>& p) {
             // 根据题目处理
             int nd = d + p1.second, nc = c+p[i1];
             if (nd > mx) continue; // 超过 mx 距离，剪枝
-            if (nc < cost[i1]) { // 最小费用 dijkstra
+            if (nc < cost[i1] || nd < dis[i1]) { // 最小费用 dijkstra
                 cost[i1] = nc;
-                dis[i1] = min(dis[i1],nd);
-                q.emplace(nc,nd,i1);
-            } else if(nd < dis[i1]) { // 限制条件：mx 距离内
                 dis[i1] = nd;
                 q.emplace(nc,nd,i1);
             }
@@ -512,7 +580,6 @@ int minCost(int mx, vector<vector<int>>& e, vector<int>& p) {
  * @return
  */
 int findCheapestPrice(int n, vector<vector<int>>& f, int s, int des, int k) {
-    int ans  = 1e7;
     // 建图
     unordered_map<int,vector<pair<int,int>>> mp;
     for (auto& f1 : f) {
@@ -520,7 +587,7 @@ int findCheapestPrice(int n, vector<vector<int>>& f, int s, int des, int k) {
     }
     // 初始化 dis 数组, cnt 记录 cnt[i], 即 到达 i 时已经过边数； 便于后续剪枝
     vector<int> dis(n, 1e7);
-    vector<int> cnt(n, k+2);
+    vector<int> cnt(n, k+3);
     dis[s] = 0;
     cnt[s] = 0;
     // 小顶堆， 起点（0，0，0） 入堆
@@ -539,94 +606,15 @@ int findCheapestPrice(int n, vector<vector<int>>& f, int s, int des, int k) {
             int nd = d + p.second;
             // 更新点
             if (j1 > k+1) continue;
-            if (nd < dis[i1]) {
+            if (nd < dis[i1] || j1 < cnt[i1]) {
                 q.emplace(nd,i1,j1);
                 dis[i1] = nd;
-                cnt[i1] = min(j1,cnt[i1]);
-            } else if (j1 < cnt[i1]) {
                 cnt[i1] = j1;
-                q.emplace(nd,i1,j1);
             }
         }
     }
     return -1;
 }
-
-/**
- * 两次 dijkstra + vis 数组
- * 注意第二次 dijkstra 的目的：正序/倒序 + vis 数组作用
- * https://leetcode.cn/problems/number-of-ways-to-arrive-at-destination/description/
- * @param n
- * @param e
- * @return
- */
-int countPaths(int n, vector<vector<int>>& e) {
-    int m = e.size();
-    ll mod = 1e9+7, ans = 1;
-    // 建图
-    vector<vector<pair<ll,ll>>> mp(n);
-    for (int i = 0; i < m; ++i) {
-        mp[e[i][0]].emplace_back(e[i][1],e[i][2]);
-        mp[e[i][1]].emplace_back(e[i][0],e[i][2]);
-    }
-    // 初始化 dis 数组, cnt 记录 cnt[i], 即 到达 i 时已经过边数； 便于后续剪枝
-    vector<ll> dis(n, 6e13);
-    dis[0] = 0;
-    // 小顶堆， 起点（0，0，0） 入堆
-    priority_queue<pair<ll,ll>,vector<pair<ll,ll>>,greater<>> q;
-    q.emplace(0,0);
-
-    while(!q.empty()) {
-        auto[d,i] = q.top();
-        q.pop();
-        if (d > dis[i]) {
-            continue;
-        }
-        // 遍历邻居
-        for (auto& p : mp[i]) {
-            ll i1 = p.first;
-            // 根据题目处理
-            ll nd = d + p.second;
-            // 更新点
-            if (nd < dis[i1] ) {
-                q.emplace(nd,i1);
-                dis[i1] = nd;
-            }
-        }
-    }
-
-    // 小顶堆， 起点（0，0，0） 入堆
-    vector<int> vis(n);
-    vector<ll> cnt(n);
-    cnt[0] = 1;
-    priority_queue<pair<ll,ll>,vector<pair<ll,ll>>,greater<>> q1;
-    q1.emplace(0,0);
-
-    while(!q1.empty()) {
-        auto[d,i] = q1.top();
-        q1.pop();
-        if (d > dis[i]) {
-            continue;
-        }
-        // 遍历邻居
-        for (auto& p : mp[i]) {
-            ll i1 = p.first;
-            // 根据题目处理
-            ll nd = d + p.second;
-            // 更新点
-            if (nd == dis[i1] ) {
-                cnt[i1] = (cnt[i1]+cnt[i])%mod;
-                if (!vis[i1]) {
-                    q1.emplace(nd,i1);
-                    vis[i1] = 1;
-                }
-            }
-        }
-    }
-    return cnt[n-1];
-}
-
-
 
 struct TreeNode {
          int val;

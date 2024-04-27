@@ -212,7 +212,6 @@ int minCameraCover(TreeNode* root) {
 }
 
 
-
 int main(){
     return 0;
 }
@@ -311,6 +310,7 @@ int main(){
 /**
  * impl list :
  * CF 的经典题, 注意练习
+ * 0.5 刷灵神的 dp 题单 (注意分类刷灵神题单，从式酱思路得来)
  * 0.9 中位数贪心; 树上倍增/树上 lca 模板积累 https://leetcode.cn/problems/kth-ancestor-of-a-tree-node/solutions/2305895/mo-ban-jiang-jie-shu-shang-bei-zeng-suan-v3rw/
  * 1.0 tarjan 算法的理解和积累
  * 1.1 每日灵茶; 可根据灵神的视频总结模板等; 手机上看题目，然后口胡/看题解思路
