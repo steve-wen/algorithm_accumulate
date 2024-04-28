@@ -211,6 +211,29 @@ int minCameraCover(TreeNode* root) {
     return min(dfs(root,0),dfs(root,2));
 }
 
+long long minEnd(int n1, int x1) {
+    ll x = x1, n = n1-1;
+    auto s = bitset<65>(n).to_string();
+    auto s1 = bitset<65>(x).to_string();
+    // 注意首尾下标
+    for (int j = 64,i = 64; j >= 0 && i >= 0; --j) {
+        if (s1[j] == '0') {
+            s1[j] = s[i];
+            --i;
+        }
+    }
+    ll ans = 0;
+    for (int j = 64; j >= 0 ; --j) {
+        if (s1[j] == '1') {
+            ans += (ll)(pow(2LL,(ll)(64-j)));
+        }
+    }
+    return ans;
+}
+
+int medianOfUniquenessArray(vector<int>& nums) {
+
+}
 
 int main(){
     return 0;
