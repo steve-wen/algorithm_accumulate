@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+#include <ctime>
+
 using namespace std;
 
 #define ll long long
@@ -211,34 +213,29 @@ int minCameraCover(TreeNode* root) {
     return min(dfs(root,0),dfs(root,2));
 }
 
-long long minEnd(int n1, int x1) {
-    ll x = x1, n = n1-1;
-    auto s = bitset<65>(n).to_string();
-    auto s1 = bitset<65>(x).to_string();
-    // 注意首尾下标
-    for (int j = 64,i = 64; j >= 0 && i >= 0; --j) {
-        if (s1[j] == '0') {
-            s1[j] = s[i];
-            --i;
+int calculateMinimumHP(vector<vector<int>>& a) {
+    int m = a.size(), n= a[0].size();
+    int f[m][n][2],g[m][n][2];
+    memset(f,0,sizeof(f));
+    memset(g,0,sizeof(g));
+    if (a[0][0] >= 0) {
+        f[0][0][0] =  f[0][0][1] = 1;
+        g[0][0][0] = g[0][0][1] = 1+a[0][0];
+    } else {
+        f[0][0][0] =  f[0][0][1] = 1+abs(a[0][0]);
+        g[0][0][0] = g[0][0][1] = 1;
+    }
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            
         }
     }
-    ll ans = 0;
-    for (int j = 64; j >= 0 ; --j) {
-        if (s1[j] == '1') {
-            ans += (ll)(pow(2LL,(ll)(64-j)));
-        }
-    }
-    return ans;
-}
-
-int medianOfUniquenessArray(vector<int>& nums) {
-
 }
 
 int main(){
     return 0;
 }
-
+#define ll long long
 /**
  * luogu/nowcoder/codeforces
  * "\n" 比 endl 快很多

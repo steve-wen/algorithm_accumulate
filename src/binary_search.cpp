@@ -135,3 +135,54 @@ int minimizeSet(int d1, int d2, int a1, int a2) {
     }
     return ans;
 }
+
+/**
+ * 二分 + 滑动窗口
+ * 二分 ： 需要枚举求第 k 小时
+ * 滑动窗口 ： 在一定的限制条件下具有单调性；处理 r == n-1 时增加一个 while
+ * https://leetcode.cn/problems/find-the-median-of-the-uniqueness-array/solutions/2759114/er-fen-da-an-hua-dong-chuang-kou-pythonj-ykg9/
+ * @param a
+ * @return
+ */
+int medianOfUniquenessArray(vector<int>& a) {
+    ll n = a.size();
+    ll sum = (n+1)*n/2;
+    sum = (sum+1)/2;
+    auto check = [&](int m){
+        ll cnt = 0;
+        unordered_map<int,int> mp;
+        int tmp = 0;
+        for (int l = 0, r = 0; r < n; ++r) {
+            if (mp[a[r]] == 0) {
+                ++tmp;
+            }
+            mp[a[r]]++;
+            while (tmp > m) {
+                cnt += (ll)(r-l);
+                mp[a[l]]--;
+                if (mp[a[l]] == 0) {
+                    tmp--;
+                }
+                ++l;
+            }
+            while (r == n-1 && l <= r) {
+                cnt += (ll)(r-l+1);
+                ++l;
+            }
+        }
+        if (cnt >= sum) return true;
+        else return false;
+    };
+    int l = 1, r = n;
+    ll ans = n;
+    while (l  <= r) {
+        ll mid = (l + r) / 2;
+        if (check(mid)) {
+            r = mid - 1;
+            ans = min(ans, mid);
+        } else {
+            l = mid + 1;
+        }
+    }
+    return ans;
+};

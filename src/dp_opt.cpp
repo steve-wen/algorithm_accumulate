@@ -47,7 +47,8 @@ int minOperations(vector<int>& t, vector<int>& a) {
 // int memo[202][202][202][2]; 与下列注释的赋值代码结合起来，可以减少一定的时间
 int numberOfStableArrays(int x, int y, int m) {
     int mod = 1e9+7;
-    int memo[y+1][m+1][x+1][2];
+//    int memo[y+1][m+1][x+1][2]; // 此处注释掉是为了编译能过；尽量用注释调的变量表示，减少时间
+    int memo[201][201][201][2];
     memset(memo,-1,sizeof(memo));
 //    for (int i = 0; i <= y; ++i) {
 //        for (int j = 0; j <= m; ++j) {
