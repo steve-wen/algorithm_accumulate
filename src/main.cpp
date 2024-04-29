@@ -227,7 +227,24 @@ int calculateMinimumHP(vector<vector<int>>& a) {
     }
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < n; ++j) {
-            
+            bool flag = false;
+            if (i-1 >= 0) {
+                flag = true;
+                f[i][j][0] = min(f[i-1][j][0]+max(1-(g[i-1][j][0]+a[i][j]),0),f[i-1][j][1]+max(1-(g[i-1][j][1]+a[i][j]),0));
+                g[i][j][0] = max(g[i-1][j][0]+a[i][j],1);
+                g[i][j][1] = max(g[i-1][j][1]+a[i][j],1);
+                f[i][j][1] = f[i-1][j][1]+max(1-(g[i-1][j][1]+a[i][j]),0);
+            }
+            if (j-1 >= 0) {
+                if (!flag) {
+                    f[i][j][0] = min(f[i][j-1][0]+max(1-(g[i][j-1][0]+a[i][j]),0),f[i][j-1][1]+max(1-(g[i][j-1][1]+a[i][j]),0));
+                    g[i][j][0] = max(g[i][j-1][0]+a[i][j],1);
+                    g[i][j][1] = max(g[i][j-1][1]+a[i][j],1);
+                    f[i][j][1] = f[i][j-1][1]+max(1-(g[i][j-1][1]+a[i][j]),0);
+                } else {
+                    if (f[i][j][0] > )
+                }
+            }
         }
     }
 }
