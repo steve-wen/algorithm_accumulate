@@ -211,9 +211,50 @@ int minCameraCover(TreeNode* root) {
     return min(dfs(root,0),dfs(root,2));
 }
 
-
+const int MOD = 1'000'000'007;
+// 快速幂取 MOD
+long long q_pow_p(long long x, int n) {
+    long long res = 1;
+    for (; n > 0; n /= 2) {
+        if (n % 2) {
+            res = res * x % MOD;
+        }
+        x = x * x % MOD;
+    }
+    return res;
+}
+//n = 5, minProfit = 3, group = [2,2], profit = [2,3]
+int profitableSchemes(int m, int c, vector<int>& g, vector<int>& p) {
+    int n = g.size(), mod = 1e9+7;
+    int f[n][m+1][c];
+    memset(f,0,sizeof(f));
+    f[0][0][0] = 1;
+    if (g[0] <= m && p[0] < c) {
+        f[0][g[0]][p[0]] = 1;
+    }
+    for (int i = 1; i < n; ++i) {
+        for (int j = 0; j <= m; ++j) {
+            for (int k = 0; k < c; ++k) {
+                f[i][j][k] = (f[i][j][k]+f[i-1][j][k])%mod;
+                if (j >= g[i] && k >= p[i]) {
+                    f[i][j][k] = (f[i][j][k]+f[i-1][j-g[i]][k-p[i]])%mod;
+                }
+            }
+        }
+    }
+    ll sum = 0;
+    for (int j = 0; j <= m; ++j) {
+        for (int k = 0; k < c; ++k) {
+            sum = (sum+f[n-1][j][k])%mod;
+        }
+    }
+    ll tmp = q_pow_p(2,n);
+    return (tmp-sum+mod)%mod;
+}
 
 int main(){
+    vector<int> g{2,2,2,2,2},p{1,2,1,1,0};
+    auto ans = profitableSchemes(5,3,g,p);
     return 0;
 }
 #define ll long long
