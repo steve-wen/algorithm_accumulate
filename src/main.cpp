@@ -4,8 +4,6 @@
 using namespace std;
 
 #define ll long long
-#define se second
-#define fi first
 #define pii pair<int,int>
 #define pll pair<long,long>
 #define tiii tuple<int,int,int>
@@ -213,41 +211,7 @@ int minCameraCover(TreeNode* root) {
     return min(dfs(root,0),dfs(root,2));
 }
 
-int calculateMinimumHP(vector<vector<int>>& a) {
-    int m = a.size(), n= a[0].size();
-    int f[m][n][2],g[m][n][2];
-    memset(f,0,sizeof(f));
-    memset(g,0,sizeof(g));
-    if (a[0][0] >= 0) {
-        f[0][0][0] =  f[0][0][1] = 1;
-        g[0][0][0] = g[0][0][1] = 1+a[0][0];
-    } else {
-        f[0][0][0] =  f[0][0][1] = 1+abs(a[0][0]);
-        g[0][0][0] = g[0][0][1] = 1;
-    }
-    for (int i = 0; i < m; ++i) {
-        for (int j = 0; j < n; ++j) {
-            bool flag = false;
-            if (i-1 >= 0) {
-                flag = true;
-                f[i][j][0] = min(f[i-1][j][0]+max(1-(g[i-1][j][0]+a[i][j]),0),f[i-1][j][1]+max(1-(g[i-1][j][1]+a[i][j]),0));
-                g[i][j][0] = max(g[i-1][j][0]+a[i][j],1);
-                g[i][j][1] = max(g[i-1][j][1]+a[i][j],1);
-                f[i][j][1] = f[i-1][j][1]+max(1-(g[i-1][j][1]+a[i][j]),0);
-            }
-            if (j-1 >= 0) {
-                if (!flag) {
-                    f[i][j][0] = min(f[i][j-1][0]+max(1-(g[i][j-1][0]+a[i][j]),0),f[i][j-1][1]+max(1-(g[i][j-1][1]+a[i][j]),0));
-                    g[i][j][0] = max(g[i][j-1][0]+a[i][j],1);
-                    g[i][j][1] = max(g[i][j-1][1]+a[i][j],1);
-                    f[i][j][1] = f[i][j-1][1]+max(1-(g[i][j-1][1]+a[i][j]),0);
-                } else {
-                    if (f[i][j][0] > )
-                }
-            }
-        }
-    }
-}
+
 
 int main(){
     return 0;
@@ -347,7 +311,7 @@ int main(){
 /**
  * impl list :
  * CF 的经典题, 注意练习
- * 0.5 刷灵神的 dp 题单 (注意分类刷灵神题单，从式酱思路得来)
+ * 0.5 刷灵神的 dp 题单 (注意分类刷灵神题单，从式酱思路得来)；注意何时用 dp 何时用记忆化；
  * 0.9 中位数贪心; 树上倍增/树上 lca 模板积累 https://leetcode.cn/problems/kth-ancestor-of-a-tree-node/solutions/2305895/mo-ban-jiang-jie-shu-shang-bei-zeng-suan-v3rw/
  * 1.0 tarjan 算法的理解和积累
  * 1.1 每日灵茶; 可根据灵神的视频总结模板等; 手机上看题目，然后口胡/看题解思路

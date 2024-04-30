@@ -128,6 +128,44 @@ int countPartitions(vector<int>& a, int k) {
     return ans;
 }
 
+/**
+ * 0-1 背包；考虑第 i 个选/不选；此种遍历方式包含（恰好和小于等于）
+ * https://leetcode.cn/problems/ones-and-zeroes/description/
+ * @param s
+ * @param m
+ * @param n
+ * @return
+ */
+int findMaxForm(vector<string>& s, int m, int n) {
+    int l = s.size();
+    int f[l][m+1][n+1];
+    memset(f,0,sizeof(f));
+    vector<int> cnt0(l),cnt1(l);
+    for (int i = 0; i < l; ++i) {
+        cnt0[i] = count(s[i].begin(),s[i].end(),'0');
+        cnt1[i] = count(s[i].begin(),s[i].end(),'1');
+    }
+    if(cnt0[0] <= m && cnt1[0] <= n) {
+        f[0][cnt0[0]][cnt1[0]] = 1;
+    }
+    for (int i = 1; i < l; ++i) {
+        for (int j = 0; j <= m; ++j) {
+            for (int k = 0; k <= n; ++k) {
+                f[i][j][k] = f[i-1][j][k];
+                if (j >= cnt0[i] && k >= cnt1[i]) {
+                    f[i][j][k] = max(f[i-1][j-cnt0[i]][k-cnt1[i]]+1,f[i][j][k]);
+                }
+            }
+        }
+    }
+    int mx = 0;
+    for (int j = 0; j <= m; ++j) {
+        for (int k = 0; k <= n; ++k) {
+            mx = max(mx,f[l-1][j][k]);
+        }
+    }
+    return mx;
+}
 
 /**
  * 二维 0-1 背包;
