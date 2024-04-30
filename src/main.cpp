@@ -223,21 +223,22 @@ long long q_pow_p(long long x, int n) {
     }
     return res;
 }
+// k 表示 剩余 来考虑
 //n = 5, minProfit = 3, group = [2,2], profit = [2,3]
 int profitableSchemes(int m, int c, vector<int>& g, vector<int>& p) {
     int n = g.size(), mod = 1e9+7;
-    int res = accumulate(p.begin(),p.end(),0);
-    int f[n][m+1][res+1];
-    memset(f,0,sizeof(f));
+    vector<vector<vector<int>>> f(n,vector<vector<int>>(m+1,vector<int>(c+1)));
+//    int f[n][m+1][res+1];
+//    memset(f,0,sizeof(f));
     f[0][0][0] = 1;
-    if (g[0] <= m && p[0] <= res) {
-        f[0][g[0]][p[0]] = 1;
+    if (g[0] <= m ) {
+        f[0][g[0]][max(c-p[0],0)] = 1;
     }
     for (int i = 1; i < n; ++i) {
         for (int j = 0; j <= m; ++j) {
-            for (int k = 0; k <= res; ++k) {
+            for (int k = 0; k <= c; ++k) {
                 f[i][j][k] = (f[i][j][k]+f[i-1][j][k])%mod;
-                if (j >= g[i] && k >= p[i]) {
+                if (j >= g[i] && k >= p[i]) { // 改
                     f[i][j][k] = (f[i][j][k]+f[i-1][j-g[i]][k-p[i]])%mod;
                 }
             }
