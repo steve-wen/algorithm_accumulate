@@ -382,7 +382,7 @@ long long beautifulSubstrings(string s, int k) {
         else return false;
     };
     int d = 1;
-    for (;d <= 2*k; ++d) {
+    for (;d <= 2*k; ++d) { // d 是最短的符合要求的长度，可以是 d 的倍数
         if (d*d % (4 *k) == 0) {
             break;
         }
