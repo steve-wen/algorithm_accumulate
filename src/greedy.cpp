@@ -76,3 +76,42 @@ int maxPerformance(int n, vector<int>& a, vector<int>& b, int k) {
     return ans%mod;
 }
 
+/**
+ * 贪心+分类讨论+枚举
+ * https://leetcode.cn/problems/minimum-cost-to-equalize-array/solutions/2766600/fen-lei-tao-lun-on-zuo-fa-pythonjavacgo-9bsb4/
+ * @param a
+ * @param t1
+ * @param t2
+ * @return
+ */
+int minCostToEqualizeArray(vector<int>& a, int t1, int t2) {
+    int mod = 1e9+7;
+    sort(a.rbegin(),a.rend());
+    int n = a.size();
+    ll mx = a[0];
+    ll sum1 = 0;
+    for (auto& a1 : a) {
+        sum1 += (ll)(mx-a1);
+    }
+    ll ans1 = 1e17;
+    for (ll k = mx; k <= min((ll)2e6,mx*2); ++k) {
+        ll ans = 0;
+        ll sum = (ll)(k-mx)*(ll)n+sum1;
+        if (t2 >= 2*t1) {
+            return sum*t1%mod;
+        }
+        ll d1 = k-a.back();
+        ll sum1 = sum-d1;
+        if (sum1 >= d1) {
+            if (sum%2) {
+                ans = ((sum/2)*(ll)t2+(ll)t1);
+            } else {
+                ans = (sum/2)*(ll)t2;
+            }
+        } else {
+            ans = ((sum1)*(ll)t2+(d1-sum1)*t1);
+        }
+        ans1 = min(ans1,ans);
+    }
+    return ans1%mod;
+}

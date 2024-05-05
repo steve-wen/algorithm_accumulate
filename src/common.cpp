@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-
+#define ll long long
 /**
 * 基础算法
 */
@@ -446,6 +446,29 @@ int countTriplets(vector<int>& a) {
                 ans += p.second;
             }
         }
+    }
+    return ans;
+}
+
+/**
+ * 前缀异或和 + 哈希表
+ * https://leetcode.cn/problems/count-the-number-of-beautiful-subarrays/solutions/2163133/tao-lu-qian-zhui-he-ha-xi-biao-pythonjav-3fna/
+ * @param a
+ * @return
+ */
+long long beautifulSubarrays(vector<int>& a) {
+    int n = a.size();
+    vector<int> s(n+1);
+    for (int i = 0; i < n; ++i) {
+        s[i+1] = s[i]^a[i];
+    }
+    ll ans = 0;
+    unordered_map<int,int> mp;
+    for (int i = 0; i <= n; ++i) {
+        if (mp.count(s[i])) {
+            ans += (ll)(mp[s[i]]);
+        }
+        mp[s[i]]++;
     }
     return ans;
 }

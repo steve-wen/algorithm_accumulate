@@ -15,7 +15,7 @@ using namespace std;
     n≤10^2 => O(n^3)，floyd，dp
     n≤1000 => O(n2)，O(n^2logn)，dp，二分
     n≤10^4 => O（n*sqrt(n)），块状链表，质数，莫队
-    n≤10^5 => O(nlogn)，各种sort，线段树、树状数组、set/map、heap、dijkstra+heap、拓扑排序、spfa、求凸包、求半平面交、二分、组合数学、容斥原理
+    n≤10^5 => O(nlogn)，各种sort，前缀和+哈希表(套路)、线段树、树状数组、贪心+枚举、set/map、heap、dijkstra+heap、拓扑排序、spfa、求凸包、求半平面交、二分、组合数学、容斥原理
     n≤10^6 => O(n)， 以及常数较小的 O(nlogn)算法， hash、双指针扫描、并查集、kmp、AC自动机，常数比较小的 O(nlogn) 的做法：sort、树状数组、heap、dijkstra、spfa
     n≤10^7 => O(n)，双指针扫描、kmp、AC自动机、线性筛素数
     n≤10^9 => O（sqrt(n)），判断质数 ；O(logn)，二分

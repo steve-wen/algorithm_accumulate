@@ -40,6 +40,7 @@ int zero_one_bag(int c, vector<int> w, vector<int> v){
 /**
  * 贡献法 + 二维 0-1 背包
  * 贡献法 : 考虑单个/每个元素的贡献；然后累加贡献
+ * 恰好选取长度为 l 且 和为 k
  * 二维 0-1 背包 ： 有两个约束条件 ： 1，背包容量 2，选取的物品数量
  * 时间复杂度: O(n^3)
  * https://leetcode.cn/problems/find-the-sum-of-the-power-of-all-subsequences/description/
@@ -65,31 +66,25 @@ long long q_pow_2(long long x, int n) {
 
 int sumOfPower(vector<int>& a, int k) {
     int n = a.size();
-    long long memo[100][100][100];
-    memset(memo,-1,sizeof(memo));
-    // i 表示 0 - n-1；j 表示 容量为 j; l 表示选取的物品数量/数组长度 为 l
-    // f[i][j][l] 表示 从 0 - n-1, 恰好选出 l 个数 且 和为 j 的方案数
-    function<long long (int,int,int)> dfs = [&](int i, int j, int l){
-        if (l < 0) return (long long)0;
-        if (i < 0) {
-            if (j == 0 && l == 0) return (long long)1;
-            return (long long)0;
+    int f[n][n+1][k+1];
+    memset(f,0,sizeof(f));
+    f[0][0][0] = 1;
+    if (a[0] <= k){
+        f[0][1][a[0]] = 1;
+    }
+    for (int i =1; i < n; ++i) {
+        for (int j = 0; j <= n; ++j) {
+            for(int l = 0; l <= k; ++l) {
+                f[i][j][l] = (f[i][j][l]+f[i-1][j][l])%MOD;
+                if (l >= a[i] && j >= 1) {
+                    f[i][j][l] = (f[i][j][l]+f[i-1][j-1][l-a[i]])%MOD;
+                }
+            }
         }
-        if (memo[i][j][l] != -1) return memo[i][j][l];
-        long long& res = memo[i][j][l];
-        res = 0;
-        if (a[i] > j) {
-            res = (res+dfs(i-1,j,l))%MOD;
-        } else {
-            res = (res+dfs(i-1,j,l))%MOD;
-            res = (res +dfs(i-1,j-a[i],l-1))%MOD;
-        }
-        return res;
-    };
-
+    }
     long long ans = 0;
     for (int i = 1; i <= n; ++i) {
-        long long cnt = dfs(n-1,k,i);
+        long long cnt = f[n-1][i][k];
         ans = (ans+ cnt * q_pow_2(2,n-i))%MOD;
     }
     return ans;
@@ -167,7 +162,45 @@ int findMaxForm(vector<string>& s, int m, int n) {
     return mx;
 }
 
-
+/**
+ * 定义 f[i][j][k] 为考虑前 i 件物品，使用人数不超过 j，所得利润至少/至多/恰好为 k 的方案数
+ * 学会做这三类变形题
+ * https://leetcode.cn/problems/profitable-schemes/solutions/820111/gong-shui-san-xie-te-shu-duo-wei-fei-yon-7su9/
+ * @param m
+ * @param c
+ * @param g
+ * @param p
+ * @return
+ */
+int profitableSchemes(int m, int c, vector<int>& g, vector<int>& p) {
+    int n = g.size(), mod = 1e9+7;
+    vector<vector<vector<int>>> f(n,vector<vector<int>>(m+1,vector<int>(c+1)));
+    f[0][0][c] = 1;
+    if (g[0] <= m ) {
+        f[0][g[0]][max(c-p[0],0)] = 1;
+    }
+    for (int i = 1; i < n; ++i) {
+        for (int j = 0; j <= m; ++j) {
+            for (int k = 0; k <= c; ++k) {
+                f[i][j][k] = (f[i][j][k]+f[i-1][j][k])%mod;
+                if (j >= g[i]) { // 改
+                    if (k == 0) {
+                        for (int l = 0; l <= min(p[i],c); ++l){
+                            f[i][j][k] = (f[i][j][k]+f[i-1][j-g[i]][l])%mod;
+                        }
+                    } else if(k+p[i] <= c) {
+                        f[i][j][k] = (f[i][j][k]+f[i-1][j-g[i]][k+p[i]])%mod;
+                    }
+                }
+            }
+        }
+    }
+    ll sum = 0;
+    for (int j = 0; j <= m; ++j) {
+        sum = (sum+f[n-1][j][0])%mod;
+    }
+    return sum%mod;
+}
 
 /**
  * 二维 0-1 背包;
