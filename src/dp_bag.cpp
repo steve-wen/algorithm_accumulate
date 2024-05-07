@@ -5,6 +5,7 @@ using namespace std;
 
 /**
 *  背包 dp
+ *  可直接用递推式写出 f[i][j],此类型少用 记忆化
  * 子序列 dp 的思考套路
  * 1. 0-1 背包， 选的子序列的相邻元素是无关的 [相邻无关]
  * 2. LIS(最长上升子序列) 选的子序列的相邻元素是相关的 [相邻相关]
@@ -274,6 +275,41 @@ int unbounded_bag(int c, vector<int> w, vector<int> v){
         return res;
     };
     return dfs(n-1,c);
+}
+
+/**
+ * 完全背包的 递推
+ * https://leetcode.cn/problems/form-largest-integer-with-digits-that-add-up-to-target/solutions/824611/gong-shui-san-xie-fen-liang-bu-kao-lu-we-uy4y/
+ * @param a
+ * @param t
+ * @return
+ */
+string largestNumber(vector<int>& a, int t) {
+    vector<string> f(t+1);
+    unordered_map<int,int> mp;
+    for (int i = 0; i < 9; ++i) {
+        if (a[i] <= t) {
+            int k = i+1;
+            f[a[i]] = to_string(k);
+            mp[a[i]] = i;
+        }
+    }
+    for (int i = 1; i <= t; ++i) {
+        for (auto& p : mp) {
+            auto j = p.second;
+            if (a[j] <= i && (!f[i-a[j]].empty() || i-a[j] == 0)) {
+                string s = f[i-a[j]] + f[a[j]];
+                if (s.size() > f[i].size()) {
+                    f[i] = s;
+                } else if (s.size() == f[i].size()) {
+                    sort(s.rbegin(),s.rend());
+                    if (s > f[i])
+                        f[i] = s;
+                }
+            }
+        }
+    }
+    return f[t].empty() ? "0" : f[t];
 }
 
 /**
