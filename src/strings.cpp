@@ -64,7 +64,7 @@ vector<int> kmp_search(const string& text, const string& pattern) {
  * @param pattern
  * @return
  */
-vector<int> beautifulIndices(string s, string a, string b, int k) {
+vector<int> beautifulIndices_1(string s, string a, string b, int k) {
     int n = s.size(), m1 = a.size(), m2 = b.size();
     vector<int> veci,vecj,ans;
     veci = kmp_search(s,a);
